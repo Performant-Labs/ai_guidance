@@ -852,6 +852,39 @@ By default, Git pipes any output stream exceeding one screen height through a te
   git --no-pager log -1
   ```
 
+## 25. Multi-Repo Scripts Appearing Stuck (Execution Duration)
+
+*Discovered in session cfb93ae7*
+
+### Symptom
+An AI agent executes a bash `for` loop that iterates over multiple repositories (e.g., synchronizing the AI subtree across 7 local projects). The command execution timer ticks for 30-45 seconds, making the system look completely frozen, identical to a `git log` pager hang.
+
+### Root Cause
+Operations that hit network borders sequentially—like initiating 7 distinct SSH handshakes to `git@github.com` via `git fetch`—take approximately 4-6 seconds per repository. A 7-repository loop legitimately takes ~35 seconds to physically complete. The terminal is perfectly healthy; it is simply blocking while completing the heavy IO operations.
+
+### Detection
+- Inspect the exact command string. If it contains a `for repo in "${REPOS[@]}"; do ... git fetch ... done` loop, it is systematically iterating.
+- Wait at least 60 seconds before assuming the loop is structurally broken. 
+
+### Solution
+Allow the agent's command to peacefully finish its network queue. If you accidentally execute `Cancel` on a long-running sync loop, simply re-run the loop.
+
+### Prevention / The Sync Script
+If the automated sync loop is ever disrupted, here is the official recovery snippet to cleanly rebuild the staged AI constraints across all host projects identically:
+
+```bash
+REPOS=( ~/Sites/opencloud-voting ~/Sites/opencloud-registration ~/Sites/pl-opencloud-server ~/Sites/pl-opensocial ~/Sites/pl-opensocial-test ~/Sites/pl-drupalorg ~/Projects/AlmondTTS )
+for repo in "${REPOS[@]}"; do
+  cd "$repo"
+  # Safely wipe uncommitted staged ghosts
+  git rm -rf --cached docs/ai_guidance/ || true
+  rm -rf docs/ai_guidance/
+  # Refresh from upstream
+  git fetch git@github.com:Performant-Labs/ai_guidance.git main
+  git read-tree --prefix=docs/ai_guidance/ -u FETCH_HEAD
+done
+```
+
 ---
 
 ## Master Cleanup Script
@@ -913,3 +946,4 @@ When something appears stuck, check in this order:
 ### Git Environments
 20. **Subtree fetch missing recent files?** → Verify the source repository has been explicitly committed and pushed to the remote origin.
 21. **Agent hung on `git log`?** → The agent forgot to bypass the terminal pager. Cancel it and tell it to use `git --no-pager log`.
+22. **Multi-repo loop appears hung?** → Sequential SSH handshakes naturally take ~35 seconds. Wait 60s before intervening.
