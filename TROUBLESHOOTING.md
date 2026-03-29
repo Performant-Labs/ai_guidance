@@ -823,6 +823,37 @@ Git subtrees inherently fetch their payloads from the remote upstream repository
 
 ---
 
+## 24. AI Agent Hung on `git` Commands (Git Pager)
+
+*Discovered in session cfb93ae7*
+
+### Symptom
+An AI agent attempts to run a terminal command like `git log`, `git show`, or `git diff` and appears to hang indefinitely. It never processes the output and requires you to manually intervene and cancel the running process. 
+
+### Root Cause
+By default, Git pipes any output stream exceeding one screen height through a terminal pager (typically `less`). The pager inherently waits for a human user to physically press the `q` key to gracefully exit. Because the AI is executing non-interactively, it cannot send the `q` keystroke, causing the agent to hang permanently.
+
+### Detection
+- The agent executes a Git inspection command.
+- The terminal execution timer ticks indefinitely (e.g. 1m+) without resolving.
+- `ps aux | grep less` may show an abandoned pager instance process.
+
+### Solution
+1. Cancel the agent's hung process. 
+2. Explicitly instruct the agent to run the command with the `--no-pager` flag.
+
+### Prevention
+- AIs must **always explicitly disable the pager** when running stream commands in this environment:
+  ```bash
+  # ❌ WRONG — hangs the AI indefinitely inside 'less'
+  git log -1
+
+  # ✅ CORRECT — safely bypasses the pager and returns immediately
+  git --no-pager log -1
+  ```
+
+---
+
 ## Master Cleanup Script
 
 The `scripts/kill-zombies.sh` script handles process cleanup. Run it:
@@ -881,3 +912,4 @@ When something appears stuck, check in this order:
 
 ### Git Environments
 20. **Subtree fetch missing recent files?** → Verify the source repository has been explicitly committed and pushed to the remote origin.
+21. **Agent hung on `git log`?** → The agent forgot to bypass the terminal pager. Cancel it and tell it to use `git --no-pager log`.
