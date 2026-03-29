@@ -794,6 +794,35 @@ The Playwright tests run against the production-like reverse proxy (e.g., `https
 
 ---
 
+## 23. Subtree Synchronization Failures (Missing Files)
+
+*Discovered in session cfb93ae7*
+
+### Symptom
+When a Git Subtree is pulled into a host repository (e.g., via `ai:sync` or `git subtree pull`), the operation completes successfully without error, but recently created or modified files are conspicuously missing from the subtree directory.
+
+### Root Cause
+Git subtrees inherently fetch their payloads from the remote upstream repository (e.g., GitHub), not your local file system. If a file was added or modified locally inside the primary source repository (e.g., `~/LocalDevelopment/ai_guidance`) but was never explicitly committed and pushed to the remote origin (`git push origin main`), the downstream host repository has no access to it. The subtree pull natively downloads exactly what was available on the server at the exact moment of the last upstream push.
+
+### Detection
+- `git status` inside the host repository shows an incomplete list of staged files after a fetch.
+- Running `git status` inside the upstream source repository reveals uncommitted tracking files or unpushed commits.
+
+### Solution
+1. Navigate directly to the original source repository (e.g., `~/LocalDevelopment/ai_guidance`).
+2. Commit and push the newest files up to the server:
+   ```bash
+   git add .
+   git commit -m "Publish new synchronization rules"
+   git push origin main
+   ```
+3. Return to your host repository and rerun the subtree fetch command (e.g., `ai:sync`).
+
+### Prevention
+- Adopt a strict sequence: when subtrees are present, you must actively verify and push the upstream subtree master repository before you attempt to systematically sync downstream host projects.
+
+---
+
 ## Master Cleanup Script
 
 The `scripts/kill-zombies.sh` script handles process cleanup. Run it:
@@ -849,3 +878,6 @@ When something appears stuck, check in this order:
 
 ### DDEV CLI
 19. **Using wrong DDEV flags?** → `ddev stop` has no `-y`, use `ddev delete --omit-snapshot -y`
+
+### Git Environments
+20. **Subtree fetch missing recent files?** → Verify the source repository has been explicitly committed and pushed to the remote origin.
