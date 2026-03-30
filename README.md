@@ -1,6 +1,6 @@
 # AI Guidance
 
-This repository serves as a centralized "source of truth" constraint-system and runbook for AI developer agents. It dictates the standard operating procedures, known troubleshooting solutions, and codebase rules that AIs must blindly adhere to before taking execution actions in our ecosystem.
+This repository serves as a centralized "source of truth" constraint-system and runbook for AI developer agents. It dictates [Browser Constraints (Headless Priority)](browser/CONSTRAINTS.md), standard operating procedures, known troubleshooting solutions, and codebase rules that AIs must blindly adhere to before taking execution actions in our ecosystem.
 
 ## How it Integrates
 
