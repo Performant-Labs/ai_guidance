@@ -495,6 +495,9 @@ These commands are safe and should never wait for approval:
 - `ls`, `cat`, `grep`, `head`, `tail` — read-only
 - `cp -r` (for module/config copying) — safe in context
 - `npx playwright test` — runs tests
+- `git add` / `git status` / `git log` — read-only or staging only
+- `git commit -m "..."` — local commit, no remote side-effects
+- `git push origin main` — standard upstream sync; **not destructive** (no `--force`)
 
 ### Prevention
 - The agent should mark all non-destructive commands as `SafeToAutoRun: true`
