@@ -16,6 +16,7 @@ This document catalogs every type of process hang encountered in DDEV/Drupal/Pla
 | 19 | DDEV `stop` flag confusion | `ddev stop -y` fails | Use `ddev stop projectname` (no `-y`) |
 | 20 | DDEV port variability | Tests fail with connection refused | Check `ddev describe`, update config |
 | 26 | `php:eval` entity save hang | `ddev drush php:eval` with `->save()` hangs silently for 10+ min | Check logs at 10s; use `config:import --partial` instead |
+| 27 | Clean-room test site / working site port collision | Tests run for 50+ min against the **wrong** DDEV project, no error | `ddev list`; stop development site before running clean-room tests |
 
 ### B. Playwright / Testing
 
@@ -473,6 +474,9 @@ These commands are safe and should never wait for approval:
 - `ls`, `cat`, `grep`, `head`, `tail` — read-only
 - `cp -r` (for module/config copying) — safe in context
 - `npx playwright test` — runs tests
+- `git add` / `git status` / `git --no-pager log` — read-only or staging only
+- `git commit -m "..."` — local commit, no remote side-effects
+- `git push origin main` — standard upstream sync; **not destructive** (no `--force`)
 
 ### Prevention
 - The agent should mark all non-destructive commands as `SafeToAutoRun: true`
@@ -898,6 +902,82 @@ This is reliable because it uses Drupal's own config management pipeline rather 
 
 ---
 
+## 27. Clean-Room Test Site / Working Site DDEV Port Collision
+
+*Discovered in session 207b5d77*
+
+### Symptom
+Playwright tests run for **50+ minutes** against a clean-room recipe or staging test site with no errors reported and no visible progress. The terminal timer keeps ticking. Tests appear to be executing but never complete or produce meaningful output.
+
+### Root Cause
+Many workflows involve **two simultaneously running DDEV projects** that share the same HTTPS port (e.g., `8493`):
+
+- A **working/development** project (e.g., `my-project-working`)
+- A **clean-room test** project (e.g., `my-project-recipe-YYYYMMDD`)
+
+Both are configured with `https://[project].ddev.site:8493`. The DDEV router can misdirect Playwright's requests to the **wrong** project. More commonly, the clean-room site's containers are stopped or degraded — so Playwright connects to the working site's containers via the shared port.
+
+This is a **silent failure**: Playwright connects to a live Drupal site (just the wrong one), so it doesn't throw a "connection refused" error. It simply runs against incorrect content until each test's timeout burns through.
+
+This scenario compounds with **Issue #21 (Agent Approval Gate)**: if the session that kicked off the test run got stuck in an invisible approval queue, the agent never confirmed the environment was clean before launching tests.
+
+### Detection
+```bash
+# Step 1: List ALL running DDEV projects and their ports
+ddev list
+
+# Step 2: Confirm the correct site is running
+ddev describe my-project-recipe 2>/dev/null | grep -E "STAT|URL"
+ddev describe my-project-working 2>/dev/null | grep -E "STAT|URL"
+
+# Step 3: Check for port collision — two projects on the same port
+ddev list | grep 8493
+# If two projects appear — you have a collision
+```
+
+### Solution
+1. Kill any stuck playwright/chromium processes:
+   ```bash
+   pkill -f "node.*playwright"
+   pkill -f "chromium"
+   ```
+2. Stop the working/development site:
+   ```bash
+   cd /path/to/working-project && ddev stop
+   ```
+3. Confirm only the clean-room test site is running:
+   ```bash
+   ddev list
+   ```
+4. Verify the test site's `playwright.config.js` `baseURL` port matches `ddev describe` output.
+5. Re-run the tests.
+
+### Prevention
+**Mandatory pre-flight checklist before running tests against a clean-room site:**
+
+```bash
+# 1. Kill zombie processes
+pkill -f "node.*playwright"; pkill -f "chromium"
+
+# 2. Stop the working/development site
+cd /path/to/working-project && ddev stop
+
+# 3. Confirm only the test site is up
+ddev list
+
+# 4. Verify baseURL port
+ddev describe | grep -i url
+```
+
+- **Never run Playwright against a clean-room test site while the working development site is also running** unless you have confirmed they use different HTTPS ports
+- Even if ports *look* different, always run `ddev list` — DDEV port assignment can shift after machine restarts
+- Large test suites with long-per-test timeouts can waste **hours** if silently talking to the wrong site
+
+### Why Issues #11 and #20 Didn't Prevent This
+Issue #11 covers two *development* projects conflicting. Issue #20 covers a mismatched *port in config*. Neither addressed the pattern where a clean-room test site inherits the same port as the ongoing development site, and neither mandated a `ddev list` pre-flight gate before test runs.
+
+---
+
 ## Master Cleanup Script
 
 If your project includes a process cleanup script (e.g., `scripts/kill-zombies.sh`), run it before every test phase:
@@ -954,6 +1034,14 @@ When something appears stuck, check in this order:
 ### DDEV CLI
 19. **Using wrong DDEV flags?** → `ddev stop` has no `-y`, use `ddev delete --omit-snapshot -y`
 20. **`ddev drush php:eval` with `->save()` hanging?** → Cancel at 10s, check `ddev logs -s web`, use `ddev drush config:import --partial --yes` instead (Issue #26)
+
+### Clean-Room / Recipe Test Pre-Flight (MANDATORY)
+21. **Before any `npx playwright test` run against a clean-room or recipe test site:**
+    - `pkill -f "node.*playwright"; pkill -f "chromium"` — kill zombie processes
+    - `cd /path/to/working-project && ddev stop` — stop the working/development site
+    - `ddev list` — confirm only the test project is running
+    - `ddev describe | grep -i url` — verify `baseURL` port matches config
+    - See Issue #27 if tests run for 50+ minutes with no completion
 
 ### Git Environments
 20. **Subtree fetch missing recent files?** → Verify the source repository has been explicitly committed and pushed to the remote origin.
