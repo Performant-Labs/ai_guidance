@@ -16,6 +16,7 @@ This document catalogs every type of process hang encountered in the Open Social
 | 19 | DDEV `stop` flag confusion | `ddev stop -y` fails | Use `ddev stop projectname` (no `-y`) |
 | 20 | DDEV port variability | Tests fail with connection refused | Check `ddev describe`, update config |
 | 26 | `php:eval` entity save hang | `ddev drush php:eval` with `->save()` hangs silently for 10+ min | Check logs at 10s; use `config:import --partial` instead |
+| 27 | ATK recipe site / working site port collision | Tests run for 50+ min against the **wrong** DDEV project, no error | `ddev list`; stop `pl-atk-d11-working` before testing recipe site |
 
 ### B. Playwright / Testing
 
@@ -939,6 +940,84 @@ This is reliable because it uses Drupal's own config management pipeline rather 
 
 ---
 
+## 27. ATK Recipe Site / Working Site DDEV Port Collision
+
+*Discovered in session 207b5d77*
+
+### Symptom
+Playwright tests run for **50+ minutes** against the ATK recipe test site (`pl-atk-d11-recipe-*`) with no errors reported and no progress visible. The terminal timer keeps ticking. Tests appear to be executing but never complete or produce meaningful output.
+
+### Root Cause
+The ATK workflow involves **two simultaneously running DDEV projects** that happen to share the same HTTPS port (e.g., `8493`):
+
+- `pl-atk-d11-working` — the source/development project
+- `pl-atk-d11-recipe-202604070751` — the clean-room recipe test site
+
+Both are configured with `https://[project].ddev.site:8493`. The DDEV router, under load, can misdirect Playwright's requests to the **wrong** project. More commonly, the `playwright.config.js` `baseURL` in the recipe directory still resolves correctly at the DNS level, but the recipe site's DDEV containers are actually stopped or degraded — causing tests to connect to the working site's containers via a shared port binding.
+
+This is a **silent failure**: Playwright connects to a live Drupal site (just the wrong one), so it doesn't throw a "connection refused" error. It simply runs against incorrect content until the 3-minute `timeout: 180000` burns through for every test.
+
+Additionally, this is the scenario where the **Agent Approval Gate (Issue #21)** compounded the problem: the session that kicked off the 50-minute test run may have been stuck in an invisible approval queue, meaning the agent never confirmed the environment was clean before launching the test.
+
+### Detection
+```bash
+# Step 1: List ALL running DDEV projects and their ports
+ddev list
+
+# Step 2: Confirm the recipe site is actually running (not the working site)
+ddev describe pl-atk-d11-recipe-202604070751 2>/dev/null | grep -E "STAT|URL"
+ddev describe pl-atk-d11-working 2>/dev/null | grep -E "STAT|URL"
+
+# Step 3: Check for port collision
+ddev list | grep 8493
+# If two projects appear — you have a collision
+```
+
+### Solution
+1. Kill any stuck playwright/chromium processes:
+   ```bash
+   pkill -f "node.*playwright"
+   pkill -f "chromium"
+   ```
+2. Stop the working site before running recipe tests:
+   ```bash
+   cd ~/Sites/pl-atk-d11-working && ddev stop
+   ```
+3. Confirm only the recipe site is running:
+   ```bash
+   ddev list
+   ```
+4. Verify the recipe site's `playwright.config.js` `baseURL` port matches `ddev describe` output.
+5. Re-run the tests.
+
+### Prevention
+**Mandatory pre-flight checklist before running ATK recipe tests:**
+
+```bash
+# ALWAYS run before: npx playwright test (in recipe directory)
+
+# 1. Kill zombie processes
+pkill -f "node.*playwright"; pkill -f "chromium"
+
+# 2. Stop the working site
+cd ~/Sites/pl-atk-d11-working && ddev stop
+
+# 3. Confirm only recipe site is up
+ddev list
+
+# 4. Verify baseURL port
+ddev describe | grep -i url
+```
+
+- **Never run Playwright against the recipe site while `pl-atk-d11-working` is also running** unless you have confirmed they use different HTTPS ports
+- Even if the ports *look* different, always run `ddev list` — DDEV port assignment can shift after machine restarts
+- The `playwright.config.js` in the recipe project has `timeout: 180000` (3 minutes per test). At scale, a port collision silently wastes **hours**.
+
+### Why TROUBLESHOOTING.md Didn't Prevent This
+Issue #11 documents port conflicts between two development projects, but did not specifically address the **ATK recipe workflow pattern** where a clean-room test site inherently runs alongside a working development site. Issue #20 (port variability) does not address the case where the port is set correctly but the *wrong* project answers on that port. The Diagnostic Checklist lacked a mandatory `ddev list` gate before recipe test runs.
+
+---
+
 ## Master Cleanup Script
 
 The `scripts/kill-zombies.sh` script handles process cleanup. Run it:
@@ -995,6 +1074,14 @@ When something appears stuck, check in this order:
 ### DDEV CLI
 19. **Using wrong DDEV flags?** → `ddev stop` has no `-y`, use `ddev delete --omit-snapshot -y`
 20. **`ddev drush php:eval` with `->save()` hanging?** → Cancel at 10s, check `ddev logs -s web`, use `ddev drush config:import --partial --yes` instead (Issue #26)
+
+### ATK Recipe Testing Pre-Flight (MANDATORY)
+21. **Before any `npx playwright test` run against a recipe site:**
+    - `pkill -f "node.*playwright"; pkill -f "chromium"` — kill zombie processes
+    - `cd ~/Sites/pl-atk-d11-working && ddev stop` — stop working site
+    - `ddev list` — confirm only recipe project is running
+    - `ddev describe | grep -i url` — verify `baseURL` port matches config
+    - See Issue #27 if tests run for 50+ minutes with no completion
 
 ### Git Environments
 20. **Subtree fetch missing recent files?** → Verify the source repository has been explicitly committed and pushed to the remote origin.
