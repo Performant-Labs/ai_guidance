@@ -15,6 +15,7 @@ This document catalogs every type of process hang encountered in the Open Social
 | 13 | Nested DDEV project error | `ddev start` fails or behaves oddly | Remove parent `~/Sites/.ddev/` |
 | 19 | DDEV `stop` flag confusion | `ddev stop -y` fails | Use `ddev stop projectname` (no `-y`) |
 | 20 | DDEV port variability | Tests fail with connection refused | Check `ddev describe`, update config |
+| 26 | `php:eval` entity save hang | `ddev drush php:eval` with `->save()` hangs silently for 10+ min | Check logs at 10s; use `config:import --partial` instead |
 
 ### B. Playwright / Testing
 
@@ -887,6 +888,57 @@ done
 
 ---
 
+## 26. `ddev drush php:eval` Silent Hang on Entity `save()`
+
+*Discovered in session b50b3fb5*
+
+### Symptom
+A `ddev drush php:eval` command that calls `->save()` on a Drupal entity (e.g., `EntityFormDisplay`, `EntityViewDisplay`, `NodeType`) hangs indefinitely with no output. The terminal timer ticks past 10 minutes with no result or error.
+
+### Root Cause
+Drupal's entity `save()` method fires a cascade of hooks — cache invalidation, config sync listeners, event subscribers, and schema updates. Inside a DDEV container under certain conditions (recent container start, pending schema updates, or heavy hook load), one of these hooks can deadlock or exceed PHP's internal memory/time thresholds silently. Drush does not surface the error; it simply never returns.
+
+This is distinct from a PHP fatal being logged to `ddev logs -s web` — the process may be alive but permanently blocked inside a hook.
+
+### Detection
+```bash
+# At the 10-second mark with no output, check web logs:
+ddev logs -s web | tail -20
+
+# Check if PHP is still processing:
+ddev exec ps aux | grep php
+```
+
+If PHP shows CPU usage but no log output, it is blocked in a hook. If there is no PHP process, it crashed silently.
+
+### Solution
+1. `Ctrl+C` the stuck command immediately (apply the 10-second rule from Issue #4)
+2. Use **config YAML import** instead of `php:eval` to create entity displays:
+
+```bash
+# Write the display config as a YAML file, then:
+ddev drush config:import --partial --source=/var/www/html/path/to/yaml/dir --yes
+```
+
+This is reliable because it uses Drupal's own config management pipeline rather than triggering hooks via PHP eval.
+
+### Prevention
+- **Never use `ddev drush php:eval` to call `->save()` on entity displays** (`EntityFormDisplay`, `EntityViewDisplay`). Use `config:import --partial --yes` with YAML files instead.
+- Apply the **10-second rule** (Issue #4): if `ddev drush` shows nothing for 10 seconds, check `ddev logs -s web` immediately — do not wait.
+- For other entity types where `php:eval` is needed (e.g., creating nodes, terms, roles), short operations are fine. The hook cascade is heaviest for config entities like displays.
+
+### Commands That Should Use Config Import Instead of `php:eval`
+| Entity | Use config:import | Why |
+|--------|-------------------|-----|
+| `EntityFormDisplay` | ✅ Yes | Triggers heavy cache + layout hooks |
+| `EntityViewDisplay` | ✅ Yes | Triggers heavy cache + layout hooks |
+| `NodeType` (content type) | ⚠️ Caution | Can use `php:eval` but test on 10-second rule |
+| `FieldStorageConfig` | ✅ Prefer import | Schema updates can deadlock |
+| Taxonomy terms | ✅ Fine with `php:eval` | Lightweight, hooks are fast |
+| Roles / permissions | ✅ Fine with drush commands | `drush role:create`, `role:perm:add` |
+
+---
+
 ## Master Cleanup Script
 
 The `scripts/kill-zombies.sh` script handles process cleanup. Run it:
@@ -942,6 +994,7 @@ When something appears stuck, check in this order:
 
 ### DDEV CLI
 19. **Using wrong DDEV flags?** → `ddev stop` has no `-y`, use `ddev delete --omit-snapshot -y`
+20. **`ddev drush php:eval` with `->save()` hanging?** → Cancel at 10s, check `ddev logs -s web`, use `ddev drush config:import --partial --yes` instead (Issue #26)
 
 ### Git Environments
 20. **Subtree fetch missing recent files?** → Verify the source repository has been explicitly committed and pushed to the remote origin.
