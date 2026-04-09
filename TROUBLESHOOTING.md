@@ -1001,6 +1001,49 @@ It may also report DDEV container health status.
 
 ---
 
+## 28. AntiGravity IDE Hidden Consent Button (Markdown Render Conflict)
+
+### Symptom
+The AntiGravity IDE agent attempts to execute a tool (e.g., `run_command`, `replace_file_content`, `grep_search`) and enters a `WAITING` state. The **Approve** and **Reject** buttons never appear in the chat UI. The agent is permanently deadlocked — it cannot proceed, and there is no visible way to approve or reject the action.
+
+### Root Cause
+The IDE's UI renderer fails to inject the tool-approval block when the agent's immediately preceding response contains complex Markdown formatting — specifically:
+
+- **GitHub Flavored Markdown (GFM) alert blocks**: `` > [!NOTE] ``, `` > [!IMPORTANT] ``, `` > [!WARNING] ``, `` > [!CAUTION] ``, `` > [!TIP] ``
+- Heavy nested lists or consecutive bold/italic formatting in the same response turn
+
+The alert block syntax corrupts the rendering context, and the Approve/Reject button block is silently swallowed.
+
+**Note:** As of April 2026, this is an open bug with no upstream code fix. The AntiGravity IDE does not have a public issue tracker; the workarounds below are the only available mitigations.
+
+### Detection
+- The agent's last response contained a `> [!...]` alert block or deeply nested Markdown
+- The chat UI shows no Approve/Reject buttons despite the agent being in `WAITING` state
+- The task is completely frozen — the agent cannot time out or self-recover
+
+### Solution
+1. **Cancel the current agent session** — there is no way to recover a deadlocked session without restarting
+2. **Start a new session** and re-issue the request
+3. If the agent reproduces the deadlock, explicitly instruct it: *"Do not use GFM alert blocks (`> [!...]`) before any tool call"*
+
+### Workarounds (Prevention)
+
+**For agents:** Output only plain text immediately before executing any tool call. Do not use:
+- `> [!NOTE]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`, `> [!TIP]`
+- Heavy nested bullet lists preceding a tool invocation
+
+Use standard **bold text** for emphasis instead of alert blocks when a tool call will immediately follow.
+
+**For users:** Add a standing instruction to your system prompt or session opener:
+> "Never use GFM alert blocks (`> [!...]`) or complex Markdown immediately before a tool call."
+
+**Session reset:** If the UI becomes unresponsive, fully close and reopen the AntiGravity panel before starting a new session.
+
+### Status
+**Open — no upstream fix.** The AntiGravity IDE is a closed-source product; the root fix (decoupling the Markdown renderer from the tool-block renderer) must come from the AntiGravity/DeepMind team. Monitor for IDE updates.
+
+---
+
 ## Diagnostic Checklist
 
 When something appears stuck, check in this order:
