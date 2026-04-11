@@ -65,6 +65,10 @@ Once the user provides the target design:
 ---
 
 ## Phase 5: Verification 
-1. Render the newly built Canvas page in the browser at the local DDEV URL.
-2. Visually compare the rendered DOM output against the original screenshot.
-3. Verify that the CSS cascade correctly limits your structural changes and does not accidentally poison the broader global typography or color matrices expected by the site. 
+1. **Manual Canvas Assembly Hold**: Because you just scaffolded structural SDC bundles into the `components/` directory, these elements are not inherently attached to a live route. You must STOP execution and explicitly instruct the user to:
+   - Clear the Drupal cache (e.g., `ddev drush cr`) so the theme registry discovers your new SDCs.
+   - Assemble the layout inside the Drupal Canvas UI using your generated components.
+   - Provide you with the URL of the finalized page.
+2. **Browser Verification**: Once the user provides the rendered URL, load the Canvas page in the headless browser.
+3. **Visual Regression**: Visually compare the rendered DOM output against the original target screenshot.
+4. **Cascade Safety Check**: Verify that your custom CSS overrides remained perfectly encapsulated within the Canvas components and did not accidentally poison the broader global typography or color matrices expected natively by the host site.
