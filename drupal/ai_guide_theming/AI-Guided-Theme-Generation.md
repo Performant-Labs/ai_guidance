@@ -21,6 +21,7 @@ Before cloning repositories or running commands, the AI must collect all foundat
    - **Base Theme Documentation Namespace** (e.g., `drupal/dripyard_themes`)
    - **Location of Target Layout Screenshots**
    - **Legacy Audit Requirement** (Required/Skipped — whether the existing site architecture needs structural mapping)
+   - **Local Runtime Environment**: Automatically test the target codebase to detect the active container wrapper (e.g., scan for `.ddev/` or `.lando.yml`). Report the detected runtime prefix (e.g., `ddev`, `lando`, or native) to the user rather than blindly assuming.
 2. Display these collected values back to the user in a formatted list or table.
 3. Explicitly ask: *"Do these setup parameters look correct? Just give me the green light and we'll jump into Phase 2!"* DO NOT proceed until the user approves.
 
@@ -31,11 +32,11 @@ Before altering any structural CSS or Layout builder templates, preserve the cur
 
 1. **Clone**: Duplicate the primary stable directory (`web/themes/custom/[primary_theme]`) to a new working directory appending a date/timestamp (e.g., `web/themes/custom/[primary_theme]_20260411`).
 2. **Refactor**: Perform a comprehensive internal find-and-replace to rename all machine names, file prefixes, and YAML configurations (e.g. `.info.yml`, `.breakpoints.yml`, `.theme` files) to match the new timestamp suffix.
-3. **Activate**: Enable the newly cloned layout theme and set it as the default theme via Drush:
+3. **Activate**: Enable the newly cloned layout theme and set it as the default theme via Drush, utilizing the runtime wrapper detected in Phase 1:
    ```bash
-   ddev drush theme:enable [primary_theme]_[timestamp]
-   ddev drush config:set system.theme default [primary_theme]_[timestamp] -y
-   ddev drush cr
+   [runtime_wrapper] drush theme:enable [primary_theme]_[timestamp]
+   [runtime_wrapper] drush config:set system.theme default [primary_theme]_[timestamp] -y
+   [runtime_wrapper] drush cr
    ```
 4. **Result**: This preserves the original theme untouched. If the experimental implementations collapse the site layout, AIs can instantly revert the active system theme to the known-good configuration.
 
@@ -60,13 +61,13 @@ Once the user provides the target design:
 1. **Markup Generation**: Generate the HTML structure applying the proper `theme--primary` or relative theme constraint wrappers. Ensure these natively inherit the overarching color palette overrides defined in the Component Layer configuration (`css/base.css`).
 2. **CSS Overrides**: If the screenshot dictates nuanced spacing or bespoke element styling, append custom CSS explicitly targeting the Component Layer inside the new canvas theme's `css/base.css` file. DO NOT attempt to override semantic variables directly.
 3. **Integration Strategy (SDC Enforced)**: When generating custom layout elements or constructing structural markup for Canvas integration, you MUST exclusively output standard **Single Directory Components (SDCs)** natively formatted within the active theme's `components/` directory (e.g., creating the `.component.yml`, `.twig`, and `.css` bundle). Do NOT output raw disconnected HTML payloads, and do NOT architect the output using custom Drupal Blocks, Layout Builder, or root Twig templates.
-4. **AI Autonomous Content Population**: When structural components (like the "Product, Pricing, Blog" header navigation or dynamic card grids) require functional Drupal content to render, DO NOT manually construct UI configurations or write raw database queries. Instead, write a lightweight PHP script (e.g., `ai_payload.php`) that invokes the native Drupal `ai_agents` service. Write a natural language prompt defining the required menu items/nodes, attach the native toolset, and execute it via `ddev drush scr ai_payload.php` so the internal Drupal AI engine orchestrates the actual content generation autonomously.
+4. **AI Autonomous Content Population**: When structural components (like the "Product, Pricing, Blog" header navigation or dynamic card grids) require functional Drupal content to render, DO NOT manually construct UI configurations or write raw database queries. Instead, write a lightweight PHP script (e.g., `ai_payload.php`) that invokes the native Drupal `ai_agents` service. Write a natural language prompt defining the required menu items/nodes, attach the native toolset, and execute it via `[runtime_wrapper] drush scr ai_payload.php` so the internal Drupal AI engine orchestrates the actual content generation autonomously.
 
 ---
 
 ## Phase 5: Verification 
 1. **Manual Canvas Assembly Hold**: Because you just scaffolded structural SDC bundles into the `components/` directory, these elements are not inherently attached to a live route. You must STOP execution and explicitly instruct the user to:
-   - Clear the Drupal cache (e.g., `ddev drush cr`) so the theme registry discovers your new SDCs.
+   - Clear the Drupal cache (e.g., `[runtime_wrapper] drush cr`) so the theme registry discovers your new SDCs.
    - Assemble the layout inside the Drupal Canvas UI using your generated components.
    - Provide you with the URL of the finalized page.
 2. **Browser Verification**: Once the user provides the rendered URL, load the Canvas page in the headless browser.
