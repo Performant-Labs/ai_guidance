@@ -27,9 +27,10 @@ Before altering any structural CSS or Layout builder templates, preserve the cur
 ## Phase 2: Screenshot Ingestion & Component Mapping
 Once the user provides the target design:
 
-1. **Visual Decomposition**: Analyze the screenshot to break down the UI into logical horizontal bands (e.g., Hero Banners, Feature Grids, Logo Arrays, Call-to-Action blocks).
-2. **Component Cross-referencing**: Check these bands against `web/themes/contrib/dripyard_base/components/` to identify completely reusable Twig structures and native CSS class names.
-3. **Gap Analysis**: Identify any bespoke elements in the screenshot that do not have a native Dripyard equivalent. These will require entirely custom CSS implementations.
+1. **Asset Storage**: Immediately save the provided screenshot into a `/designs` or `/reference` directory inside the newly created active theme (e.g., `web/themes/custom/[primary_theme]_[timestamp]/designs/screenshot.png`). This ensures the AI context and layout references are permanently shipped alongside the theme files.
+2. **Visual Decomposition**: Analyze the screenshot to break down the UI into logical horizontal bands (e.g., Hero Banners, Feature Grids, Logo Arrays, Call-to-Action blocks).
+3. **Component Cross-referencing**: Check these bands against `web/themes/contrib/dripyard_base/components/` to identify completely reusable Twig structures and native CSS class names.
+4. **Gap Analysis**: Identify any bespoke elements in the screenshot that do not have a native Dripyard equivalent. These will require entirely custom CSS implementations.
 
 ---
 
