@@ -84,3 +84,4 @@ Once the user provides the target design:
 2. **Browser Verification**: Once the user provides the rendered URL, load the Canvas page in the headless browser.
 3. **Visual Regression**: Visually compare the rendered DOM output against the original target screenshot.
 4. **Cascade Safety Check**: Verify that your custom CSS overrides remained perfectly encapsulated within the Canvas components and did not accidentally poison the broader global typography or color matrices expected natively by the host site.
+5. **Failure Path**: If visual regression fails or the cascade check identifies layout pollution, do NOT leave the broken state committed. Immediately report the specific discrepancy to the user, revert the Phase 4 implementation commit (e.g. `git revert HEAD`), and return to Phase 4 Step 1 with the identified failures explicitly documented as constraints for the next attempt.
