@@ -40,7 +40,7 @@ Before altering any structural CSS or Layout builder templates, preserve the cur
    [runtime_wrapper] drush cr
    ```
 4. **Result**: This preserves the original theme untouched. If the experimental implementations collapse the site layout, AIs can instantly revert the active system theme to the known-good configuration.
-5. **Version Control Snapshot**: Add and commit the cloned baseline to git immediately (e.g. `git add web/themes/custom/[primary]_[timestamp] && git commit -m "chore: Branch new component testbed theme"`). This guarantees a clean rollback point before layout mapping begins.
+5. **Version Control Snapshot**: Add and commit only the cloned theme directory using its explicit path (e.g. `git add web/themes/custom/[primary_theme]_[timestamp] && git commit -m "chore: Branch new component testbed theme"`). Do NOT use `git add .` here — only stage the new theme directory to avoid accidentally committing unrelated working files.
 
 ---
 
