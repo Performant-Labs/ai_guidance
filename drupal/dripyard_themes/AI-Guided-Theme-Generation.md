@@ -38,7 +38,7 @@ Once the user provides the target design:
 ## Phase 3: Implementation Execution
 1. **Markup Generation**: Generate the HTML structure applying the proper `theme--primary` or relative theme constraint wrappers. Ensure these natively inherit the overarching color palette overrides defined in the Component Layer configuration (`css/base.css`).
 2. **CSS Overrides**: If the screenshot dictates nuanced spacing or bespoke element styling, append custom CSS explicitly targeting the Component Layer inside the new canvas theme's `css/base.css` file. DO NOT attempt to override semantic variables directly.
-3. **Integration Strategy**: Wait for user clarification on how to inject the markup (e.g., as a custom Twig template override like `page--front.html.twig`, a custom Drupal Block class, Paragraphs, or the Acquia Layout Builder grid).
+3. **Integration Strategy**: The resulting structural markup and mapped components must be exclusively constructed and formatted for **Canvas pages**. Do not architect the output using disjointed custom Drupal Blocks, the native Layout Builder ecosystem, or direct system Twig templates (`page--*.html.twig`).
 
 ---
 
