@@ -1,0 +1,13 @@
+{#
+/**
+ * @file
+ * Card display for Course content type.
+ */
+#}
+{{ include('dripyard_base:card', {
+  title: label,
+  image: content.dripyard_image|add_suggestion('bare'),
+  eyebrow_text: content.dripyard_course_code|render|striptags,
+  body: content.dripyard_subject|render|striptags,
+  href: url,
+  }, with_context = false) }}

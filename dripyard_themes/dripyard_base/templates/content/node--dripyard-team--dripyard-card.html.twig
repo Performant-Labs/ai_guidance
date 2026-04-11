@@ -1,0 +1,13 @@
+{#
+/**
+ * @file
+ * Card display for Team content type.
+ */
+#}
+{{ include('dripyard_base:card', {
+  title: label,
+  image: content.dripyard_image|add_suggestion('bare'),
+  eyebrow_text: content.dripyard_season|render|striptags,
+  body: content.dripyard_audience|render|striptags,
+  href: url,
+  }, with_context = false) }}

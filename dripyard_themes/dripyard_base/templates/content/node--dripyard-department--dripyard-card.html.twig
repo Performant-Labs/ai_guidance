@@ -1,0 +1,13 @@
+{#
+/**
+ * @file
+ * Card display for Department content type.
+ */
+#}
+{{ include('dripyard_base:card', {
+  title: label,
+  image: content.dripyard_image|add_suggestion('bare'),
+  eyebrow_text: content.dripyard_location|render|striptags,
+  body: content.body|render|striptags|trim|slice(0, 150) ~ '...',
+  href: url,
+  }, with_context = false) }}

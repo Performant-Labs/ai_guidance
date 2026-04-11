@@ -1,0 +1,13 @@
+{#
+/**
+ * @file
+ * Card display for Group content type.
+ */
+#}
+{{ include('dripyard_base:card', {
+  title: label,
+  image: content.dripyard_image|add_suggestion('bare'),
+  eyebrow_text: content.dripyard_group_type|render|striptags,
+  body: content.dripyard_schedule|render|striptags,
+  href: url,
+  }, with_context = false) }}

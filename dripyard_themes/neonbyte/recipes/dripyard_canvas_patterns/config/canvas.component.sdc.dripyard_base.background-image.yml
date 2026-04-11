@@ -1,0 +1,147 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.media.image.field_media_image
+    - image.style.canvas_parametrized_width
+    - media.type.image
+  module:
+    - file
+    - image
+    - media
+    - media_library
+    - options
+  theme:
+    - dripyard_base
+label: 'Background image'
+id: sdc.dripyard_base.background-image
+source: sdc
+source_local_id: 'dripyard_base:background-image'
+provider: dripyard_base
+active_version: 6b716cd0789b24bf
+versioned_properties:
+  active:
+    settings:
+      prop_field_definitions:
+        image:
+          required: false
+          field_type: entity_reference
+          field_storage_settings:
+            target_type: media
+          field_instance_settings:
+            handler: 'default:media'
+            handler_settings:
+              target_bundles:
+                image: image
+          field_widget: media_library_widget
+          default_value: {  }
+          expression: 'ℹ︎entity_reference␟entity␜␜entity:media:image␝field_media_image␞␟{src↠src_with_alternate_widths,alt↠alt,width↠width,height↠height}'
+        background_image_opacity:
+          required: false
+          field_type: integer
+          field_storage_settings: {  }
+          field_instance_settings:
+            min: 1
+            max: 100
+          field_widget: number
+          default_value:
+            -
+              value: 100
+          expression: ℹ︎integer␟value
+        loading:
+          required: false
+          field_type: list_string
+          field_storage_settings:
+            allowed_values_function: canvas_load_allowed_values_for_component_prop
+          field_instance_settings: {  }
+          field_widget: options_select
+          default_value:
+            -
+              value: lazy
+          expression: ℹ︎list_string␟value
+        position_x:
+          required: false
+          field_type: integer
+          field_storage_settings: {  }
+          field_instance_settings:
+            min: 1
+            max: 100
+          field_widget: number
+          default_value:
+            -
+              value: 50
+          expression: ℹ︎integer␟value
+        position_y:
+          required: false
+          field_type: integer
+          field_storage_settings: {  }
+          field_instance_settings:
+            min: 1
+            max: 100
+          field_widget: number
+          default_value:
+            -
+              value: 50
+          expression: ℹ︎integer␟value
+    fallback_metadata:
+      slot_definitions: {  }
+  2fb92e5de8477353:
+    settings:
+      prop_field_definitions:
+        image:
+          required: false
+          field_type: image
+          field_storage_settings: {  }
+          field_instance_settings: {  }
+          field_widget: image_image
+          default_value: {  }
+          expression: 'ℹ︎image␟{src↠src_with_alternate_widths,alt↠alt,width↠width,height↠height}'
+        background_image_opacity:
+          required: false
+          field_type: integer
+          field_storage_settings: {  }
+          field_instance_settings:
+            min: 1
+            max: 100
+          field_widget: number
+          default_value:
+            -
+              value: 100
+          expression: ℹ︎integer␟value
+        loading:
+          required: false
+          field_type: list_string
+          field_storage_settings:
+            allowed_values_function: canvas_load_allowed_values_for_component_prop
+          field_instance_settings: {  }
+          field_widget: options_select
+          default_value:
+            -
+              value: lazy
+          expression: ℹ︎list_string␟value
+        position_x:
+          required: false
+          field_type: integer
+          field_storage_settings: {  }
+          field_instance_settings:
+            min: 1
+            max: 100
+          field_widget: number
+          default_value:
+            -
+              value: 50
+          expression: ℹ︎integer␟value
+        position_y:
+          required: false
+          field_type: integer
+          field_storage_settings: {  }
+          field_instance_settings:
+            min: 1
+            max: 100
+          field_widget: number
+          default_value:
+            -
+              value: 50
+          expression: ℹ︎integer␟value
+    fallback_metadata:
+      slot_definitions: {  }
