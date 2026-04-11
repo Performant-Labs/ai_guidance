@@ -12,7 +12,21 @@ To ensure absolute safety and maintain a functional baseline for the host projec
 
 ---
 
-## Phase 1: Establish the Baseline Backup
+## Phase 1: Pre-Execution Discovery
+Before cloning repositories or running commands, the AI must collect all foundational environment variables and display them to the user for explicit confirmation.
+
+1. Gather the following run-time parameters:
+   - **Primary Active Theme Name** (e.g., `performant_labs`)
+   - **Target Local Project Path** (e.g., `~/Sites/pl-performantlabs.com`)
+   - **Base Theme Documentation Namespace** (e.g., `drupal/dripyard_themes`)
+   - **Location of Target Layout Screenshots**
+   - **Legacy Audit Requirement** (Required/Skipped — whether the existing site architecture needs structural mapping)
+2. Display these collected values back to the user in a formatted list or table.
+3. Explicitly ask: *"Please confirm these parameters are correct before I execute the baseline backup."* DO NOT proceed until the user approves.
+
+---
+
+## Phase 2: Establish the Baseline Backup
 Before altering any structural CSS or Layout builder templates, preserve the current customized primary theme.
 
 1. **Clone**: Duplicate the primary stable directory (`web/themes/custom/[primary_theme]`) to a new working directory appending a date/timestamp (e.g., `web/themes/custom/[primary_theme]_20260411`).
@@ -27,7 +41,7 @@ Before altering any structural CSS or Layout builder templates, preserve the cur
 
 ---
 
-## Phase 2: Screenshot Ingestion & Component Mapping
+## Phase 3: Screenshot Ingestion & Component Mapping
 Once the user provides the target design:
 
 1. **Asset Storage**: Immediately save the provided screenshot into a `/designs` or `/reference` directory inside the newly created active theme (e.g., `web/themes/custom/[primary_theme]_[timestamp]/designs/screenshot.png`). This ensures the AI context and layout references are permanently shipped alongside the theme files.
@@ -42,7 +56,7 @@ Once the user provides the target design:
 
 ---
 
-## Phase 3: Implementation Execution
+## Phase 4: Implementation Execution
 1. **Markup Generation**: Generate the HTML structure applying the proper `theme--primary` or relative theme constraint wrappers. Ensure these natively inherit the overarching color palette overrides defined in the Component Layer configuration (`css/base.css`).
 2. **CSS Overrides**: If the screenshot dictates nuanced spacing or bespoke element styling, append custom CSS explicitly targeting the Component Layer inside the new canvas theme's `css/base.css` file. DO NOT attempt to override semantic variables directly.
 3. **Integration Strategy**: The resulting structural markup and mapped components must be exclusively constructed and formatted for **Canvas pages**. Do not architect the output using disjointed custom Drupal Blocks, the native Layout Builder ecosystem, or direct system Twig templates (`page--*.html.twig`).
@@ -50,7 +64,7 @@ Once the user provides the target design:
 
 ---
 
-## Phase 4: Verification 
+## Phase 5: Verification 
 1. Render the newly built Canvas page in the browser at the local DDEV URL.
 2. Visually compare the rendered DOM output against the original screenshot.
 3. Verify that the CSS cascade correctly limits your structural changes and does not accidentally poison the broader global typography or color matrices expected by the site. 
