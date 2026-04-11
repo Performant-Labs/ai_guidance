@@ -46,6 +46,16 @@ Once installed natively on your machine, no matter what language stack the proje
 - **`ai:push`** to instantly publish new rules to the central nervous system.
 ---
 
+# Drupal Reference Runbooks
+
+The following documents dictate Performant Labs' specific architectural constraints and SOPs for the Drupal subsystem:
+
+- [Drupal CMS 2.0 AI Ecosystem Best Practices](drupal/drupal-ai-modules.md)
+- [Dripyard Themes: Color Management Constraints](drupal/dripyard_themes/color_management.md)
+- [Dripyard Themes: AI-Guided Theme Generation SOP](drupal/dripyard_themes/AI-Guided-Theme-Generation.md)
+
+---
+
 # Drupal CMS
 
 Drupal CMS is a fast-moving open source product that enables site builders to easily create new Drupal sites and extend them with smart defaults, all using their browser.
