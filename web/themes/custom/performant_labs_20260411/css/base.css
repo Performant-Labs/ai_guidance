@@ -1,0 +1,36 @@
+/**
+ * @file
+ * Global styles.
+ */
+
+/* Custom Palette Color Overrides */
+
+/* LIGHT / WHITE REGIONS (e.g., Main Page Content) */
+html :where(:root),
+html .theme--light, 
+html .theme--white {
+  --theme-surface: #F0F1F0;               
+  --theme-surface-alt: #FFFFFF;           
+  --theme-text-color-primary: #1B2638;    
+  --theme-text-color-loud: #2D3E48;       
+  --theme-text-color-medium: #555F68;     
+  --theme-link-color: #F59E0B;            
+  --theme-link-hover: #92600A;            
+  --theme-border-color: #555F68;          
+  --theme-focus-ring-color: #F59E0B;      
+}
+
+/* PRIMARY / DARK REGIONS (e.g., Site Footer, Headers) */
+html .theme--primary,
+html .theme--dark,
+html .theme--black {
+  --theme-surface: #1B2638;             /* Dark Navy Background */  
+  --theme-surface-alt: #2D3E48;         /* Lighter Dark Slate Panels */
+  --theme-text-color-primary: #F0F1F0;  /* Bright Text */  
+  --theme-text-color-loud: #FFFFFF;     
+  --theme-text-color-medium: #555F68;   /* Muted Slate Text */  
+  --theme-link-color: #F59E0B;          /* Amber Links */  
+  --theme-link-hover: #92600A;          
+  --theme-border-color: #555F68;        
+  --theme-focus-ring-color: #F59E0B;    
+}
