@@ -5,9 +5,9 @@ dependencies:
   module:
     - simple_search_form
   theme:
-    - neonbyte_subtheme
-id: neonbyte_subtheme_simplesearchform
-theme: neonbyte_subtheme
+    - performant_labs
+id: performant_labs_simplesearchform
+theme: performant_labs
 region: header_third
 weight: 0
 provider: null

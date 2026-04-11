@@ -4,20 +4,20 @@ dependencies:
   module:
     - system
   theme:
-    - neonbyte_subtheme
-id: neonbyte_subtheme_secondary_local_tasks
-theme: neonbyte_subtheme
+    - performant_labs
+id: performant_labs_primary_local_tasks
+theme: performant_labs
 region: fixed_middle_right
-weight: -4
+weight: -5
 provider: null
 plugin: local_tasks_block
 settings:
   id: local_tasks_block
-  label: 'Secondary tabs'
+  label: 'Primary tabs'
   label_display: '0'
   provider: core
-  primary: false
-  secondary: true
+  primary: true
+  secondary: false
 visibility:
   request_path:
     id: request_path

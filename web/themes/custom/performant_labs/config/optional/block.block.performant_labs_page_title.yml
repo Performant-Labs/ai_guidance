@@ -2,9 +2,9 @@ langcode: en
 status: true
 dependencies:
   theme:
-    - neonbyte_subtheme
-id: neonbyte_subtheme_page_title
-theme: neonbyte_subtheme
+    - performant_labs
+id: performant_labs_page_title
+theme: performant_labs
 region: highlighted
 weight: -5
 provider: null

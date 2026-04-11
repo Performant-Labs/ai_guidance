@@ -6,9 +6,9 @@ dependencies:
   module:
     - system
   theme:
-    - neonbyte_subtheme
-id: neonbyte_subtheme_main_menu
-theme: neonbyte_subtheme
+    - performant_labs
+id: performant_labs_main_menu
+theme: performant_labs
 region: header_second
 weight: -5
 provider: null

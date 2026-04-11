@@ -4,9 +4,9 @@ dependencies:
   module:
     - search
   theme:
-    - neonbyte_subtheme
-id: neonbyte_subtheme_search_form
-theme: neonbyte_subtheme
+    - performant_labs
+id: performant_labs_search_form
+theme: performant_labs
 region: header_third
 weight: 0
 provider: null

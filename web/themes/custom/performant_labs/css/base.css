@@ -1,0 +1,20 @@
+/**
+ * @file
+ * Global styles.
+ */
+
+/* Architecturally Correct Semantic Overrides */
+:where(:root) {
+  /* 1. Base Primary & Secondary Anchors */
+  /* By setting these, the OKLCH engine calculates all 10 shades dynamically from YOUR hex codes */
+  --base-primary-color: #1B2638;
+  --base-secondary-color: #F59E0B;
+
+  /* 2. Specific Neutral/Scale Overrides */
+  /* We intercept specific computed shades and force them to your exact secondary brand hexes */
+  --neutral-100: #F0F1F0;   /* Replaces the lightest background shade */
+  --neutral-600: #555F68;   /* Replaces the medium slate borders/text */
+  --neutral-800: #2D3E48;   /* Replaces the dark slate text/accents */
+  
+  --secondary-700: #92600A; /* Replaces the dark amber hover states */
+}

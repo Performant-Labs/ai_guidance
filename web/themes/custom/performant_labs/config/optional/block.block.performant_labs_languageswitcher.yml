@@ -4,9 +4,9 @@ dependencies:
   module:
     - language
   theme:
-    - neonbyte_subtheme
-id: neonbyte_subtheme_languageswitcher
-theme: neonbyte_subtheme
+    - performant_labs
+id: performant_labs_languageswitcher
+theme: performant_labs
 region: header_third
 weight: 0
 provider: null

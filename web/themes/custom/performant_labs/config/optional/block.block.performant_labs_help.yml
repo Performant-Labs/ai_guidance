@@ -4,9 +4,9 @@ dependencies:
   module:
     - help
   theme:
-    - neonbyte_subtheme
-id: neonbyte_subtheme_help
-theme: neonbyte_subtheme
+    - performant_labs
+id: performant_labs_help
+theme: performant_labs
 region: highlighted
 weight: 0
 provider: null

@@ -1,14 +1,14 @@
 # Licensed to: andre.angelantoni@performantlabs.com (c14f4bdc-9260-401a-922e-a55523c688c9)
-name: neonbyte_subtheme
+name: Performant Labs
 type: theme
 'base theme': neonbyte
 description: ''
 core_version_requirement: ^11
 
 libraries:
-  - neonbyte_subtheme/base
+  - performant_labs/base
 version: 1.0.0
-generator: 'neonbyte_subtheme:unknown-version'
+generator: 'performant_labs:unknown-version'
 
 #
 # Libraries extend will add custom libraries to specified libraries
