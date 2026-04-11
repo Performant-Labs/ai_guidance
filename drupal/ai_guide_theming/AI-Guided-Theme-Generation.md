@@ -22,7 +22,7 @@ Before cloning repositories or running commands, the AI must collect all foundat
    - **Location of Target Layout Screenshots**
    - **Legacy Audit Requirement** (Required/Skipped — whether the existing site architecture needs structural mapping)
 2. Display these collected values back to the user in a formatted list or table.
-3. Explicitly ask: *"Please confirm these operational parameters are correct before I initialize Phase 2 execution."* DO NOT proceed until the user approves.
+3. Explicitly ask: *"Do these setup parameters look correct? Just give me the green light and we'll jump into Phase 2!"* DO NOT proceed until the user approves.
 
 ---
 
