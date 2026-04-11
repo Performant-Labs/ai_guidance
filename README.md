@@ -44,7 +44,6 @@ alias ai:push="git subtree push --prefix=docs/ai_guidance git@github.com:Perform
 Once installed natively on your machine, no matter what language stack the project is, you just type:
 - **`ai:sync`** to instantly update the local project's rules.
 - **`ai:push`** to instantly publish new rules to the central nervous system.
-
 ---
 
 # Drupal CMS
