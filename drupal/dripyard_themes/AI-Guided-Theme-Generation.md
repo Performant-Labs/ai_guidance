@@ -39,6 +39,7 @@ Once the user provides the target design:
 1. **Markup Generation**: Generate the HTML structure applying the proper `theme--primary` or relative theme constraint wrappers. Ensure these natively inherit the overarching color palette overrides defined in the Component Layer configuration (`css/base.css`).
 2. **CSS Overrides**: If the screenshot dictates nuanced spacing or bespoke element styling, append custom CSS explicitly targeting the Component Layer inside the new canvas theme's `css/base.css` file. DO NOT attempt to override semantic variables directly.
 3. **Integration Strategy**: The resulting structural markup and mapped components must be exclusively constructed and formatted for **Canvas pages**. Do not architect the output using disjointed custom Drupal Blocks, the native Layout Builder ecosystem, or direct system Twig templates (`page--*.html.twig`).
+4. **AI Autonomous Content Population**: When structural components (like the "Product, Pricing, Blog" header navigation or dynamic card grids) require functional Drupal content to render, DO NOT manually construct UI configurations or write raw database queries. Instead, write a lightweight PHP script (e.g., `ai_payload.php`) that invokes the native Drupal `ai_agents` service. Write a natural language prompt defining the required menu items/nodes, attach the native toolset, and execute it via `ddev drush scr ai_payload.php` so the internal Drupal AI engine orchestrates the actual content generation autonomously.
 
 ---
 
