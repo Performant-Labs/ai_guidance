@@ -234,6 +234,24 @@ $url = $this->saveAndGetImageUrl($response);
 
 ---
 
+## Best Practices
+
+When building AI integrations within the Drupal CMS 2.0 ecosystem, adhere to these established community guidelines:
+
+1. **Strict Service Abstraction (Provider Independence)**
+   Never build against a specific provider's API directly (e.g., executing raw cURL requests to OpenAI). Always pass operations through the AI Core Abstraction framework. Using `\Drupal::service('ai.provider')->getDefaultProviderForOperationType('chat')` ensures your underlying codebase survives completely intact even if you swap LLM providers at the infrastructure level.
+
+2. **Never Store Keys in Config or Code**
+   Always utilize the **Key module** (`drupal/key`). All credentials and tokens must be offloaded to secure environment variables or vaults. The AI Provider adapters explicitly integrate with Key module tokens. Do not bypass this by hardcoding or placing API secrets into default PHP config structures.
+
+3. **Let the Engine Pre-Populate Content (AI Automators)**
+   Instead of creating heavy custom controllers to intercept form submissions for AI tasks, rely on **AI Automators**. Automators tie gracefully into native Drupal form lifecycles (e.g., triggering on node save), abstracting away custom hooks to seamlessly auto-generate taxonomy tags, meta descriptions, or translations.
+
+4. **Test Safely via API Explorer**
+   Utilize the native **AI API Explorer** (`/admin/config/ai/explorer`) to interactively test your LLM prompt formulations and boundaries within the Drupal backend *before* rigorously committing the prompt structures back into your codebase.
+
+---
+
 ## Resources
 
 - **Module docs:** https://project.pages.drupalcode.org/ai/latest/
