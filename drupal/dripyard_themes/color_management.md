@@ -11,40 +11,54 @@ Dripyard uses a complex 4-layer color system powered by CSS `oklch()` color math
 3. **Theme Layer**: It distributes those semantic scales into 5 built-in theme wrappers (`White, Light, Primary, Dark, Black`). These map out specific variables like `--theme-surface`, `--theme-text-color-loud`, and `--theme-border-color`.
 4. **Component Layer**: Every block or menu inherits styles natively based on the overarching wrapper classes (e.g. `<footer class="site-footer theme--primary">`).
 
-## The Overriding Pitfall (CSS Specificity Wars)
+## The Pitfall: Semantic Layer Specificity Wars
 
-If you attempt to inject hardcoded static Hex codes by overriding Layer 3 Theme Variables (e.g. `--theme-surface`) inside a custom `base.css` file, you will likely encounter frustrating UI inconsistencies. 
+The internal theme documentation implies that you should override the Layer 2 Semantic scale using `:where(:root)`. **However, this will fail in practice.**
 
-For example, simply overriding `:root { --theme-surface: #F0F1F0; }` will fail on certain blocks (like headers or footers) because those blocks utilize highly specific descendant wrappers like `.theme--primary` or `.theme--dark`. Thus, your overrides will lose the CSS specificity battle against the theme's core engine, resulting in random elements reverting to the original OKLCH-calculated bright blue `#0000d9` defaults.
+Because Dripyard's backend actively injects the `base_primary_color` dynamically as an **inline style directly onto the `<html>` tag** (e.g., `style="--theme-setting-base-primary-color: #0000d9;"`), the inline variable possesses absolute maximum CSS specificity. Consequently, any Semantic substitutions defined inside external CSS files will inevitably lose the variable cascade when resolving specialized descendant regions (like `<footer class="site-footer theme--primary">`), and the system will forcefully revert to the internal OKLCH math engine's default bright blue.
 
-**Do not use `!important` tags.** CSS pipelines and preprocessors natively used in Drupal's aggregation often choke on `!important` declarations injected inside CSS custom property variables. 
+## The Architecturally Correct Solution: Override the Component Layer
 
-## The Architecturally Correct Solution: Override the Semantic Layer
+The most reliable, upgrade-proof way to bypass the dynamic `oklch()` generation while structurally retaining the layout's built-in 5-theme capability is to explicitly override the overarching region wrapper classes directly at the **Layer 4 Component Layer**.
 
-The safest and most upgrade-proof way to bypass the "fancy system" while ensuring all components inherit your colors flawlessly is to declare static values against the **Layer 2 Semantic Variables** at the `:where(:root)` pseudo-class level in your custom subtheme's `base.css`. 
-
-By intercepting the underlying shades _before_ the Theme Layer uses them, the 5 core theme wrappers (White/Light/Primary/Dark/Black) will dynamically consume your exact colors across the entire site layout. 
+By using descendant selectors against `html`, your custom palette fundamentally overrides both the internal OKLCH computations and the inline HTML variable assignments, natively executing your exact colors across every DOM layout segment!
 
 ### Example Configuration Snippet
 
 Place this in your subtheme's stylesheet (`web/themes/custom/[subtheme_name]/css/base.css`):
 
 ```css
-/* Architecturally Correct Semantic Overrides */
-:where(:root) {
-  /* 1. Base Primary & Secondary Anchors */
-  /* Re-declare the anchors so the OKLCH engine calculates shades cleanly off your hexes */
-  --base-primary-color: #1B2638;
-  --base-secondary-color: #F59E0B;
+/* Custom Palette Color Component Overrides */
 
-  /* 2. Specific Neutral/Scale Overrides */
-  /* Intercept explicit mathematical shades and force them to your specific brand palette */
-  --neutral-100: #F0F1F0;   /* Lightest background shade (Used in Light/White themes) */
-  --neutral-600: #555F68;   /* Medium borders and subdued UI text */
-  --neutral-800: #2D3E48;   /* Deep slate body/accent text */
-  
-  --secondary-700: #92600A; /* Dark amber hover states */
+/* LIGHT / WHITE REGIONS (e.g., Main Page Content) */
+html :where(:root),
+html .theme--light, 
+html .theme--white {
+  --theme-surface: #F0F1F0;               
+  --theme-surface-alt: #FFFFFF;           
+  --theme-text-color-primary: #1B2638;    
+  --theme-text-color-loud: #2D3E48;       
+  --theme-text-color-medium: #555F68;     
+  --theme-link-color: #F59E0B;            
+  --theme-link-hover: #92600A;            
+  --theme-border-color: #555F68;          
+  --theme-focus-ring-color: #F59E0B;      
+}
+
+/* PRIMARY / DARK REGIONS (e.g., Site Footer, Headers) */
+html .theme--primary,
+html .theme--dark,
+html .theme--black {
+  --theme-surface: #1B2638;             /* Dark Navy Background */  
+  --theme-surface-alt: #2D3E48;         /* Lighter Dark Slate Panels */
+  --theme-text-color-primary: #F0F1F0;  /* Bright Text */  
+  --theme-text-color-loud: #FFFFFF;     
+  --theme-text-color-medium: #555F68;   /* Muted Slate Text */  
+  --theme-link-color: #F59E0B;          /* Amber Links */  
+  --theme-link-hover: #92600A;          
+  --theme-border-color: #555F68;        
+  --theme-focus-ring-color: #F59E0B;    
 }
 ```
 
-This single configuration perfectly bridges a completely custom 6-color palette smoothly onto the robust block rendering systems expected by Dripyard!
+This single configuration structurally anchors your exact static colors securely onto the robust block rendering system Dripyard expects!
