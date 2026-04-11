@@ -32,7 +32,7 @@ Before cloning repositories or running commands, the AI must collect all foundat
 Before altering any structural CSS or Layout builder templates, preserve the current customized primary theme.
 
 1. **Clone**: Duplicate the primary stable directory (`web/themes/custom/[primary_theme]`) to a new working directory appending a date/timestamp (e.g., `web/themes/custom/[primary_theme]_20260411`).
-2. **Refactor**: Perform a comprehensive internal find-and-replace to rename all machine names, file prefixes, and YAML configurations (e.g. `.info.yml`, `.breakpoints.yml`, `.theme` files) to match the new timestamp suffix.
+2. **Refactor**: Perform a targeted find-and-replace to rename all machine names inside configuration files only. Scope this strictly to `.info.yml`, `.breakpoints.yml`, `.theme`, `.libraries.yml`, and `.yml` files. Do NOT run a broad replacement across all files — binary assets, images, and generic CSS class names must not be touched.
 3. **Activate**: Enable the newly cloned layout theme and set it as the default theme via Drush, utilizing the runtime wrapper detected in Phase 1:
    ```bash
    [runtime_wrapper] drush theme:enable [primary_theme]_[timestamp]
