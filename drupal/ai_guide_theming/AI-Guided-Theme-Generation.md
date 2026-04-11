@@ -1,6 +1,9 @@
 # AI-Guided Theme Generation
 
-This runbook outlines the standard operating procedure for AI developer agents tasked with safely creating a new testbed theme and translating UI screenshots into functional Drupal pages using the `dripyard_base` ecosystem.
+This runbook outlines the standard operating procedure for AI developer agents tasked with safely creating a new testbed theme and translating UI screenshots into functional Drupal pages. 
+
+> [!IMPORTANT]
+> **Theme-Specific Run-Time Instruction**: At run-time, you MUST ask the user to provide the documentation folder path for their underlying base theme framework (e.g., `drupal/dripyard_themes`). You must thoroughly review all theme-specific instructions (such as component inventories and color management rules) stored in that folder before making architectural layout assumptions.
 
 ## Operating Principles
 The primary objective is to ingest a UI screenshot, map its visual elements identically to Dripyard theme components, and implement the layout within Drupal. 
@@ -33,9 +36,9 @@ Once the user provides the target design:
    - Utilize native database introspection, Drush commands, or structural DOM analysis to dissect the existing content framework (tracking how legacy blocks, node fields, and taxonomies are routed).
    - Draft this architectural dissection into an explicit Markdown file and save it within an `/audits` directory positioned as a direct peer to the `/designs` directory inside the new active theme (e.g., `web/themes/custom/[primary_theme]_[timestamp]/audits/legacy_dissection.md`).
 3. **Visual Decomposition**: Analyze the screenshot to break down the UI into logical horizontal bands (e.g., Hero Banners, Feature Grids, Logo Arrays, Call-to-Action blocks).
-4. **Component Cross-referencing**: Check these bands against `web/themes/contrib/dripyard_base/components/` to identify completely reusable Twig structures and native CSS class names.
-5. **Gap Analysis**: Identify any bespoke elements in the screenshot that do not have a native Dripyard equivalent. These will require entirely custom CSS implementations.
-6. **Implementation Plan Generation**: Before writing any execution markup, STOP and generate a `theme_component_mapping_plan.md` file directly into the same directory that hosts this master document (`drupal/ai_guide_theming/`). This file must summarize your findings from the component mapping and gap analysis. Wait for the user to explicitly approve your strategy.
+4. **Component Cross-referencing**: Check these visual bands against your base theme's component library (identified via the documentation folder provided by the user) to identify completely reusable Twig structures and native CSS modifier classes.
+5. **Gap Analysis**: Identify any bespoke elements in the screenshot that do not have a native equivalent in the base theme. These will require entirely custom CSS implementations.
+6. **Implementation Plan Generation**: Before writing any execution markup, STOP and generate a `theme_component_mapping_plan.md` file directly into the specific theme documentation folder the user provided at run-time (e.g., `drupal/dripyard_themes/`). This file must summarize your findings. Wait for the user to explicitly approve your strategy.
 
 ---
 
