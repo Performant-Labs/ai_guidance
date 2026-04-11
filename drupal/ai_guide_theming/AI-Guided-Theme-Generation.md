@@ -6,7 +6,7 @@ This runbook outlines the standard operating procedure for AI developer agents t
 > **Theme-Specific Run-Time Instruction**: At run-time, you MUST ask the user to provide the documentation folder path for their underlying base theme framework (e.g., `drupal/dripyard_themes`). You must thoroughly review all theme-specific instructions (such as component inventories and color management rules) stored in that folder before making architectural layout assumptions.
 
 ## Operating Principles
-The primary objective is to ingest a UI screenshot, map its visual elements identically to Dripyard theme components, and implement the layout within Drupal. 
+The primary objective is to ingest a UI screenshot, map its visual elements to the components provided by the user's specified base theme framework, and implement the resulting layout within Drupal. 
 
 To ensure absolute safety and maintain a functional baseline for the host project, **AIs must first duplicate the existing stable theme into a new working directory before making any experimental layout or styling changes.**
 
