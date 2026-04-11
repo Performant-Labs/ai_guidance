@@ -1,53 +1,326 @@
-# Keytail Component Mapping Plan
+# Keytail Canvas Page — Component Mapping Plan
+## Theme: `performant_labs_20260411` · Base: `neonbyte` → `dripyard_base`
 
-This document details the strategy for recreating the `keytail-desktop.webp` design using the `performant_labs_20260411` baseline theme, the underlying `dripyard_base` components, and specifically formatting the output for **Drupal Canvas pages**.
+This document is the **Phase 3 output** of the AI-Guided Theme Generation SOP.
+It maps every design slice to native Dripyard SDC components, identifies gaps
+requiring bespoke SDCs, and defines the Canvas assembly strategy.
 
-## Phase 1 & 2 Execution Status
-- [x] Created the baseline backup `performant_labs_20260411`.
-- [x] Sliced the continuous source image into 8 localized image bands stored in `/designs/`.
+**Status**: Draft — awaiting user approval before any code is written.
 
-## Component Mapping Strategy
+---
 
-We will construct this layout block-by-block. All regions will utilize native Dripyard CSS modifier classes (e.g., `theme--light`, `theme--dark`) to enforce color inheritance, completely decoupled from Layout Builder blocks.
+## Reference Assets
 
-### 1. Global Navigation & Hero Region
-- **Design Elements:** Transparent sticky header, centered massive typography ("Get found. Automatically."), search input, and a complex green-gradient background masking a dashboard mock.
-- **Dripyard Components:** `header-logo`, `title-cta` (for text and input).
-- **Customization Required:** The intricate green gradient masking the dashboard image is not a native component. We will write a custom CSS block using `clip-path` and gradients inside `base.css` to build this hero wrapper.
+| File | Purpose |
+|------|---------|
+| `designs/keytail-desktop.webp` | Full-page desktop reference (2000 × 9902 px) |
+| `designs/keytail-mobile.webp` | Full-page mobile reference |
+| `designs/00_menu.webp` | Slice: Navigation bar |
+| `designs/01_hero.webp` | Slice: Hero section |
+| `designs/02_features_search_changed.webp` | Slice: Feature cards |
+| `designs/03_carousel_built_different.webp` | Slice: Horizontal carousel |
+| `designs/04_content_engine.webp` | Slice: Dashboard tabs |
+| `designs/05_designed_for_teams.webp` | Slice: 2-col teams section |
+| `designs/06_graph_stocks.webp` | Slice: Stock graph |
+| `designs/07_faq.webp` | Slice: FAQ accordion |
+| `designs/08_footer.webp` | Slice: Footer |
 
-### 2. Feature Cards ("Search has changed")
-- **Design Elements:** 3-column masonry/grid showing floating UI cards.
-- **Dripyard Components:** `content-card`. 
-- **Layout Construction:** Enclosed in a standard Canvas grid row array utilizing the white surface wrapper (`theme--white`).
+---
 
-### 3. Horizontal Scroll Cards ("Built different")
-- **Design Elements:** 4 horizontal scrollable cards with inner images and pills.
-- **Dripyard Components:** `carousel` wrapped around standard `card` components.
-- **Customization Required:** Custom CSS for the inner black pill buttons with right-facing arrows.
+## Native Dripyard Component Library (dripyard_base)
 
-### 4. Content Engine Dashboard View
-- **Design Elements:** Title/subtitle above a prominent dark dashboard image with "Discover / Create / Publish" toggle buttons.
-- **Dripyard Components:** `tabs` (for the toggle structure), `heading`.
-- **Layout Construction:** Enclosed in a `theme--light` (grey) background wrapper.
+Available SDCs confirmed in `web/themes/contrib/dripyard_base/components/`:
 
-### 5. Multi-Column Content ("Designed for teams")
-- **Design Elements:** Standard 2-column layout (Text left, image right).
-- **Dripyard Components:** `teaser` component mapped into a 2-column Canvas boundary.
+`accordion` · `background-image` · `button` · `canvas-image` · `card` ·
+`card-canvas` · `card-full-image` · `carousel` · `content-card` · `heading` ·
+`horizontal-line` · `icon` · `icon-card` · `icon-list` · `logo-grid` ·
+`menu-block` · `menu-footer` · `pill` · `statistic` · `tabs` · `tab-group` ·
+`tags` · `teaser` · `testimonial` · `testimonial-canvas` · `text` ·
+`title-cta` · `video-player` · `video-youtube`
 
-### 6. Interactive Graph ("Just like stocks")
-- **Design Elements:** Typography above a line graph with an interactive tab switcher.
-- **Dripyard Components:** `tabs` structure to handle the UI layout of the switcher. 
-- **Customization Required:** The graph itself is highly custom. We will build a static mock of the graph container using basic HTML/SVG and position it below the tabs.
+Available SDCs confirmed in `web/themes/contrib/neonbyte/components/`:
 
-### 7. FAQ 
-- **Design Elements:** Centered "FAQ" title, expanding/collapsing question rows.
-- **Dripyard Components:** `accordion`. We will style the accordion items to maintain the ultra-thin grey bordering from the design.
+`header` · `header-search` · `primary-menu` · `mobile-nav-button` ·
+`language-switcher` · `footer` · `hero` · `header-article` · `html-header` ·
+`icon`
 
-### 8. Custom Footer & Massive Logo
-- **Design Elements:** Dark slate blue background featuring a massive 'K' watermark taking up the left column, with standard footer links on the right.
-- **Dripyard Components:** `menu-footer`.
-- **Customization Required:** The massive oversized 'K' background is highly bespoke. We will enforce this using standard wrapper classes (`theme--primary`) and absolutely position an SVG vector behind the primary footer content container.
+---
 
-## Canvas Output Strategy
+## Per-Slice Component Mapping
 
-Unlike static templates, we will generate the raw HTML payload conforming to Canvas component payload structures. I will write the HTML and corresponding CSS patches required for `performant_labs_20260411` incrementally so you can drop them into the Canvas editor.
+---
+
+### Slice 00 — Navigation Bar (`00_menu.webp`)
+
+**Design**: Transparent sticky header. Left: Keytail wordmark logo. Center: horizontal
+primary nav links. Right: "Sign in" text link + "Get started" amber CTA button.
+Mobile: collapsible hamburger.
+
+| Element | Native Component | Theme Wrapper | Notes |
+|---------|-----------------|---------------|-------|
+| Header shell | Neonbyte `header` | `theme--white` | Rendered via site header region — not a Canvas block |
+| Logo | `header-logo` | — | Standard Drupal site branding block |
+| Primary nav | `primary-menu` | — | Standard menu block |
+| CTA button | `button` | — | Requires amber variant CSS |
+| Mobile toggle | `mobile-nav-button` | — | Native |
+
+**Customisation required** (CSS in `css/base.css`):
+- Sticky + transparent header scrolling to opaque → CSS `position: sticky` + `backdrop-filter`
+- Amber "Get started" button variant (`.button--cta`) → `css/base.css`
+
+**Bespoke SDC needed**: ❌ None — handled by site regions.
+
+---
+
+### Slice 01 — Hero (`01_hero.webp`)
+
+**Design**: Full-width dark section. Deep green-to-teal radial gradient background
+masking a clipped dashboard screenshot image. Large bold headline:
+_"Get found. Automatically."_ Subtitle paragraph. Search input field with
+"Start for free" button. Gradient fades from green/teal at top to dark navy at
+bottom-right. Dashboard image appears to bleed out of the section boundary.
+
+| Element | Native Component | Theme Wrapper | Notes |
+|---------|-----------------|---------------|-------|
+| Section shell | `background-image` | `theme--primary` | Dark navy base |
+| Headline + subtitle | `heading` + `text` | — | Inside shell |
+| CTA / search input | `title-cta` | — | Closest native match |
+
+**Customisation required**:
+- Radial green/teal gradient overlay → bespoke CSS layer inside SDC
+- Dashboard image with `clip-path` bleed → bespoke SDC (image absolutely positioned, clipped)
+- Search input styled as hero input → CSS override
+
+**Bespoke SDC needed**: ✅ **`hero-keytail`**
+- Location: `web/themes/custom/performant_labs_20260411/components/hero-keytail/`
+- Files: `hero-keytail.twig`, `hero-keytail.css`, `hero-keytail.component.yml`
+- Inherits: none (standalone)
+- Contains: gradient wrapper div, headline slot, subtitle slot, CTA slot, dashboard image slot
+
+---
+
+### Slice 02 — Features: "Search has changed" (`02_features_search_changed.webp`)
+
+**Design**: White background. Section eyebrow + headline. 3-column card grid.
+Cards are elevated (drop shadow), contain a UI screenshot at top, a bold card
+title, and a short descriptor paragraph. Cards feel "floating" with rounded corners.
+
+| Element | Native Component | Theme Wrapper | Notes |
+|---------|-----------------|---------------|-------|
+| Section wrapper | Canvas grid row (3-col) | `theme--white` | Standard Canvas layout |
+| Eyebrow + headline | `heading` | — | Two heading blocks stacked |
+| Feature cards | `content-card` | — | Canvas variant available |
+
+**Customisation required**:
+- Card drop-shadow + rounded corner elevation → scoped CSS
+- Screenshot image filling card top area → `canvas-image` slot inside `content-card`
+
+**Bespoke SDC needed**: ❌ None — `content-card` covers this with CSS tuning.
+Scoped CSS file: `components/content-card/content-card.css` (inside `_20260411`)
+
+---
+
+### Slice 03 — Carousel: "Built different" (`03_carousel_built_different.webp`)
+
+**Design**: Light grey background. Section headline. 4 horizontally scrollable cards.
+Each card: rounded dark image at top, category pill tag, bold title, short body, and
+a black pill-shaped "→" arrow button. Cards overflow the container width, implying
+a CSS scroll-snap or JS carousel.
+
+| Element | Native Component | Theme Wrapper | Notes |
+|---------|-----------------|---------------|-------|
+| Section wrapper | Canvas section | `theme--light` | Grey surface |
+| Headline | `heading` | — | |
+| Carousel shell | `carousel` | — | Native dripyard_base |
+| Individual cards | `card` (`card-canvas` variant) | — | |
+| Category pills | `pill` | — | Inside card |
+| Arrow CTA | `button` | — | Black pill variant |
+
+**Customisation required**:
+- Horizontal snap-scroll behaviour → CSS override on `.carousel` wrapper
+- Black pill button variant (`.button--pill-dark`) → `css/base.css`
+- Card image with rounded top corners → scoped CSS
+
+**Bespoke SDC needed**: ❌ None — `carousel` + `card` covers this with CSS.
+
+---
+
+### Slice 04 — Content Engine Dashboard (`04_content_engine.webp`)
+
+**Design**: Light grey background. Centered headline + subtitle. Below: a tab switcher
+row ("Discover" / "Create" / "Publish" — active tab underlined). Below tabs: a large
+dark-mode dashboard screenshot that changes based on active tab. Dashboard image has
+subtle shadow and rounded corners. This is the page's primary interactive section.
+
+| Element | Native Component | Theme Wrapper | Notes |
+|---------|-----------------|---------------|-------|
+| Section wrapper | Canvas section | `theme--light` | Grey |
+| Headline + subtitle | `heading` + `text` | — | |
+| Tab switcher | `tab-group` + `tab` | — | Native dripyard_base |
+| Dashboard image | `canvas-image` | — | One image per tab pane |
+
+**Customisation required**:
+- Tab underline active style (not boxed) → CSS override on `.tab-group`
+- Dashboard image sizing (full-width within tab pane, rounded corners) → scoped CSS
+
+**Bespoke SDC needed**: ❌ None — `tabs` + `canvas-image` covers this.
+Scoped CSS: `components/tabs/tabs.css` (inside `_20260411`)
+
+---
+
+### Slice 05 — Designed for Teams (`05_designed_for_teams.webp`)
+
+**Design**: White background. 2-column layout. Left: eyebrow, large headline, body
+copy, icon-list of feature bullets (checkmark icons + short text), CTA link. Right:
+product screenshot image.
+
+| Element | Native Component | Theme Wrapper | Notes |
+|---------|-----------------|---------------|-------|
+| 2-col layout | Canvas 2-column grid | `theme--white` | 50/50 split |
+| Left column | `heading` + `text` + `icon-list` + `button` | — | Stacked blocks |
+| Icon bullets | `icon-list` (`icon-list-item`) | — | Native |
+| Right image | `canvas-image` | — | |
+
+**Customisation required**: Minimal — standard Canvas grid layout.
+- Icon colour (amber checkmarks) → `css/base.css`
+
+**Bespoke SDC needed**: ❌ None.
+
+---
+
+### Slice 06 — Graph: "Just like stocks" (`06_graph_stocks.webp`)
+
+**Design**: Light grey background. Centered headline + subtitle. Below: a tab row
+of metric options (e.g. "Organic traffic", "Rankings", "Backlinks"). Below that: a
+prominent SVG-style line graph with labelled axes, data points, and a gradient fill
+under the curve. Graph is presented as a static visual in the design.
+
+| Element | Native Component | Theme Wrapper | Notes |
+|---------|-----------------|---------------|-------|
+| Section wrapper | Canvas section | `theme--light` | Grey |
+| Headline + subtitle | `heading` + `text` | — | |
+| Metric tab row | `tab-group` + `tab` | — | Native |
+| Graph area | ❌ **No native match** | — | Bespoke SDC |
+
+**Customisation required**:
+- Tab row as pill-style switcher (not underline) → CSS override
+- Graph: static SVG line chart with gradient fill
+
+**Bespoke SDC needed**: ✅ **`graph-display`**
+- Location: `web/themes/custom/performant_labs_20260411/components/graph-display/`
+- Files: `graph-display.twig`, `graph-display.css`, `graph-display.component.yml`
+- Contains: static inline SVG path (hardcoded for Canvas demo), gradient fills, axis labels
+- Not interactive — purely presentational for Canvas assembly
+
+---
+
+### Slice 07 — FAQ (`07_faq.webp`)
+
+**Design**: White background. Centered "FAQ" large headline. Below: a vertical list
+of question rows separated by ultra-thin grey horizontal lines. Each row: bold
+question left-aligned, "+" expand icon right-aligned. Accordion pattern.
+
+| Element | Native Component | Theme Wrapper | Notes |
+|---------|-----------------|---------------|-------|
+| Section wrapper | Canvas section | `theme--white` | |
+| Headline | `heading` | — | Centered |
+| Accordion items | `accordion` | — | Native dripyard_base |
+
+**Customisation required**:
+- Accordion border: ultra-thin `1px solid` grey lines (replace any default boxed style) → scoped CSS
+- "+" icon colour → scoped CSS
+- Remove any background fill on accordion items
+
+**Bespoke SDC needed**: ❌ None — `accordion` with scoped CSS override.
+Scoped CSS: `components/accordion/accordion.css` (inside `_20260411`)
+
+---
+
+### Slice 08 — Footer (`08_footer.webp`)
+
+**Design**: Dark navy/slate background (`theme--primary`). 2-column layout.
+Left column: a massive oversized "K" letterform (watermark) in a slightly lighter
+shade of navy, absolutely positioned behind the content. Right column: footer nav
+links in columns, social icons, copyright line. Logo appears top-left of right column.
+
+| Element | Native Component | Theme Wrapper | Notes |
+|---------|-----------------|---------------|-------|
+| Footer shell | Neonbyte `footer` | `theme--primary` | Dark navy |
+| Nav links | `menu-footer` | — | Standard footer menu blocks |
+| Social icons | `social-media-nav` | — | Native |
+| "K" watermark | ❌ **No native match** | — | Bespoke CSS only |
+
+**Customisation required**:
+- Massive "K" SVG: absolutely positioned pseudo or inline SVG inside footer wrapper
+- Footer region split into 2-col by Canvas grid
+- Watermark opacity and z-index layering
+
+**Bespoke SDC needed**: ❌ No new SDC — pure CSS addition to `css/base.css`.
+The "K" is rendered as a CSS `::before` pseudo-element or inline SVG on the
+`site-footer` wrapper using `position: absolute; z-index: 0; font-size: clamp(...)`.
+
+---
+
+## Gap Analysis Summary
+
+| Slice | Native Coverage | Gap | Resolution |
+|-------|----------------|-----|-----------|
+| 00 Navigation | ✅ Full (site regions) | Amber CTA, sticky CSS | `css/base.css` |
+| 01 Hero | ⚠️ Partial | Gradient overlay + clipped image | **Bespoke SDC: `hero-keytail`** |
+| 02 Feature Cards | ✅ `content-card` | Elevation/shadow styling | Scoped component CSS |
+| 03 Carousel | ✅ `carousel` + `card` | Horizontal snap, pill button | `css/base.css` + scoped CSS |
+| 04 Dashboard Tabs | ✅ `tabs` + `canvas-image` | Tab underline style | Scoped component CSS |
+| 05 Teams 2-col | ✅ Canvas grid + `icon-list` | Icon colour | `css/base.css` |
+| 06 Graph | ⚠️ Partial (`tabs` for switcher) | Graph visualization | **Bespoke SDC: `graph-display`** |
+| 07 FAQ | ✅ `accordion` | Border/icon styling | Scoped component CSS |
+| 08 Footer | ✅ `footer` + `menu-footer` | "K" watermark | `css/base.css` pseudo |
+
+---
+
+## Bespoke SDCs To Be Created
+
+| SDC | Path | Priority | Complexity |
+|-----|------|----------|-----------|
+| `hero-keytail` | `components/hero-keytail/` | 🔴 High | High — gradient, clip-path, image bleed |
+| `graph-display` | `components/graph-display/` | 🟡 Medium | Medium — static SVG only |
+
+---
+
+## Global CSS Additions (`css/base.css`)
+
+Items that affect existing native components globally (not scoped):
+
+| Item | Selector Target |
+|------|----------------|
+| Amber CTA button variant | `.button--cta` |
+| Sticky transparent → opaque header | `.site-header` |
+| Horizontal carousel snap-scroll | `.carousel__track` |
+| Black pill button variant | `.button--pill-dark` |
+| Amber icon colour for icon-list | `.icon-list__icon` |
+| Footer "K" watermark pseudo | `.site-footer::before` |
+
+---
+
+## Canvas Assembly Order
+
+Sections will be assembled in the Canvas editor in this sequence:
+
+1. **Navigation** — Site header region (pre-existing blocks)
+2. **Hero** — SDC `hero-keytail` (full-width, `theme--primary`)
+3. **Feature Cards** — 3-col Canvas grid, `content-card` × 3 (`theme--white`)
+4. **Carousel** — `carousel` containing `card` × 4 (`theme--light`)
+5. **Dashboard Tabs** — `tab-group` + `tab` × 3 + `canvas-image` (`theme--light`)
+6. **Teams** — 2-col Canvas grid, text blocks left + `canvas-image` right (`theme--white`)
+7. **Graph** — `tab-group` + SDC `graph-display` (`theme--light`)
+8. **FAQ** — `accordion` × N items (`theme--white`)
+9. **Footer** — Site footer region (`theme--primary`, CSS watermark)
+
+---
+
+## Implementation Rules (SOP Reminder)
+
+- All CSS for existing native components → scoped `components/[name]/[name].css` inside `_20260411`
+- Global overrides only for cross-component concerns → `css/base.css`
+- No HTML files on disk — Canvas blocks authored via Heredoc stdin
+- Commit each SDC and CSS file with explicit path-scoped `git add`
+- Hard stop before Phase 4 begins — user must approve this plan
