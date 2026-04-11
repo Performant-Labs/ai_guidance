@@ -49,8 +49,8 @@ Once the user provides the target design:
 
 1. **Asset Storage**: Immediately save the provided screenshot into a `/designs` or `/reference` directory inside the newly created active theme (e.g., `web/themes/custom/[primary_theme]_[timestamp]/designs/screenshot.png`). This ensures the AI context and layout references are permanently shipped alongside the theme files.
 2. *(Optional)* **Legacy Architecture Audit**: If the objective is to migrate or upgrade an existing live website into the new Canvas architecture, perform a comprehensive structural audit of the legacy site before making assumptions about the new layout.
-   - Target the local legacy codebase environment (e.g., navigating into `~/Sites/pl-performantlabs.com`).
-   - Utilize native database introspection, Drush commands, or structural DOM analysis to dissect the existing content framework (tracking how legacy blocks, node fields, and taxonomies are routed).
+   - Target the local legacy codebase environment (e.g., navigating into `~/Sites/pl-performantlabs.com`). **First, independently detect its runtime wrapper** (scan for `.ddev/`, `.lando.yml`, etc.) — it may differ from the primary project detected in Phase 1.
+   - Utilize native database introspection, Drush commands (via the legacy site's detected wrapper), or structural DOM analysis to dissect the existing content framework (tracking how legacy blocks, node fields, and taxonomies are routed).
    - Draft this architectural dissection into an explicit Markdown file and save it within an `/audits` directory positioned as a direct peer to the `/designs` directory inside the new active theme (e.g., `web/themes/custom/[primary_theme]_[timestamp]/audits/legacy_dissection.md`).
 3. **Visual Decomposition**: Analyze the screenshot to break down the UI into logical horizontal bands (e.g., Hero Banners, Feature Grids, Logo Arrays, Call-to-Action blocks).
 4. **Component Cross-referencing**: Check these visual bands against your base theme's component library (identified via the documentation folder provided by the user) to identify completely reusable Twig structures and native CSS modifier classes.
