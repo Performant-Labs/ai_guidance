@@ -43,17 +43,6 @@ alias ai:push="git subtree push --prefix=docs/ai_guidance git@github.com:Perform
 
 Once installed natively on your machine, no matter what language stack the project is, you just type:
 - **`ai:sync`** to instantly update the local project's rules.
-- **`ai:push`** to instantly publish new rules to the central nervous system.
----
-
-# Drupal Reference Runbooks
-
-The following documents dictate Performant Labs' specific architectural constraints and SOPs for the Drupal subsystem:
-
-- [Drupal CMS 2.0 AI Ecosystem Best Practices](drupal/drupal-ai-modules.md)
-- [Dripyard Themes: Color Management Constraints](drupal/dripyard_themes/color_management.md)
-- [Dripyard Themes: AI-Guided Theme Generation SOP](drupal/dripyard_themes/AI-Guided-Theme-Generation.md)
-
 ---
 
 # Drupal CMS
