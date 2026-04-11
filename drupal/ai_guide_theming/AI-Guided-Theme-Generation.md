@@ -72,7 +72,7 @@ Once the user provides the target design:
    // ... script invoking \Drupal::service('ai_agents') ...
    EOF
    ```
-5. **Version Control Snapshot**: Commit the newly generated SDCs, CSS wrappers, and payload scripts before handing off to the verification stage (e.g. `git commit -m "feat: Implement Canvas SDCs and dynamic payload generators"`).
+5. **Version Control Snapshot**: Commit the newly generated SDC bundles and CSS wrappers before handing off to the verification stage (e.g. `git commit -m "feat: Implement Canvas SDC component suite"`).
 
 ---
 
