@@ -35,7 +35,7 @@ Once the user provides the target design:
 3. **Visual Decomposition**: Analyze the screenshot to break down the UI into logical horizontal bands (e.g., Hero Banners, Feature Grids, Logo Arrays, Call-to-Action blocks).
 4. **Component Cross-referencing**: Check these bands against `web/themes/contrib/dripyard_base/components/` to identify completely reusable Twig structures and native CSS class names.
 5. **Gap Analysis**: Identify any bespoke elements in the screenshot that do not have a native Dripyard equivalent. These will require entirely custom CSS implementations.
-6. **Implementation Plan Generation**: Before writing any execution markup, STOP and generate a `theme_component_mapping_plan.md` file directly into the same directory that hosts this master document (`drupal/dripyard_themes/`). This file must summarize your findings from the component mapping and gap analysis. Wait for the user to explicitly approve your strategy.
+6. **Implementation Plan Generation**: Before writing any execution markup, STOP and generate a `theme_component_mapping_plan.md` file directly into the same directory that hosts this master document (`drupal/ai_guide_theming/`). This file must summarize your findings from the component mapping and gap analysis. Wait for the user to explicitly approve your strategy.
 
 ---
 
