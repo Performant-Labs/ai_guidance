@@ -12,12 +12,12 @@ To ensure absolute safety and maintain a functional baseline for the host projec
 ## Phase 1: Establish the Baseline Backup
 Before altering any structural CSS or Layout builder templates, preserve the current customized primary theme.
 
-1. **Clone**: Duplicate the primary stable directory (`web/themes/custom/[primary_theme]`) to a new working directory suffix (e.g., `web/themes/custom/[primary_theme]_canvas`).
-2. **Refactor**: Perform a comprehensive internal find-and-replace to rename all machine names, file prefixes, and YAML configurations (e.g. `.info.yml`, `.breakpoints.yml`, `.theme` files) to match the new suffix.
-3. **Activate**: Enable the new canvas theme and set it as the default theme via Drush:
+1. **Clone**: Duplicate the primary stable directory (`web/themes/custom/[primary_theme]`) to a new working directory appending a date/timestamp (e.g., `web/themes/custom/[primary_theme]_20260411`).
+2. **Refactor**: Perform a comprehensive internal find-and-replace to rename all machine names, file prefixes, and YAML configurations (e.g. `.info.yml`, `.breakpoints.yml`, `.theme` files) to match the new timestamp suffix.
+3. **Activate**: Enable the newly cloned layout theme and set it as the default theme via Drush:
    ```bash
-   ddev drush theme:enable [primary_theme]_canvas
-   ddev drush config:set system.theme default [primary_theme]_canvas -y
+   ddev drush theme:enable [primary_theme]_[timestamp]
+   ddev drush config:set system.theme default [primary_theme]_[timestamp] -y
    ddev drush cr
    ```
 4. **Result**: This preserves the original theme untouched. If the experimental implementations collapse the site layout, AIs can instantly revert the active system theme to the known-good configuration.
