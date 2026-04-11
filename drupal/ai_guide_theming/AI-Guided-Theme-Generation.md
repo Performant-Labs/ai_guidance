@@ -22,6 +22,7 @@ Before cloning repositories or running commands, the AI must collect all foundat
    - **Location of Target Layout Screenshots**
    - **Legacy Audit Requirement** (Required/Skipped — whether the existing site architecture needs structural mapping)
    - **Local Runtime Environment**: Automatically test the target codebase to detect the active container wrapper (e.g., scan for `.ddev/` or `.lando.yml`). Report the detected runtime prefix (e.g., `ddev`, `lando`, or native) to the user rather than blindly assuming.
+   - **Git Safety Check**: Run `git status` to verify the working tree is completely clean. If uncommitted changes exist, force the user to stash or commit them. Do not allow execution on a dirty tree.
 2. Display these collected values back to the user in a formatted list or table.
 3. Explicitly ask: *"Do these setup parameters look correct? Just give me the green light and we'll jump into Phase 2!"* DO NOT proceed until the user approves.
 
@@ -39,6 +40,7 @@ Before altering any structural CSS or Layout builder templates, preserve the cur
    [runtime_wrapper] drush cr
    ```
 4. **Result**: This preserves the original theme untouched. If the experimental implementations collapse the site layout, AIs can instantly revert the active system theme to the known-good configuration.
+5. **Version Control Snapshot**: Add and commit the cloned baseline to git immediately (e.g. `git add web/themes/custom/[primary]_[timestamp] && git commit -m "chore: Branch new component testbed theme"`). This guarantees a clean rollback point before layout mapping begins.
 
 ---
 
@@ -54,6 +56,7 @@ Once the user provides the target design:
 4. **Component Cross-referencing**: Check these visual bands against your base theme's component library (identified via the documentation folder provided by the user) to identify completely reusable Twig structures and native CSS modifier classes.
 5. **Gap Analysis**: Identify any bespoke elements in the screenshot that do not have a native equivalent in the base theme. These will require entirely custom CSS implementations.
 6. **Implementation Plan Generation**: Before writing any execution markup, STOP and generate a `theme_component_mapping_plan.md` file directly into the specific theme documentation folder the user provided at run-time (e.g., `drupal/dripyard_themes/`). This file must summarize your findings. Wait for the user to explicitly approve your strategy.
+7. **Version Control Snapshot**: Commit the newly gathered assets, the audit file (if generated), and the mapping plan logically (e.g. `git commit -m "docs: Scaffold layout target assets and implementation strategy"`).
 
 ---
 
@@ -62,6 +65,7 @@ Once the user provides the target design:
 2. **CSS Overrides**: If the screenshot dictates nuanced spacing or bespoke element styling, append custom CSS explicitly targeting the Component Layer inside the new canvas theme's `css/base.css` file. DO NOT attempt to override semantic variables directly.
 3. **Integration Strategy (SDC Enforced)**: When generating custom layout elements or constructing structural markup for Canvas integration, you MUST exclusively output standard **Single Directory Components (SDCs)** natively formatted within the active theme's `components/` directory (e.g., creating the `.component.yml`, `.twig`, and `.css` bundle). Do NOT output raw disconnected HTML payloads, and do NOT architect the output using custom Drupal Blocks, Layout Builder, or root Twig templates.
 4. **AI Autonomous Content Population**: When structural components (like the "Product, Pricing, Blog" header navigation or dynamic card grids) require functional Drupal content to render, DO NOT manually construct UI configurations or write raw database queries. Instead, write a lightweight PHP script (e.g., `ai_payload.php`) that invokes the native Drupal `ai_agents` service. Write a natural language prompt defining the required menu items/nodes, attach the native toolset, and execute it via `[runtime_wrapper] drush scr ai_payload.php` so the internal Drupal AI engine orchestrates the actual content generation autonomously.
+5. **Version Control Snapshot**: Commit the newly generated SDCs, CSS wrappers, and payload scripts before handing off to the verification stage (e.g. `git commit -m "feat: Implement Canvas SDCs and dynamic payload generators"`).
 
 ---
 
