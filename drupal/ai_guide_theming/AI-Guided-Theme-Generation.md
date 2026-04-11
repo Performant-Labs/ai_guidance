@@ -55,8 +55,9 @@ Once the user provides the target design:
 3. **Visual Decomposition**: Analyze the screenshot to break down the UI into logical horizontal bands (e.g., Hero Banners, Feature Grids, Logo Arrays, Call-to-Action blocks).
 4. **Component Cross-referencing**: Check these visual bands against your base theme's component library (identified via the documentation folder provided by the user) to identify completely reusable Twig structures and native CSS modifier classes.
 5. **Gap Analysis**: Identify any bespoke elements in the screenshot that do not have a native equivalent in the base theme. These will require entirely custom CSS implementations.
-6. **Implementation Plan Generation**: Before writing any execution markup, STOP and generate a `theme_component_mapping_plan.md` file directly into the specific theme documentation folder the user provided at run-time (e.g., `drupal/dripyard_themes/`). This file must summarize your findings. Wait for the user to explicitly approve your strategy.
-7. **Version Control Snapshot**: Commit the newly gathered assets, the audit file (if generated), and the mapping plan logically (e.g. `git commit -m "docs: Scaffold layout target assets and implementation strategy"`).
+6. **Implementation Plan Generation**: Synthesize your structural component findings and draft your `theme_component_mapping_plan.md` strategy directly into the specific theme documentation folder that the user provided natively at run-time (e.g., `drupal/dripyard_themes/`).
+7. **Version Control Snapshot**: Immediately commit the raw target assets, the legacy audit framework (if generated), and your drafted component plan to Git (e.g., `git add . && git commit -m "docs: Scaffold layout target assets and implementation mapping"`). 
+8. **Approval Checkpoint**: With the plan safely tracked in version control, you must explicitly STOP execution. Display your mapped strategy to the user and wait for their explicit manual approval before advancing into Phase 4 layout executions.
 
 ---
 
