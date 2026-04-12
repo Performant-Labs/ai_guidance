@@ -457,11 +457,24 @@ Then export: `[runtime_wrapper] drush config:export --yes`
 
 ---
 
-## Phase 9: Verification
+## Phase 9: Content Migration
 
-Verification is split into two sequential sub-phases. **Phase 9.2 must not begin until Phase 9.1 passes.** Structure was verified inline during Phases 5, 7, and 8 — Phase 9 tests content and visual presentation only.
+> [!IMPORTANT]
+> **Mandatory pre-reading**: Read [`drupal/ai_guide_theming/content-migration-cookbook.md`](content-migration-cookbook.md) in full before writing any script or running any Drush command in this phase. It contains all inventory commands, migration patterns, dependency ordering, the form framework assessment, and the verification gate.
 
-### Phase 9.1 — Content Audit
+1. **DDEV multi-project**: Start the source site alongside the target — `cd [source-path] && ddev start`. Both run simultaneously; the shared `ddev-router` handles both by subdomain. No conflict expected.
+2. **Run inventory** (cookbook §0–§8 inventory commands): Execute against the source site. Present each category as a structured table — one category at a time. Do not dump all categories simultaneously.
+3. **User selection gate**: For each category, the user assigns a disposition to every item (bring as-is / modify / placeholder stub / skip). **Do NOT proceed to migration until all categories have explicit dispositions.**
+4. **Execute migration in dependency order** (cookbook §0 → §1 → §2 → §3 → §4 → §5 → §6 → §7 → §8). One category per script. Verify each category before moving to the next. Commit after each verified category.
+5. **Verification gate** (cookbook §Verification): Run node counts, alias spot-checks, media counts, image style audit, and Canvas placeholder scan. Must pass before Phase 10.
+
+---
+
+## Phase 10: Verification
+
+Verification is split into two sequential sub-phases. **Phase 10.2 must not begin until Phase 10.1 passes.** Structure was verified inline during Phases 5, 7, and 8 — Phase 10 tests visual presentation only.
+
+### Phase 10.1 — Content Audit
 
 Scan every Canvas text-bearing component for placeholder copy before any screenshot is taken. Base themes (NeonByte, Keytail, Dripyard) ship demo content that is structurally invisible — it passes layout checks but contains the wrong words.
 
@@ -481,13 +494,13 @@ curl -sk [site-url]/ | grep -i "[approved hero headline]"
 curl -sk [site-url]/ | grep -iE "[nav-label-1]|[nav-label-2]"
 ```
 
-**Pass**: 0 placeholder matches, all approved copy present → proceed to Phase 9.2.
+**Pass**: 0 placeholder matches, all approved copy present → proceed to Phase 10.2.
 **Fail**: update via the keyed-replacement pattern in `canvas-scripting-protocol.md` → re-run the scan → do not open a browser until this gate is green.
 
 > [!CAUTION]
-> A Phase 9.2 visual regression finding should **never** be "wrong text." If it is, Phase 9.1 was not run correctly. Return to 9.1.
+> A Phase 10.2 visual regression finding should **never** be "wrong text." If it is, Phase 10.1 was not run correctly. Return to 10.1.
 
-### Phase 9.2 — Visual Regression
+### Phase 10.2 — Visual Regression
 
 Visually compare the rendered page against the original target design slices, panel by panel.
 
