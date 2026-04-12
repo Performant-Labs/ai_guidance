@@ -12,5 +12,6 @@ items:
   - block.system_menu_block.footer
   - block.system_menu_block.main
   - block.system_menu_block.navigation-user-links
+  - block.system_menu_block.social-links
   - block.system_menu_block.tools
   - block.system_menu_block.top-tasks

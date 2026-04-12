@@ -1,0 +1,27 @@
+uuid: e7138cf8-6730-4d33-865f-5b875afd57fd
+langcode: en
+status: false
+dependencies:
+  config:
+    - system.menu.social-links
+  module:
+    - system
+active_version: f0f037b37b55dd24
+versioned_properties:
+  active:
+    settings:
+      default_settings:
+        id: 'system_menu_block:social-links'
+        label: 'Social Links'
+        label_display: '0'
+        provider: system
+        level: 1
+        depth: null
+        expand_all_items: false
+    fallback_metadata:
+      slot_definitions: null
+label: 'Social Links'
+id: block.system_menu_block.social-links
+provider: system
+source: block
+source_local_id: 'system_menu_block:social-links'
