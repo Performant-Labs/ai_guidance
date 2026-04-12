@@ -1,0 +1,25 @@
+uuid: ddb6152f-9e8e-45a0-b7c4-b6a0c05a137b
+langcode: en
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - performant_labs_20260411
+_core:
+  default_config_hash: qk6QEGzda44efSetPJqU3V51Ngi2SzoUUkiBr50ph4s
+id: performant_labs_20260411_site_branding
+theme: performant_labs_20260411
+region: header_first
+weight: -10
+provider: null
+plugin: system_branding_block
+settings:
+  id: system_branding_block
+  label: 'Site branding'
+  label_display: '0'
+  provider: system
+  use_site_logo: true
+  use_site_name: false
+  use_site_slogan: false
+visibility: {  }

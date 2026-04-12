@@ -316,6 +316,15 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'drupal/book' => array(
+            'pretty_version' => '3.0.1',
+            'version' => '3.0.1.0',
+            'reference' => '3.0.1',
+            'type' => 'drupal-module',
+            'install_path' => __DIR__ . '/../../web/modules/contrib/book',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'drupal/bpmn_io' => array(
             'pretty_version' => '3.0.5',
             'version' => '3.0.5.0',

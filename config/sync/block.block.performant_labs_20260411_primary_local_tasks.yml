@@ -1,0 +1,28 @@
+uuid: 0cd8acf4-10d0-4dfb-b466-5e13d26f2b32
+langcode: en
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - performant_labs_20260411
+_core:
+  default_config_hash: 3kYte619QGyj1PZ9s2VXJdCRU9gc4ZyAqmpOe8yl070
+id: performant_labs_20260411_primary_local_tasks
+theme: performant_labs_20260411
+region: fixed_middle_right
+weight: -5
+provider: null
+plugin: local_tasks_block
+settings:
+  id: local_tasks_block
+  label: 'Primary tabs'
+  label_display: '0'
+  provider: core
+  primary: true
+  secondary: false
+visibility:
+  request_path:
+    id: request_path
+    negate: true
+    pages: "/user/login\r\n/user/register\r\n/user/password"

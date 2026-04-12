@@ -1,0 +1,13 @@
+uuid: 4bf98081-fc8a-431b-a829-4417eff1529a
+langcode: en
+status: true
+dependencies: {  }
+name: 'Dripyard Cards'
+configEntityTypeId: component
+weight: 0
+items:
+  - sdc.dripyard_base.card-canvas
+  - sdc.dripyard_base.card-full-image-canvas
+  - sdc.dripyard_base.content-card
+  - sdc.dripyard_base.icon-card
+  - sdc.dripyard_base.promo
