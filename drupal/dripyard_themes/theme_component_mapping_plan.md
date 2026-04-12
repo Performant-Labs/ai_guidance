@@ -81,21 +81,24 @@ _"Get found. Automatically."_ Subtitle paragraph. Search input field with
 bottom-right. Dashboard image appears to bleed out of the section boundary.
 
 | Element | Native Component | Theme Wrapper | Notes |
-|---------|-----------------|---------------|-------|
-| Section shell | `background-image` | `theme--primary` | Dark navy base |
-| Headline + subtitle | `heading` + `text` | — | Inside shell |
-| CTA / search input | `title-cta` | — | Closest native match |
+|---------|-----------------|---------------| ------|
+| Hero shell | Neonbyte `hero` | `theme--primary` | `height: large`, `position_behind_against_screen_top: true` |
+| Background media | `background-image` (in `hero_media` slot) | — | Gradient CSS applied via `css/base.css` on `.hero__media` |
+| Headline + subtitle | `title-cta` (in `hero_content` slot) | — | `heading_style: h1`, `layout: default` |
+| CTA button | `button` (inside `title-cta`) | — | `button_style: primary` |
 
-**Customisation required**:
-- Radial green/teal gradient overlay → bespoke CSS layer inside SDC
-- Dashboard image with `clip-path` bleed → bespoke SDC (image absolutely positioned, clipped)
-- Search input styled as hero input → CSS override
+**The native `hero` component covers this fully.** It accepts:
+- `theme: primary` → dark navy wrapper
+- `hero_media` slot → `background-image` component; the green/teal gradient is applied
+  via a CSS rule targeting `.hero__media` in `css/base.css` (no disk file needed)
+- `hero_content` slot → any content component
+- `position_behind_against_screen_top: true` → handles sticky header bleed
 
-**Bespoke SDC needed**: ✅ **`hero-keytail`**
-- Location: `web/themes/custom/performant_labs_20260411/components/hero-keytail/`
-- Files: `hero-keytail.twig`, `hero-keytail.css`, `hero-keytail.component.yml`
-- Inherits: none (standalone)
-- Contains: gradient wrapper div, headline slot, subtitle slot, CTA slot, dashboard image slot
+**Customisation required** (CSS only, in `css/base.css`):
+- Radial green/teal gradient on `.hero__media` → `background: radial-gradient(...)`
+- Dashboard image absolutely positioned inside `.hero__media` with `clip-path`
+
+**Bespoke SDC needed**: ❌ None — native `hero` + CSS overrides.
 
 ---
 
@@ -196,21 +199,21 @@ prominent SVG-style line graph with labelled axes, data points, and a gradient f
 under the curve. Graph is presented as a static visual in the design.
 
 | Element | Native Component | Theme Wrapper | Notes |
-|---------|-----------------|---------------|-------|
+|---------|-----------------|---------------| ------|
 | Section wrapper | Canvas section | `theme--light` | Grey |
 | Headline + subtitle | `heading` + `text` | — | |
 | Metric tab row | `tab-group` + `tab` | — | Native |
-| Graph area | ❌ **No native match** | — | Bespoke SDC |
+| Graph area | `canvas-image` | — | Static screenshot of graph used as image asset |
 
-**Customisation required**:
-- Tab row as pill-style switcher (not underline) → CSS override
-- Graph: static SVG line chart with gradient fill
+**Rationale**: The graph is a presentational element only — no interactivity is
+required for Canvas assembly. A static image of the graph is sufficient and avoids
+unneeded SDC complexity. The `tab-group` handles the metric switcher UI; each tab
+pane contains a `canvas-image` of the appropriate graph state.
 
-**Bespoke SDC needed**: ✅ **`graph-display`**
-- Location: `web/themes/custom/performant_labs_20260411/components/graph-display/`
-- Files: `graph-display.twig`, `graph-display.css`, `graph-display.component.yml`
-- Contains: static inline SVG path (hardcoded for Canvas demo), gradient fills, axis labels
-- Not interactive — purely presentational for Canvas assembly
+**Customisation required** (CSS only):
+- Tab row pill-style switcher variant → scoped CSS
+
+**Bespoke SDC needed**: ❌ None — `tabs` + `canvas-image`.
 
 ---
 
@@ -266,12 +269,12 @@ The "K" is rendered as a CSS `::before` pseudo-element or inline SVG on the
 | Slice | Native Coverage | Gap | Resolution |
 |-------|----------------|-----|-----------|
 | 00 Navigation | ✅ Full (site regions) | Amber CTA, sticky CSS | `css/base.css` |
-| 01 Hero | ⚠️ Partial | Gradient overlay + clipped image | **Bespoke SDC: `hero-keytail`** |
+| 01 Hero | ✅ Native `hero` + `background-image` | Gradient + clipped image CSS | `css/base.css` on `.hero__media` |
 | 02 Feature Cards | ✅ `content-card` | Elevation/shadow styling | Scoped component CSS |
 | 03 Carousel | ✅ `carousel` + `card` | Horizontal snap, pill button | `css/base.css` + scoped CSS |
 | 04 Dashboard Tabs | ✅ `tabs` + `canvas-image` | Tab underline style | Scoped component CSS |
 | 05 Teams 2-col | ✅ Canvas grid + `icon-list` | Icon colour | `css/base.css` |
-| 06 Graph | ⚠️ Partial (`tabs` for switcher) | Graph visualization | **Bespoke SDC: `graph-display`** |
+| 06 Graph | ✅ `tabs` + `canvas-image` | Tab pill style | Scoped component CSS |
 | 07 FAQ | ✅ `accordion` | Border/icon styling | Scoped component CSS |
 | 08 Footer | ✅ `footer` + `menu-footer` | "K" watermark | `css/base.css` pseudo |
 
@@ -279,21 +282,21 @@ The "K" is rendered as a CSS `::before` pseudo-element or inline SVG on the
 
 ## Bespoke SDCs To Be Created
 
-| SDC | Path | Priority | Complexity |
-|-----|------|----------|-----------|
-| `hero-keytail` | `components/hero-keytail/` | 🔴 High | High — gradient, clip-path, image bleed |
-| `graph-display` | `components/graph-display/` | 🟡 Medium | Medium — static SVG only |
+**None.** All sections are covered by native Dripyard/Neonbyte components.
+Customisation is handled entirely through scoped component CSS and additions to `css/base.css`.
 
 ---
 
 ## Global CSS Additions (`css/base.css`)
 
-Items that affect existing native components globally (not scoped):
+Items that affect existing native components globally (not scoped to a single component):
 
 | Item | Selector Target |
 |------|----------------|
 | Amber CTA button variant | `.button--cta` |
 | Sticky transparent → opaque header | `.site-header` |
+| Hero gradient overlay on media background | `.hero__media` |
+| Hero dashboard image (clipped, absolute) | `.hero__media::after` or inline img |
 | Horizontal carousel snap-scroll | `.carousel__track` |
 | Black pill button variant | `.button--pill-dark` |
 | Amber icon colour for icon-list | `.icon-list__icon` |
