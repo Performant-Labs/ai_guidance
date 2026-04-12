@@ -19,11 +19,11 @@ social_media_links:
   whatsapp: ''
   youtube: ''
 theme_colors:
-  color_scheme: default
+  color_scheme: custom
   colors:
-    base_primary_color: '#0000d9'
+    base_primary_color: '#1B2638'
     base_primary_color_brightness: dark
-    base_secondary_color: '#ea8b1f'
+    base_secondary_color: '#F59E0B'
     base_secondary_color_brightness: dark
   site_theme: white
 footer:
