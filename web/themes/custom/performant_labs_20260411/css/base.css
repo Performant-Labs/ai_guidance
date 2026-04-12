@@ -253,3 +253,56 @@ a.button--pill-dark {
   z-index: 1;
 }
 
+/* =============================================================================
+   Footer social icon row — injected via page--front.html.twig footer_bottom
+   ============================================================================= */
+
+.footer-social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  padding-block: 1rem;
+  margin-block-start: 1rem;
+  border-block-start: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.footer-social-icons__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.footer-social-icons__link:hover,
+.footer-social-icons__link:focus-visible {
+  background: #F59E0B;
+  color: #1B2638;
+  transform: translateY(-2px);
+}
+
+/* =============================================================================
+   Footer CTA "Get in touch" link (footer_right block)
+   ============================================================================= */
+
+.footer-cta__link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #F59E0B;
+  text-decoration: none;
+  gap: 0.25rem;
+  transition: gap 0.2s ease, opacity 0.2s ease;
+}
+
+.footer-cta__link:hover,
+.footer-cta__link:focus-visible {
+  opacity: 0.85;
+  gap: 0.5rem;
+}
