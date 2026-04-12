@@ -97,13 +97,20 @@ Before writing any component markup or CSS, define the page shells that those co
 1. **Component Markup (Twig)**: For each mapped component in the approved strategy, author its structural markup as a Twig template (`.twig`) inside the relevant SDC bundle. Apply the proper `theme--[name]` CSS scoping wrappers inside the Twig output so each component inherits the theme's color palette overrides from `css/base.css` without hardcoding color values.
 2. **Global CSS Overrides (Native Components)**: If the design dictates nuanced spacing or styling modifications for existing native components, append custom CSS explicitly targeting the Component Layer inside the new canvas theme's `css/base.css` file. DO NOT attempt to override semantic variables directly.
 3. **Integration Strategy (Bespoke SDCs Enforced)**: When generating custom layout elements that do not exist natively, you MUST exclusively output standard **Single Directory Components (SDCs)** formatted within the active theme's `components/` directory (e.g., creating the `.component.yml`, `.twig`, and `.css` bundle). The styling for these bespoke components must be encapsulated entirely inside their local `.css` file, NOT in `base.css`. Do NOT output raw disconnected HTML payloads, and do NOT architect the output using custom Drupal Blocks, Layout Builder, or root Twig templates.
-4. **AI Autonomous Content Population**: When structural components (like the "Product, Pricing, Blog" header navigation or dynamic card grids) require functional Drupal content to render, DO NOT manually construct UI configurations or write raw database queries. Instead, map out the required menu items or nodes in a natural language prompt and execute it securely through standard input using the native Drupal `ai_agents` service. **Do not write temporary PHP files to the disk.** Pipe the execution logic directly in memory via Heredoc:
-   ```bash
-   cat << 'EOF' | [runtime_wrapper] drush scr -
-   <?php
-   // ... script invoking \Drupal::service('ai_agents') ...
-   EOF
-   ```
+4. **AI Autonomous Content Population**: When structural components (like the "Product, Pricing, Blog" header navigation or dynamic card grids) require functional Drupal content to render, DO NOT manually construct UI configurations or write raw database queries.
+
+   > [!WARNING]
+   > **`drush scr -` (stdin pipe) does NOT accept `<?php` opening tags and will fail silently.** The heredoc-to-stdin pattern is unreliable. Instead, write a temporary `.php` file to the **project root** (never to `/tmp` or theme directories), execute it, then immediately delete it:
+   > ```bash
+   > cat > menus_populate.php << 'EOF'
+   > <?php
+   > // Drupal bootstrap is automatic via drush scr
+   > use Drupal\menu_link_content\Entity\MenuLinkContent;
+   > MenuLinkContent::create([...]) ->save();
+   > EOF
+   > [runtime_wrapper] drush scr menus_populate.php && rm menus_populate.php
+   > ```
+   > Writing to the project root keeps the file within the DDEV-mounted volume. Delete immediately after execution — never commit these scripts.
 5. **Version Control Snapshot**: Commit the newly generated SDC bundles and CSS wrappers before handing off to the verification stage (e.g. `git commit -m "feat: Implement Canvas SDC component suite"`).
 
 ---
@@ -117,3 +124,153 @@ Before writing any component markup or CSS, define the page shells that those co
 3. **Visual Regression**: Visually compare the rendered DOM output against the original target screenshot.
 4. **Cascade Safety Check**: Verify that your custom CSS overrides remained perfectly encapsulated within the Canvas components and did not accidentally poison the broader global typography or color matrices expected natively by the host site.
 5. **Failure Path**: If visual regression fails or the cascade check identifies layout pollution, do NOT leave the broken state committed. Immediately report the specific discrepancy to the user, revert the Phase 4 implementation commit (e.g. `git revert HEAD`), and return to Phase 4 Step 1 with the identified failures explicitly documented as constraints for the next attempt.
+
+---
+
+## Phase 7: Canvas Page Programmatic Assembly
+
+The Canvas module stores home pages as `canvas_page` entities — **not** standard nodes. They cannot be created with `node_create`. All structural page content must be wired via the `canvas_page`'s `components` field.
+
+### 7.1 Locating the Canvas home page
+
+```bash
+# Confirm the site front page route:
+[runtime_wrapper] drush config:get system.site page.front
+# output: /page/1  →  canvas_page entity ID 1. Edit at /page/[id]/edit
+```
+
+> [!IMPORTANT]
+> Do NOT assume the front page is a node. `system.site page.front` may return `/page/[id]` (Canvas), not `/node/[nid]`.
+
+### 7.2 Canvas component tree structure
+
+The `components` field is a **flat array**. Nesting is expressed by `parent_uuid` references — not by PHP array nesting. Every component item requires these keys:
+
+| Key | Notes |
+|---|---|
+| `component_id` | Full SDC ID e.g. `sdc.dripyard_base.section` |
+| `component_version` | Set to `NULL` — Canvas auto-resolves on `preSave()`. Never hard-code a hash. |
+| `uuid` | Must be unique. Use `Uuid::generate()` or a deterministic `md5(seed)` formatted as UUID. |
+| `parent_uuid` | `NULL` for root items. Must exactly match the parent's `uuid`. |
+| `slot` | `NULL` for root. Must match a named slot in the parent's `.component.yml`. |
+| `inputs` | JSON array. **Must exactly match the component's schema props.** |
+| `label` | `NULL` is safe. |
+| `weight` | Integer position relative to siblings. |
+
+### 7.3 SDC schema validation rules
+
+> [!CAUTION]
+> Canvas validates every `inputs` array against the component's `.component.yml` schema on save. Any violation silently drops the component or throws a `RuntimeError` during rendering. Always cross-reference the actual `.component.yml` file before setting props.
+
+Known schema gotchas from `dripyard_base`:
+
+| Component | Common mistake | Correct prop |
+|---|---|---|
+| `heading` | Key named `heading` | Use `text` for the heading string |
+| `heading` | `margin_top: 0` (integer) | Must be an enum string e.g. `"none"`, `"sm"`, `"md"`, `"lg"` |
+| `canvas-image` | Omitting `loading` | `loading` is **required**: `"eager"` or `"lazy"`. Null throws a `RuntimeError` from `image-or-media`. |
+| `icon-list-item` | Using `text` for the label | Use `title` |
+
+> [!TIP]
+> If a `canvas-image` has no real image source yet, **replace it with `sdc.[theme].text`** as a placeholder. The `text` component has no required props that cause rendering failures.
+
+### 7.4 Diagnosing Canvas rendering errors
+
+```bash
+# Check watchdog for RuntimeError entries:
+[runtime_wrapper] drush watchdog:show --count=10 --severity=3
+
+# Inspect the raw stored component by UUID:
+[runtime_wrapper] drush sql-query "SELECT components_component_id, components_component_version, \
+  components_inputs FROM canvas_page__components WHERE components_uuid='[uuid]';"
+
+# If DB data is correct but error persists — flush render cache at DB level:
+[runtime_wrapper] drush sql-query "TRUNCATE TABLE cache_render; TRUNCATE TABLE cache_menu;"
+[runtime_wrapper] drush cr
+```
+
+> [!NOTE]
+> A `RuntimeError` referencing a UUID whose DB data is correct usually means a **stale render cache** — not bad data. Always truncate `cache_render` before concluding the stored data is wrong.
+
+---
+
+## Phase 8: Menu & Block Wiring (Programmatic)
+
+Never use the Drupal admin UI to wire menus or place blocks. Use `drush scr` scripts for all wiring.
+
+### 8.1 Menu population pattern
+
+```php
+<?php
+use Drupal\menu_link_content\Entity\MenuLinkContent;
+
+// Clear before repopulating to avoid duplicates:
+$old = \Drupal::entityTypeManager()->getStorage('menu_link_content')
+  ->loadByProperties(['menu_name' => 'main']);
+foreach ($old as $item) { $item->delete(); }
+
+MenuLinkContent::create([
+  'title'     => 'Services',
+  'link'      => ['uri' => 'internal:/services'],
+  'menu_name' => 'main',
+  'weight'    => 0,
+  'expanded'  => FALSE,
+])->save();
+
+\Drupal::service('plugin.manager.menu.link')->rebuild();
+```
+
+> [!WARNING]
+> **Menu links to inaccessible routes are silently hidden for anonymous users.** If a menu item disappears, check the target node's publication state. If content moderation is active, `$node->set('status', 1)->save()` alone does NOT publish a node — you must set `$node->set('moderation_state', 'published')->save()`. Verify with: `drush php-eval "\$n = \Drupal::entityTypeManager()->getStorage('node')->load([nid]); echo \$n->moderation_state->value;"`
+
+### 8.2 Block placement pattern
+
+```php
+<?php
+use Drupal\block\Entity\Block;
+
+Block::create([
+  'id'       => '[theme_machine_name]_book_navigation',
+  'theme'    => '[theme_machine_name]',
+  'region'   => 'sidebar_first',
+  'plugin'   => 'book_navigation',
+  'weight'   => 0,
+  'status'   => TRUE,
+  'settings' => ['id' => 'book_navigation', 'label_display' => '0',
+                 'block_mode' => 'book pages', 'provider' => 'book'],
+  'visibility' => [
+    'node_type' => [
+      'id'      => 'entity_bundle:node',
+      'bundles' => ['book' => 'book'],
+      'negate'  => FALSE,
+      'context_mapping' => ['node' => '@node.node_route_context:node'],
+    ],
+  ],
+])->save();
+```
+
+### 8.3 Config sync directory
+
+DDEV defaults `config_sync_directory` to `sites/default/files/sync` (gitignored) unless overridden. To track config in the project root's `config/sync` directory, add this to `settings.php` **before** the DDEV include block:
+
+```php
+// Point config sync to the tracked directory at the project root.
+// Must appear BEFORE the IS_DDEV_PROJECT include so DDEV's fallback is skipped.
+$settings['config_sync_directory'] = '../config/sync';
+```
+
+Then export: `[runtime_wrapper] drush config:export --yes`
+
+> [!NOTE]
+> `settings.php` is gitignored (contains secrets). This setting must be added on each environment or via a post-provision hook. It does not get committed.
+
+### 8.4 Verify your work
+
+After any programmatic wiring, always use the browser subagent to verify the rendered output. For items that may be in the DOM but not visually obvious (e.g., footer items that wrap to a second line), confirm with `curl`:
+
+```bash
+curl -s https://[site-url]/ -k | grep -i "[expected link text]"
+```
+
+Screenshots alone are not sufficient — a link that appears absent in a screenshot may simply be off-screen.
+
