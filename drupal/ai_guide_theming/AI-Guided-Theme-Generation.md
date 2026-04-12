@@ -32,6 +32,79 @@ Before cloning repositories or running commands, the AI must collect all foundat
 
 ---
 
+## Phase 1B: Brand Asset Collection
+
+Before cloning a single file or running any Drush command, the AI must collect all **ancillary brand identity assets**. These items are entirely independent of templates and components — they configure *what the theme looks like* rather than *how it lays out content*. Collecting them here prevents the recurring failure mode where body colors, logos, and the favicon remain as inherited parent-theme defaults until visual regression exposes them near the end of the project.
+
+> [!IMPORTANT]
+> Do NOT advance to Phase 2 until every item in the checklist below has been explicitly provided by the user **or** explicitly marked as "use parent theme default / skip."
+
+### 1B.1 Required checklist
+
+Ask the user to provide **all of the following** at once. Present it as a single structured prompt so the user can answer in one pass:
+
+| # | Asset | What to ask for | Format requirement |
+|---|---|---|---|
+| 1 | **Primary brand color** | The dominant brand color (e.g., navy, forest green) | Hex value — e.g., `#1B2638` |
+| 2 | **Secondary / accent color** | The CTA / highlight color (e.g., amber, coral) | Hex value — e.g., `#F59E0B` |
+| 3 | **Color brightness hints** | Are each of those colors perceived as light or dark backgrounds? | `light` or `dark` per color |
+| 4 | **Logo file** | The site logo (SVG strongly preferred; PNG acceptable) | File path or paste SVG source |
+| 5 | **Favicon** | A 32×32 or 64×64 icon (SVG or PNG) | File path or paste; `null` = generate from logo |
+| 6 | **Site name** | The exact site name string displayed in the `<title>` tag and branding block | Plain text string |
+| 7 | **Tagline / slogan** | One-line site tagline (displayed in header branding or footer) | Plain text string, or `none` |
+| 8 | **Brand font(s)** | Primary heading font and body font names | Google Font name(s) or `use parent default` |
+| 9 | **Social / OG image** | A 1200×630 image for Open Graph / Twitter cards | File path, or `generate from logo` |
+| 10 | **Social profile URLs** | LinkedIn, GitHub, X/Twitter, etc. | List of full URLs; omit any that don't apply |
+
+### 1B.2 Execution steps (after user provides assets)
+
+1. **Copy assets into the theme**: Place logos, favicons, and OG images into `web/themes/custom/[primary_theme]_[timestamp]/` (logo at root; others under `assets/`). Never reference parent-theme asset paths.
+2. **Apply the color palette**: Write the two hex values into the theme's configuration:
+   ```bash
+   [runtime_wrapper] drush php-eval "
+   \$config = \Drupal::configFactory()->getEditable('[theme_machine_name].settings');
+   \$config->set('theme_colors.colors.base_primary_color', '#[HEX]');
+   \$config->set('theme_colors.colors.base_primary_color_brightness', '[light|dark]');
+   \$config->set('theme_colors.colors.base_secondary_color', '#[HEX]');
+   \$config->set('theme_colors.colors.base_secondary_color_brightness', '[light|dark]');
+   \$config->save();
+   "
+   [runtime_wrapper] drush cr
+   ```
+   > [!NOTE]
+   > In NeonByte / Dripyard-based themes, the entire palette (all `--primary-*` and `--neutral-*` scale tokens) is derived from these two config values via `oklch()` in `variables-colors-semantic.css`. Setting them here drives all button colors, card borders, body backgrounds, and icon accents — no additional CSS is needed for the base palette.
+3. **Wire the logo**: Confirm `system.theme.global` → `logo.path` points to your theme's `logo.svg`, **not** the parent theme's path. Export the config:
+   ```bash
+   [runtime_wrapper] drush config:export --yes
+   git add config/sync/ web/themes/custom/[primary_theme]_[timestamp]/logo.svg
+   git commit -m "feat: brand assets — logo, palette, favicon"
+   ```
+4. **Apply the favicon**: Place the file at `web/themes/custom/[primary_theme]_[timestamp]/favicon.ico` (or `.png`). Update `system.theme.global` → `favicon.path` to point to it.
+5. **Register brand fonts**: If custom Google Fonts are specified, add them to the theme's `.libraries.yml` and reference in `css/base.css`:
+   ```css
+   @import url('https://fonts.googleapis.com/css2?family=[FontName]:wght@400;600;700&display=swap');
+   :root { --font-heading: '[FontName]', sans-serif; }
+   ```
+6. **Set social profile URLs**: Store these in the theme settings if the base theme provides social link fields, or note them for Twig injection in the footer template (Phase 6/7).
+
+### 1B.3 Verification
+
+After applying, confirm in the browser that the `<html>` `style` attribute reflects the correct primary color:
+
+```bash
+curl -k -s https://[site-url]/ | grep "theme-setting-base-primary-color"
+# Expected: --theme-setting-base-primary-color: #[your-hex];
+```
+
+> [!CAUTION]
+> **Do not skip this verification.** If the hex value returned is the parent theme's default (e.g., `#0000d9` for NeonByte), the config write did not persist — re-run the `drush php-eval` block and cache rebuild before advancing.
+
+### 1B.4 Approval Checkpoint
+
+Display the resolved asset list to the user (confirmed hex values, logo path, favicon path) and ask: *"Brand assets confirmed — shall I proceed to Phase 2?"* Do NOT advance until the user approves.
+
+---
+
 ## Phase 2: Establish the Baseline Backup
 Before altering any structural CSS or Layout builder templates, preserve the current customized primary theme.
 
