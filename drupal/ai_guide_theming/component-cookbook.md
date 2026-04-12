@@ -86,23 +86,24 @@ When writing a `canvas_page__components` row:
 ### `dripyard_base:title-cta`
 **Component ID:** `sdc.dripyard_base.title-cta`
 
+> [!CAUTION]
+> **Schema verified against live `.component.yml`.** Props that were previously documented (`body`, `title_size`, `eyebrow`, `text_color`, `cta` slot) **do not exist** and will cause a `LogicException` on save.
+
 | Prop name | Type | Required | Valid values / notes |
 |---|---|---|---|
-| `eyebrow` | string | no | Short label above the heading |
-| `title` | string | no | Heading text |
-| `body` | string | no | Body copy (HTML allowed) |
-| `layout` | string | no | `"start"` `"center"` `"end"` |
-| `text_color` | string | no | `"inherit"` `"white"` `"dark"` |
-| `title_size` | string | no | `"h1"` `"h2"` `"h3"` `"h4"` `"h5"` `"h6"` |
-
-| Slot name | Notes |
-|---|---|
-| `cta` | Primary call-to-action component (one button) |
-| `secondary_cta` | Secondary call-to-action component |
-| `header_content` | Additional content above body |
+| `title` | string | **yes** | Heading text |
+| `layout` | string | no | `"default"` `"center"` |
+| `heading_style` | string | no | `"title"` `"h1"` `"h2"` `"h3"` `"h4"` `"h5"` `"h6"` `"body_l"` `"body_m"` `"body_s"` |
+| `button_text` | string | no | Button label (inline CTA button) |
+| `button_href` | string | no | Button URL |
+| `button_style` | string | no | `"default"` `"primary"` `"secondary"` `"light"` `"dark"` `"outline"` `"bare"` |
+| `button_size` | string | no | `"small"` `"medium"` `"large"` |
+| `button_target` | boolean\|null | no | Open in new window |
+| `button_prefix_icon` | string\|null | no | Icon name |
+| `button_suffix_icon` | string\|null | no | Icon name |
 
 > [!NOTE]
-> `title-cta` supports two CTA slots natively. Use `cta` for the primary button and `secondary_cta` for the "Book a call" outline button. No `flex-wrapper` needed.
+> `title-cta` has **no slots** and **no body text prop**. For body copy below the title, add a separate `sdc.dripyard_base.text` component as a sibling in the same parent slot.
 
 ---
 
@@ -113,39 +114,50 @@ When writing a `canvas_page__components` row:
 |---|---|---|---|
 | `text` | string | **yes** | Button label |
 | `href` | string | no | URL |
-| `style` | string | no | `"primary"` `"secondary"` `"outline"` `"ghost"` `"link"` |
-| `size` | string | no | `"sm"` `"md"` `"lg"` |
-| `full_width` | boolean | no | `true` / `false` |
-| `icon` | string | no | Icon name |
-| `icon_position` | string | no | `"start"` `"end"` |
+| `style` | string | no | `"default"` `"primary"` `"secondary"` `"light"` `"dark"` `"outline"` `"bare"` |
+| `size` | string | no | `"small"` `"medium"` `"large"` |
+| `target` | boolean\|null | no | Open in new window |
 
 ---
 
 ### `dripyard_base:heading`
 **Component ID:** `sdc.dripyard_base.heading`
 
+> [!CAUTION]
+> **Schema verified.** Required props that will 500 if omitted: `text`, `html_element`, `style`, `margin_top`, `margin_bottom`. Enum values use `zero/small/medium/large` — **not** `none/sm/md/lg`.
+
 | Prop name | Type | Required | Valid values / notes |
 |---|---|---|---|
-| `text` | string | **yes** | ⚠️ NOT `heading` — the prop is `text` |
-| `level` | string | no | `"h1"` `"h2"` `"h3"` `"h4"` `"h5"` `"h6"` |
-| `margin_top` | string | no | `"none"` `"sm"` `"md"` `"lg"` — ⚠️ Must be string enum, NOT integer `0` |
-| `margin_bottom` | string | no | `"none"` `"sm"` `"md"` `"lg"` |
-| `text_align` | string | no | `"start"` `"center"` `"end"` |
+| `text` | string | **yes** | Heading text — ⚠️ NOT `heading` |
+| `html_element` | string | **yes** | `"h1"` `"h2"` `"h3"` `"h4"` `"h5"` `"h6"` `"p"` `"div"` `"span"` |
+| `style` | string\|null | **yes** | `"title"` `"h1"` `"h2"` `"h3"` `"h4"` `"h5"` `"h6"` `"body_l"` `"body_m"` `"body_s"` |
+| `margin_top` | string | **yes** | `"zero"` `"small"` `"medium"` `"large"` — ⚠️ NOT `"none"` `"sm"` |
+| `margin_bottom` | string | **yes** | `"zero"` `"small"` `"medium"` `"large"` |
+| `color` | string\|null | no | `"default"` `"soft"` `"medium"` `"loud"` `"primary"` |
+| `center` | boolean | no | Center-align the text |
+| `text_max_width` | string | no | `"400px"` `"600px"` `"800px"` `"1000px"` `"1200px"` `"1400px"` |
+| `modifier_classes` | string | no | Extra CSS classes |
 
 ---
 
 ### `dripyard_base:text`
 **Component ID:** `sdc.dripyard_base.text`
 
+> [!CAUTION]
+> **Schema verified.** `style` and `color` are **required**. The old docs listed `text_align` and `margin_*` props which do not exist on this component.
+
 | Prop name | Type | Required | Valid values / notes |
 |---|---|---|---|
+| `style` | string\|null | **yes** | `"body_l"` `"body_m"` `"body_s"` |
+| `color` | string\|null | **yes** | `"inherit"` `"soft"` `"medium"` `"loud"` `"primary"` |
 | `text` | string | no | Body copy, HTML allowed |
-| `text_align` | string | no | `"start"` `"center"` `"end"` |
-| `margin_top` | string | no | `"none"` `"sm"` `"md"` `"lg"` |
-| `margin_bottom` | string | no | `"none"` `"sm"` `"md"` `"lg"` |
+| `center` | boolean | no | Center-align the text |
+| `text_max_width` | string | no | `"400px"` `"600px"` `"800px"` `"1000px"` `"1200px"` `"1400px"` |
+| `modifier_classes` | string | no | Extra CSS classes |
 
 > [!TIP]
-> Use `text` as a safe placeholder when a real component isn't ready. It has no required props and will never throw a `RuntimeError`.
+> Unlike the old docs, `style` and `color` ARE required — passing `null` is valid for both.
+> Safe minimum: `['style' => 'body_m', 'color' => 'inherit', 'text' => '...']`
 
 ---
 
@@ -341,13 +353,24 @@ When writing a `canvas_page__components` row:
 | Component | Wrong (will fail) | Correct |
 |---|---|---|
 | `heading` | `"heading": "text"` | `"text": "text"` |
-| `heading` | `"margin_top": 0` | `"margin_top": "none"` |
+| `heading` | `"margin_top": "none"` | `"margin_top": "zero"` — enum is `zero/small/medium/large` |
+| `heading` | `"margin_top": 0` | `"margin_top": "zero"` — must be string |
+| `heading` | omit `html_element` | required: `"html_element": "h2"` |
+| `heading` | omit `style` | required: `"style": "h2"` |
+| `text` | omit `style` | required: `"style": "body_m"` |
+| `text` | omit `color` | required: `"color": "inherit"` |
+| `text` | `"text_align": "center"` | use `"center": true` instead |
+| `title-cta` | `"body": "..."` | ❌ prop does not exist — use sibling `text` component |
+| `title-cta` | `"title_size": "h2"` | ❌ prop does not exist — use `"heading_style": "h2"` |
+| `title-cta` | `"layout": "start"` | only `"default"` or `"center"` are valid |
 | `icon-list-item` | `"text": "label"` | `"title": "label"` |
 | `canvas-image` | omit `loading` | `"loading": "lazy"` |
 | `flex-wrapper` | `"direction": "row"` | no `direction` prop — use `columns` |
 | `flex-wrapper` | `"gap": "md"` | use `column_gutter` + `row_gutter` |
+| `flex-wrapper` | `"align_y": "start"` | enum is `top/center/bottom/stretch` — not `start` |
 | `accordion-group` | omit `variation` | `"variation": "background-color"` |
 | `tab` | omit `title` | `"title": "Tab name"` |
 | `statistic` | omit `statistic` | `"statistic": "40%"` |
 | `logo-grid` | omit any of 3 required | `layout` + `logo_size` + `logo_background` all required |
-| `title-cta` secondary button | use `flex-wrapper` wrapper | use built-in `secondary_cta` slot |
+| `Canvas entity API` | set `component_version => ''` | **omit `component_version` entirely** — preSave() resolves it |
+| `Canvas entity API` | call `$storage->load()` after a failed save | call `$storage->resetCache([id])` first to avoid stale state |
