@@ -59,20 +59,27 @@ Never assume Canvas content is safe in git just because `git status` is clean.
 
 ---
 
-## 4. Canvas DB updates: use `drush php-script`, never inline `drush php-eval`
+## 4. Drush PHP execution: match the tool to the task
 
-Inline drush php-eval with multi-line PHP strings causes two compounding problems:
+There are two approaches for running PHP in a Drush context, and each has a correct use case.
 
-1. **Shell quoting conflicts** — single quotes inside single-quoted shell strings break the
-   command, requiring non-obvious escaping that is easy to get wrong.
-2. **Unicode escape literals** — `\u2019` in a PHP double-quoted string is not a unicode
-   character; it is the six literal characters `\`, `u`, `2`, `0`, `1`, `9`. Canvas will
-   render them verbatim.
+| Scenario | Approach | Why |
+|---|---|---|
+| Short, self-contained command (< 10 lines, no content strings) | Heredoc stdin: `cat << 'EOF' \| ddev drush php-script -` | Zero disk artefact; fine for simple API calls |
+| Canvas DB updates with content strings, apostrophes, or special characters | `drush php-script path/to/script.php` | Eliminates shell quoting hell; IDE-assisted; debuggable |
+| Any script using `\u` unicode escapes in strings | Always `drush php-script` — heredoc has the same escaping problem | PHP does not process `\uXXXX` in strings; stores them literally |
 
-**The fix**: write a `.php` file and run it with `drush php-script path/to/script.php`. The
-file is editable, IDE-assisted, and bypasses all shell quoting. Use plain ASCII apostrophes
-(`'`) and hyphens (`-`) in content strings — avoid special Unicode in PHP source unless you
-paste the actual UTF-8 character.
+**The unicode trap**: `\u2019` in a PHP string (whether heredoc or eval) is not a unicode
+character. It is six literal characters: `\`, `u`, `2`, `0`, `1`, `9`. Canvas renders them
+verbatim. Use plain ASCII apostrophes (`'`) and hyphens (`-`) in all content strings, or
+paste the actual UTF-8 character directly in the source file.
+
+**Cleanup**: always delete script files after a successful run:
+```bash
+ddev drush php-script fix_something.php && rm fix_something.php
+```
+If the script fails, the file remains for inspection. Never leave `.php` fix scripts in the
+project root long-term.
 
 ---
 
@@ -154,4 +161,94 @@ steps, not six sequential calls.
 
 ---
 
-*Last updated: 2026-04-12 — sourced from Performant Labs site assembly session (Phase 10–16).*
+## 11. Never batch unverified fixes
+
+Apply one fix, verify it, mark it done, then move to the next. Never combine multiple
+unverified fixes in a single session without confirming each one works before adding the next.
+
+A second broken fix stacked on top of a broken first fix creates a compound DB state that is
+very hard to isolate and debug. The cost of verification between fixes is 30 seconds. The cost
+of debugging a compounded state is 20–40 minutes.
+
+> **One fix → one verify → one commit → next fix.**
+
+---
+
+## 12. Watchdog errors: script failure vs. live page error
+
+Failed `drush php-script` runs log their schema validation errors to watchdog at severity=3,
+making them look identical to live page rendering errors. Before investigating a watchdog error
+as a live site problem, check the backtrace:
+
+| Backtrace contains | Means |
+|---|---|
+| `/var/www/html/fix_*.php` or any named script path | Error from a **failed script run** — not a live page error. Check the script exit status instead. |
+| `HtmlRenderer.php`, `HttpKernel.php`, `PageCache.php` | Error from a **live page request** — must be fixed before proceeding. |
+
+Timestamp as a secondary signal: a script-run error will have a timestamp matching when you
+ran the script, not matching a browser page load.
+
+```bash
+# Confirm page still returns 200 before concluding there is a live issue:
+curl -sk -o /dev/null -w '%{http_code}' https://[site-url]/
+```
+
+---
+
+## 13. Why VR browser subagent calls crash — and how to prevent it
+
+Every prior full-VR attempt crashed for the same four compounding reasons:
+
+| Root cause | Prevention |
+|---|---|
+| **Scope too large** — tried to load 6-7 full-viewport screenshots + write a full report in one call | One subagent call = one design slice vs. one live viewport |
+| **Wrong reference asset** — passed the full 9,902px composite as MediaPath | Always pass pre-sliced `designs/NN_name.webp` — never `keytail-desktop.webp` |
+| **No incremental writes** — observations accumulated in scratchpad, lost on crash | Write findings to `visual-regression-report.md` inside the subagent call before returning |
+| **Side-by-side is impossible in one pass** — 17 viewport-equivalent images in one context | Split into sequential calls; the outer agent aggregates results |
+
+See `visual-regression-strategy.md §Correct Execution Pattern` for the full protocol.
+
+---
+
+## 14. Module audit before config or content migration
+
+Modules that provide content types, fields, Views, or form builders must exist on the **target
+site** before their config or content is migrated. Running a config import for a View that
+depends on a missing module will fail silently or produce a confusing schema validation error.
+
+**Always run a module diff first:**
+
+```bash
+# Export enabled modules from source:
+ddev drush pm:list --status=enabled --field=name 2>/dev/null | sort > /tmp/source_modules.txt
+
+# Export from target, diff:
+ddev drush pm:list --status=enabled --field=name 2>/dev/null | sort > /tmp/target_modules.txt
+diff /tmp/source_modules.txt /tmp/target_modules.txt
+```
+
+Install missing modules on the target before any config import. See
+`content-migration-cookbook.md §-1` for the full checklist.
+
+---
+
+## 15. `git add` always path-scoped — never `git add .`
+
+`git add .` risks staging unrelated files, generated artefacts, or local config that is not
+meant to be committed (e.g., `settings.local.php`, `.ddev/config.local.yaml`). It will also
+stage scratch `.php` files if you forgot to delete them.
+
+Always specify explicit paths:
+
+```bash
+git add config/sync/ web/themes/custom/[theme]/ drupal/ai_guide_theming/
+# Never: git add .
+```
+
+The `.gitignore` is a safety net, not a substitute for intentional staging.
+
+---
+
+*Last updated: 2026-04-12 — items 1–10 from Phase 10–16 live run; items 11–15 extracted from*
+*`canvas-scripting-protocol.md`, `visual-regression-strategy.md`, `content-migration-cookbook.md`,*
+*and `session-2026-04-11.md` during document review.*
