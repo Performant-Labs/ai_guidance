@@ -4,17 +4,47 @@
  */
 
 /* =============================================================================
-   Brand colour tokens (dripyard_base OKLCH engine overrides)
+   Performant Labs — full brand palette
+   Six colors, each assigned to a specific semantic role:
+
+   #F0F1F0  →  --white (page surface / body bg)  off-white background
+   #1B2638  →  Primary brand color token          navy; drives --primary-* OKLCH scale
+   #2D3E48  →  --theme-text-color-loud            body headings / high-contrast text
+   #555F68  →  --theme-text-color-soft            muted text, captions, metadata
+   #F59E0B  →  Secondary brand color token        amber; drives --secondary-* OKLCH scale
+   #92600A  →  --theme-link-color-hover            dark amber; CTA hover & pressed states
    ============================================================================= */
 
+/* Step 1: Re-pin --white to the brand off-white so all surfaces that reference
+   var(--white) pick up the correct background automatically. */
 :where(:root) {
-  --base-primary-color:   #1B2638;
-  --base-secondary-color: #F59E0B;
-  --neutral-100: #F0F1F0;
-  --neutral-600: #555F68;
-  --neutral-800: #2D3E48;
-  --secondary-700: #92600A;
+  --white: #F0F1F0;
 }
+
+/* Step 2: Override semantic text & surface tokens inside theme--white (the active
+   root class set by NeonByte). Scoping to .theme--white keeps dark/primary zones
+   (hero, footer, nav) untouched. */
+:where(:root),
+.theme--white {
+  /* Heading / loud text → dark steel navy */
+  --theme-text-color-loud:   #2D3E48;
+
+  /* Body text / medium emphasis → same navy (readable on off-white) */
+  --theme-text-color-medium: #2D3E48;
+
+  /* Muted text: captions, metadata, helper text */
+  --theme-text-color-soft:   #555F68;
+
+  /* Link & primary interactive color → amber */
+  --theme-text-color-primary: #F59E0B;
+  --theme-link-color:         #F59E0B;
+  --theme-link-color-hover:   #92600A;
+
+  /* Border tones derived from palette */
+  --theme-border-color:       #555F68;
+  --theme-border-color-soft:  color-mix(in srgb, #555F68 30%, transparent);
+}
+
 
 /* =============================================================================
    Header CTA pill button (.header-cta)
