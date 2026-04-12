@@ -137,40 +137,7 @@ Before writing any component markup or CSS, define the page shells that those co
 
 ---
 
-## Phase 6: Verification
-1. **Manual Canvas Assembly Hold**: Because you just scaffolded structural SDC bundles into the `components/` directory, these elements are not inherently attached to a live route. You must STOP execution and explicitly instruct the user to:
-   - Clear the Drupal cache (e.g., `[runtime_wrapper] drush cr`) so the theme registry discovers your new SDCs.
-   - Assemble the layout inside the Drupal Canvas UI using your generated components.
-   - Provide you with the URL of the finalized page.
-2. **Browser Verification**: Once the user provides the rendered URL, load the Canvas page in the headless browser. Each browser subagent call must be **tightly scoped** — one task, one screenshot, one return. Do not ask a subagent to navigate, scroll, screenshot multiple sections, and report findings in a single call. That scope causes context budget failures and unreliable output.
-
-   Preferred pattern per section:
-   ```
-   Task: "Navigate to [URL]. Accept cert warnings. Wait 2s. Scroll to Y=[n]px. Take one screenshot. Return it immediately."
-   ```
-
-   For structural checks (confirming a link or element exists in the DOM without a screenshot):
-   ```bash
-   curl -k -s https://[site-url]/ | grep -i "[expected text or class]"
-   ```
-
-3. **Visual Regression**: Visually compare the rendered DOM output against the original target design slices.
-
-   > [!IMPORTANT]
-   > **Do not attempt visual regression in a single subagent call.** Previous sessions crashed repeatedly because the scope (6+ screenshots + a 9,902 px reference image) exceeded the agent's context budget. You MUST follow the panel-by-panel protocol defined in:
-   > **`drupal/ai_guide_theming/visual-regression-strategy.md`**
-   >
-   > Key rules from that document:
-   > - One subagent call = one design slice vs. one live viewport. Nine slices = nine sequential calls.
-   > - Use the pre-sliced assets in `designs/` (`00_menu.webp` … `08_footer.webp`). Never pass `keytail-desktop.webp` as a MediaPath — it is 9,902 px tall and will exhaust context alone.
-   > - Each subagent call must write its findings to `drupal/ai_guide_theming/visual-regression-report.md` before returning.
-
-4. **Cascade Safety Check**: Verify that your custom CSS overrides remained perfectly encapsulated within the Canvas components and did not accidentally poison the broader global typography or color matrices expected natively by the host site.
-5. **Failure Path**: If visual regression fails or the cascade check identifies layout pollution, do NOT leave the broken state committed. Immediately report the specific discrepancy to the user, revert the Phase 4 implementation commit (e.g. `git revert HEAD`), and return to Phase 4 Step 1 with the identified failures explicitly documented as constraints for the next attempt.
-
----
-
-## Phase 7: Canvas Page Programmatic Assembly
+## Phase 6: Canvas Page Programmatic Assembly
 
 The Canvas module stores home pages as `canvas_page` entities — **not** standard nodes. They cannot be created with `node_create`. All structural page content must be wired via the `canvas_page`'s `components` field.
 
@@ -260,7 +227,7 @@ Assemble the Canvas page one visual section at a time, in top-to-bottom order ma
 
 ---
 
-## Phase 8: Menu & Block Wiring (Programmatic)
+## Phase 7: Menu & Block Wiring (Programmatic)
 
 Never use the Drupal admin UI to wire menus or place blocks. Use `drush scr` scripts for all wiring.
 
@@ -339,4 +306,34 @@ curl -s https://[site-url]/ -k | grep -i "[expected link text]"
 ```
 
 Screenshots alone are not sufficient — a link that appears absent in a screenshot may simply be off-screen.
+
+---
+
+## Phase 8: Verification
+
+1. **Browser Verification**: Once the Canvas page is assembled and menus are wired, load the live URL in the headless browser. Each browser subagent call must be **tightly scoped** — one task, one screenshot, one return. Do not ask a subagent to navigate, scroll, screenshot multiple sections, and report findings in a single call. That scope causes context budget failures and unreliable output.
+
+   Preferred pattern per section:
+   ```
+   Task: "Navigate to [URL]. Accept cert warnings. Wait 2s. Scroll to Y=[n]px. Take one screenshot. Return it immediately."
+   ```
+
+   For structural checks (confirming a link or element exists in the DOM without a screenshot):
+   ```bash
+   curl -k -s https://[site-url]/ | grep -i "[expected text or class]"
+   ```
+
+2. **Visual Regression**: Visually compare the rendered DOM output against the original target design slices.
+
+   > [!IMPORTANT]
+   > **Do not attempt visual regression in a single subagent call.** Previous sessions crashed repeatedly because the scope (6+ screenshots + a 9,902 px reference image) exceeded the agent's context budget. You MUST follow the panel-by-panel protocol defined in:
+   > **`drupal/ai_guide_theming/visual-regression-strategy.md`**
+   >
+   > Key rules from that document:
+   > - One subagent call = one design slice vs. one live viewport. Nine slices = nine sequential calls.
+   > - Use the pre-sliced assets in `designs/` (`00_menu.webp` … `08_footer.webp`). Never pass `keytail-desktop.webp` as a MediaPath — it is 9,902 px tall and will exhaust context alone.
+   > - Each subagent call must write its findings to `drupal/ai_guide_theming/visual-regression-report.md` before returning.
+
+3. **Cascade Safety Check**: Verify that your custom CSS overrides remained perfectly encapsulated within the Canvas components and did not accidentally poison the broader global typography or color matrices expected natively by the host site.
+4. **Failure Path**: If visual regression fails or the cascade check identifies layout pollution, do NOT leave the broken state committed. Immediately report the specific discrepancy to the user, revert the Phase 5 implementation commit (e.g. `git revert HEAD`), and return to Phase 5 Step 1 with the identified failures explicitly documented as constraints for the next attempt.
 
