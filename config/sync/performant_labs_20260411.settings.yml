@@ -37,7 +37,8 @@ features:
   favicon: false
   node_user_picture: false
 logo:
-  use_default: true
+  use_default: false
+  path: themes/custom/performant_labs_20260411/logo.svg
 third_party_settings:
   shortcut:
     module_link: true
