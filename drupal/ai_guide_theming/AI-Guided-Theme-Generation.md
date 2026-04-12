@@ -193,7 +193,19 @@ Before writing any component markup or CSS, define the page shells that those co
            web/themes/custom/[primary_theme]_[timestamp]/[primary_theme]_[timestamp].info.yml
    git commit -m "feat: scaffold page template variants (Canvas full-width + docs sidebar)"
    ```
-7. **Approval Checkpoint**: Confirm with the user that all required page structures are covered before proceeding to implementation.
+7. **Structural Verification Gate** *(all checks must pass before proceeding)*:
+
+   | Check | Command | Pass condition |
+   |---|---|---|
+   | Theme is active | `[runtime_wrapper] drush theme:status` | custom theme listed as default |
+   | No PHP/Twig errors | `[runtime_wrapper] drush watchdog:show --count=20 --severity=3` | 0 new errors after `drush cr` |
+   | Front page returns 200 | `curl -k -o /dev/null -s -w "%{http_code}" [site-url]/` | `200` |
+   | Front page template fires | `curl -sk [site-url]/ \| grep [unique-class-in-page--front.html.twig]` | match found |
+   | Declared regions present | `curl -sk [site-url]/ \| grep -E "region-(header\|content\|footer)"` | all three match |
+
+   **Fail path**: fix the specific template or region → re-run the gate → do not advance until all checks are green.
+
+8. **Approval Checkpoint**: Confirm with the user that all required page structures are covered before proceeding to implementation.
 
 ---
 
@@ -296,12 +308,12 @@ Known schema gotchas from `dripyard_base`:
 Assemble the Canvas page one visual section at a time, in top-to-bottom order matching the design. Each section is one script, one verification, one commit.
 
 ```
-[Section name]  →  write script  →  run script  →  verify in browser  →  commit  →  next section
+[Section name]  →  write script  →  per-section gate  →  commit  →  next section
 ```
 
 **Rules:**
 - One script covers exactly one visual section (hero, features, carousel, tabbed section, etc.). Never combine unrelated mutations in a single script.
-- Every script ends with a verification query that prints the written data — confirm it before clearing cache:
+- Every script ends with a DB verification query before clearing cache:
   ```php
   // At the end of every assembly script, before cache clear:
   $rows = \Drupal::database()->select('canvas_page__components', 'c')
@@ -310,26 +322,52 @@ Assemble the Canvas page one visual section at a time, in top-to-bottom order ma
     ->execute()->fetchAll();
   print_r($rows); // Must return exactly one row with correct data
   ```
-- Do not proceed to the next section until the browser confirms the current section renders correctly.
 - Commit after each verified section: `git commit -m "feat(canvas): assemble [section name] section"`
 - If a script fails, restore from the Phase 3 Canvas DB snapshot rather than writing a second fix script on top of an uncertain state.
 
-### 7.6 Placeholder content scrub (mandatory before Phase 9 verification)
+### 7.6 Per-section structural gate *(run after every assembly script)*
 
-Base themes (e.g., NeonByte/Keytail) ship with demo copy pre-loaded into Canvas components. After assembly, scan every text-bearing component and replace any demo content with client copy **before** running visual regression.
+Before committing a section and moving to the next, two checks must pass:
 
 ```bash
-# Audit all text and heading inputs for non-client copy:
+# 1. UUID exists in DB (replace [uuid] with the root component UUID you just wrote):
 [runtime_wrapper] drush sql-query \
-  "SELECT components_component_id, components_inputs FROM canvas_page__components WHERE entity_id=1;"
-# Grep output for known demo phrases:
-# 'Keytail', 'NeonByte', 'SDRs hit quota', 'Get found. Automatically.'
+  "SELECT components_uuid, components_component_id FROM canvas_page__components \
+   WHERE entity_id=1 AND components_uuid='[uuid]';"
+# Must return exactly 1 row.
+
+# 2. Section renders in the DOM:
+curl -sk [site-url]/ | grep -i "[unique class or landmark text from this section]"
+# Must return a match.
 ```
 
-Update via a targeted `drush scr` script using the `json_decode → mutate → json_encode → $page->save()` pattern. Never update text in the DB layer directly — always use the entity API to preserve field validation and cache invalidation.
+**Fail path**: do not write a second fix script on top of uncertain state. Restore from the Phase 3 Canvas DB snapshot, identify the root cause against the pre-flight checklist in `canvas-scripting-protocol.md`, and re-run the section script.
 
-> [!CAUTION]
-> Placeholder content that passes visual regression is invisible — it looks correct in structure but contains the wrong words. A content scrub **must** be its own explicit step, run before the browser agent opens the page for the first time.
+### 7.7 End-of-phase full tree audit *(run once after all sections assembled)*
+
+```bash
+# Count total components — must match your cookbook's expected total:
+[runtime_wrapper] drush sql-query \
+  "SELECT COUNT(*) FROM canvas_page__components WHERE entity_id=1 AND deleted=0;"
+
+# Check for orphaned components:
+[runtime_wrapper] drush php-eval "
+\$rows = \Drupal::database()->select('canvas_page__components','c')
+  ->fields('c',['components_uuid','components_parent_uuid','components_component_id'])
+  ->condition('entity_id',1)->condition('deleted',0)->execute()->fetchAll();
+\$uuids = array_column(\$rows,'components_uuid');
+foreach (\$rows as \$r) {
+  if (\$r->components_parent_uuid && !in_array(\$r->components_parent_uuid,\$uuids)) {
+    echo 'ORPHAN: '.\$r->components_uuid.' parent='.\$r->components_parent_uuid.PHP_EOL;
+  }
+}
+echo 'Done.'.PHP_EOL;
+"
+# Must return 'Done.' with zero ORPHAN lines.
+```
+
+**Pass**: all sections verified, no orphans → commit the full assembly snapshot → proceed to Phase 8.
+**Fail**: fix the specific orphan or missing component → re-run 7.7 before proceeding.
 
 ---
 
@@ -404,43 +442,66 @@ Then export: `[runtime_wrapper] drush config:export --yes`
 > [!NOTE]
 > `settings.php` is gitignored (contains secrets). This setting must be added on each environment or via a post-provision hook. It does not get committed.
 
-### 8.4 Verify your work
+### 8.4 Structural Verification Gate *(all checks must pass before proceeding to Phase 9)*
 
-After any programmatic wiring, always use the browser subagent to verify the rendered output. For items that may be in the DOM but not visually obvious (e.g., footer items that wrap to a second line), confirm with `curl`:
+| Check | Command | Pass condition |
+|---|---|---|
+| Main nav has items | `[runtime_wrapper] drush php-eval "print_r(\Drupal::entityTypeManager()->getStorage('menu_link_content')->loadByProperties(['menu_name'=>'main']));"` | ≥ 1 item returned |
+| Footer nav has items | same, swap `'main'` for footer menu machine name | ≥ 1 item returned |
+| Expected blocks in regions | `[runtime_wrapper] drush php-eval "\$blocks=\Drupal::entityTypeManager()->getStorage('block')->loadByProperties(['theme'=>'[theme_machine_name]']); foreach(\$blocks as \$b){echo \$b->id().': '.\$b->getRegion().PHP_EOL;}"` | all expected blocks show a region ≠ `none` |
+| Anonymous front page | `curl -k -o /dev/null -s -w "%{http_code}" [site-url]/` | `200` (not `403` or `302`) |
+| Nav items visible to anon | `curl -sk [site-url]/ \| grep -i "[first nav item text]"` | match found |
+| No new errors | `[runtime_wrapper] drush watchdog:show --count=10 --severity=3` | 0 new errors |
 
-```bash
-curl -s https://[site-url]/ -k | grep -i "[expected link text]"
-```
-
-Screenshots alone are not sufficient — a link that appears absent in a screenshot may simply be off-screen.
+**Fail path**: fix the specific wiring issue → re-run only the failed check → commit → proceed to Phase 9 only when all checks are green.
 
 ---
 
 ## Phase 9: Verification
 
-1. **Browser Verification**: Once the Canvas page is assembled and menus are wired, load the live URL in the headless browser. Each browser subagent call must be **tightly scoped** — one task, one screenshot, one return. Do not ask a subagent to navigate, scroll, screenshot multiple sections, and report findings in a single call. That scope causes context budget failures and unreliable output.
+Verification is split into two sequential sub-phases. **Phase 9.2 must not begin until Phase 9.1 passes.** Structure was verified inline during Phases 5, 7, and 8 — Phase 9 tests content and visual presentation only.
 
-   Preferred pattern per section:
-   ```
-   Task: "Navigate to [URL]. Accept cert warnings. Wait 2s. Scroll to Y=[n]px. Take one screenshot. Return it immediately."
-   ```
+### Phase 9.1 — Content Audit
 
-   For structural checks (confirming a link or element exists in the DOM without a screenshot):
-   ```bash
-   curl -k -s https://[site-url]/ | grep -i "[expected text or class]"
-   ```
+Scan every Canvas text-bearing component for placeholder copy before any screenshot is taken. Base themes (NeonByte, Keytail, Dripyard) ship demo content that is structurally invisible — it passes layout checks but contains the wrong words.
 
-2. **Visual Regression**: Visually compare the rendered DOM output against the original target design slices.
+```bash
+# Scan all Canvas inputs for known placeholder phrases:
+[runtime_wrapper] drush sql-query \
+  "SELECT delta, components_component_id, components_inputs \
+   FROM canvas_page__components WHERE entity_id=1 ORDER BY delta;" \
+  | grep -iE "keytail|neonbyte|SDRs hit|Get found|lorem ipsum|Search and outreach"
+# Must return 0 matches.
 
-   > [!IMPORTANT]
-   > **Do not attempt visual regression in a single subagent call.** Previous sessions crashed repeatedly because the scope (6+ screenshots + a 9,902 px reference image) exceeded the agent's context budget. You MUST follow the panel-by-panel protocol defined in:
-   > **`drupal/ai_guide_theming/visual-regression-strategy.md`**
-   >
-   > Key rules from that document:
-   > - One subagent call = one design slice vs. one live viewport. Nine slices = nine sequential calls.
-   > - Use the pre-sliced assets in `designs/` (`00_menu.webp` … `08_footer.webp`). Never pass `keytail-desktop.webp` as a MediaPath — it is 9,902 px tall and will exhaust context alone.
-   > - Each subagent call must write its findings to `drupal/ai_guide_theming/visual-regression-report.md` before returning.
+# Verify hero h1 contains approved client copy:
+curl -sk [site-url]/ | grep -i "[approved hero headline]"
+# Must return a match.
 
-3. **Cascade Safety Check**: Verify that your custom CSS overrides remained perfectly encapsulated within the Canvas components and did not accidentally poison the broader global typography or color matrices expected natively by the host site.
-4. **Failure Path**: If visual regression fails or the cascade check identifies layout pollution, do NOT leave the broken state committed. Immediately report the specific discrepancy to the user, revert the Phase 6 implementation commit (e.g. `git revert HEAD`), and return to Phase 6 Step 1 with the identified failures explicitly documented as constraints for the next attempt.
+# Verify nav labels match approved content:
+curl -sk [site-url]/ | grep -iE "[nav-label-1]|[nav-label-2]"
+```
+
+**Pass**: 0 placeholder matches, all approved copy present → proceed to Phase 9.2.
+**Fail**: update via the keyed-replacement pattern in `canvas-scripting-protocol.md` → re-run the scan → do not open a browser until this gate is green.
+
+> [!CAUTION]
+> A Phase 9.2 visual regression finding should **never** be "wrong text." If it is, Phase 9.1 was not run correctly. Return to 9.1.
+
+### Phase 9.2 — Visual Regression
+
+Visually compare the rendered page against the original target design slices, panel by panel.
+
+> [!IMPORTANT]
+> **Do not attempt visual regression in a single subagent call.** Previous sessions crashed repeatedly because the scope (6+ screenshots + a 9,902 px reference image) exceeded the agent's context budget. You MUST follow the panel-by-panel protocol defined in:
+> **[`drupal/ai_guide_theming/visual-regression-strategy.md`](visual-regression-strategy.md)**
+>
+> Key rules:
+> - One subagent call = one design slice vs. one live viewport. Nine slices = nine sequential calls.
+> - Use the pre-sliced assets in `designs/` (`00_menu.webp` … `08_footer.webp`). Never pass the full composite image as a MediaPath — it will exhaust context alone.
+> - Each subagent call must append its findings to `drupal/ai_guide_theming/visual-regression-report.md` before returning.
+> - Phase 9.2 evaluates layout, color, spacing, and typography **only**. Content correctness is not re-evaluated here.
+
+**Cascade Safety Check**: After visual regression, confirm custom CSS overrides remained encapsulated and did not pollute global typography or color tokens expected by the host site.
+
+**Failure path**: If visual regression fails, do NOT leave the broken state committed. Report the specific discrepancy, revert the Phase 6 implementation commit (`git revert HEAD`), and return to Phase 6 with the failures documented as explicit constraints.
 
