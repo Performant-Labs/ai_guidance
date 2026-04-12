@@ -34,3 +34,78 @@ html .theme--black {
   --theme-border-color: #555F68;        
   --theme-focus-ring-color: #F59E0B;    
 }
+
+/* =============================================================================
+   Canvas Full-Width Page (page--front.html.twig)
+   ============================================================================= */
+
+/**
+ * Remove all inner gutters from the Canvas homepage so each Canvas block
+ * can stretch to the full viewport. The `canvas-page` class is applied to
+ * <main> in page--front.html.twig.
+ */
+.canvas-page {
+  padding: 0;
+  margin: 0;
+}
+
+.canvas-page .block {
+  /* Prevent stray Drupal block wrappers from adding unexpected gutters */
+  margin: 0;
+  padding: 0;
+}
+
+/* =============================================================================
+   Documentation Interior Page (page--documentation.html.twig)
+   ============================================================================= */
+
+/**
+ * Two-column CSS Grid layout.
+ * Left  : docs-sidebar (fixed 280px) — TOC / documentation index menu.
+ * Right : docs-content (grows to fill remaining width).
+ *
+ * Collapses to a single column below 900px (tablet breakpoint).
+ */
+.docs-page .docs-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  grid-template-areas: "sidebar content";
+  gap: 0 3rem;
+  align-items: start;
+  padding-block: 3rem;
+}
+
+.docs-page .docs-sidebar {
+  grid-area: sidebar;
+  position: sticky;
+  top: calc(var(--header-height, 80px) + 1.5rem);
+  max-height: calc(100vh - var(--header-height, 80px) - 3rem);
+  overflow-y: auto;
+  padding-inline-end: 1rem;
+  border-inline-end: 1px solid var(--theme-border-color);
+}
+
+.docs-page .docs-content {
+  grid-area: content;
+  min-width: 0; /* prevent grid blowout on long content */
+}
+
+/* Responsive: collapse sidebar above content on narrow viewports */
+@media (max-width: 900px) {
+  .docs-page .docs-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "sidebar"
+      "content";
+    gap: 2rem 0;
+  }
+
+  .docs-page .docs-sidebar {
+    position: static;
+    max-height: none;
+    border-inline-end: none;
+    border-block-end: 1px solid var(--theme-border-color);
+    padding-block-end: 1.5rem;
+    padding-inline-end: 0;
+  }
+}
