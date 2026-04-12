@@ -215,6 +215,28 @@ Only then write the Twig `set` injection.
 
 ---
 
+## Watchdog Error Interpretation
+
+When checking `drush watchdog:show` during a gate, not every error record is a live page error. Failed `drush scr` runs log their schema validation failures to watchdog at severity=3, making them look identical to runtime rendering errors.
+
+**How to tell them apart — check the backtrace:**
+
+| Backtrace contains | Means |
+|---|---|
+| `/var/www/html/fix_*.php` or `/var/www/html/[script_name].php` | Error from a **failed `drush scr` run** — not a live page error. Check the script's exit status instead. |
+| `HtmlRenderer.php`, `HttpKernel.php`, `PageCache.php` | Error from a **live page request** — must be investigated and fixed before proceeding. |
+
+**Timestamp as a secondary signal**: errors from script runs will have a timestamp matching when you ran the script, not matching a browser page load. Use:
+```bash
+# Convert a watchdog timestamp to human-readable:
+[runtime_wrapper] drush php-eval "echo date('Y-m-d H:i:s', [wid_timestamp]);"
+```
+
+> [!NOTE]
+> A watchdog error from a failed script does not mean the page is broken — it means the script itself failed. Confirm the page still returns 200 and the component tree is intact before concluding there is a live issue.
+
+---
+
 ## Verification After Every Fix
 
 After every script or template change, always confirm the fix via the browser **before** moving to the next item on the checklist.

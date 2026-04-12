@@ -197,8 +197,8 @@ Before writing any component markup or CSS, define the page shells that those co
 
    | Check | Command | Pass condition |
    |---|---|---|
-   | Theme is active | `[runtime_wrapper] drush theme:status` | custom theme listed as default |
-   | No PHP/Twig errors | `[runtime_wrapper] drush watchdog:show --count=20 --severity=3` | 0 new errors after `drush cr` |
+   | Theme is active | `[runtime_wrapper] drush php-eval "echo \Drupal::config('system.theme')->get('default');"` | prints custom theme machine name (e.g. `performant_labs_20260411`) |
+   | No PHP/Twig errors | `[runtime_wrapper] drush watchdog:show --count=20 --severity=3` | 0 new errors after `drush cr` — see watchdog interpretation note in `canvas-scripting-protocol.md` |
    | Front page returns 200 | `curl -k -o /dev/null -s -w "%{http_code}" [site-url]/` | `200` |
    | Front page template fires | `curl -sk [site-url]/ \| grep [unique-class-in-page--front.html.twig]` | match found |
    | Declared regions present | `curl -sk [site-url]/ \| grep -E "region-(header\|content\|footer)"` | all three match |
