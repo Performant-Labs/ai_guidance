@@ -38,7 +38,7 @@ features:
   node_user_picture: false
 logo:
   use_default: false
-  path: 'themes/custom/performant_labs_20260411/logo.svg?v=1'
+  path: 'themes/custom/performant_labs_20260411/logo.svg?v=2'
 third_party_settings:
   shortcut:
     module_link: true
