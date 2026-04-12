@@ -38,3 +38,4 @@ $RECYCLE.BIN/
 # this should never be under version control.
 /auth.json
 .vscode/
+canvas_snapshot_pre_assembly.sql

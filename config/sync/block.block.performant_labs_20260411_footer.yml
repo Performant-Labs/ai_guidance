@@ -1,0 +1,27 @@
+uuid: b741faa1-38a2-46a4-97b7-ced4272f9a8b
+langcode: en
+status: true
+dependencies:
+  config:
+    - system.menu.footer
+  module:
+    - system
+  theme:
+    - performant_labs_20260411
+_core:
+  default_config_hash: qC7xfTCJm-batA1vHeCRIFNYeiVeKxckyIuqKvqN5gc
+id: performant_labs_20260411_footer
+theme: performant_labs_20260411
+region: footer_left
+weight: 0
+provider: null
+plugin: 'system_menu_block:footer'
+settings:
+  id: 'system_menu_block:footer'
+  label: Footer
+  label_display: '0'
+  provider: system
+  level: 1
+  depth: 2
+  expand_all_items: true
+visibility: {  }

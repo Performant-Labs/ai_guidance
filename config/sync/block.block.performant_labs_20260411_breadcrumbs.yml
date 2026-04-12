@@ -1,0 +1,22 @@
+uuid: 3a84c6e8-f9ba-4405-a5d8-275fd97ede46
+langcode: en
+status: false
+dependencies:
+  module:
+    - system
+  theme:
+    - performant_labs_20260411
+_core:
+  default_config_hash: ZgDUbuqGnZTUXTHaCe7KF2QNUL9yD4r5CcpxNHfdrZY
+id: performant_labs_20260411_breadcrumbs
+theme: performant_labs_20260411
+region: highlighted
+weight: -4
+provider: null
+plugin: system_breadcrumb_block
+settings:
+  id: system_breadcrumb_block
+  label: Breadcrumbs
+  label_display: '0'
+  provider: system
+visibility: {  }
