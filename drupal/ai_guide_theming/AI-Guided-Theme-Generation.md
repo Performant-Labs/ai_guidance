@@ -160,10 +160,12 @@ Once the user provides the target design:
    - Every **required** prop name with its valid enum values, copied verbatim from the schema
    - Every **slot** name, copied verbatim from the schema
 
-   Save this table to `drupal/ai_guide_theming/component-cookbook.md`. It becomes the authoritative prop reference for every Phase 8 assembly script — no prop name may be written from memory during assembly.
+   Save this table to `drupal/ai_guide_theming/component-cookbook.md`. It becomes the authoritative prop reference for every Phase 7 assembly script — no prop name may be written from memory during assembly.
 
    > [!CAUTION]
    > Do not guess prop names. A wrong prop name causes a silent drop or a `RuntimeError` on save. The cookbook prevents the "fix the fix" cycle.
+   >
+   > **Reference document**: [`drupal/ai_guide_theming/component-cookbook.md`](component-cookbook.md) — read this file in full at the start of Phase 7 before writing a single assembly script. It contains verbatim prop/slot names and a "Common Mistakes" table of props that have caused silent failures in past sessions.
 
 9. **Approval Checkpoint**: With the plan and cookbook safely tracked in version control, you must explicitly STOP execution. Display your mapped strategy to the user and wait for their explicit manual approval before advancing into Phase 5 layout executions.
 
@@ -218,6 +220,13 @@ Before writing any component markup or CSS, define the page shells that those co
 ---
 
 ## Phase 7: Canvas Page Programmatic Assembly
+
+> [!IMPORTANT]
+> **Mandatory pre-reading before writing any script in this phase:**
+> 1. [`drupal/ai_guide_theming/component-cookbook.md`](component-cookbook.md) — authoritative prop/slot names for every component. Never write an `inputs` JSON from memory.
+> 2. [`drupal/ai_guide_theming/canvas-scripting-protocol.md`](canvas-scripting-protocol.md) — mandatory pre-flight checklist (schema check, template read, module availability, asset reachability, DB state, logo path, placeholder content scrub), script writing rules, and verification cadence.
+>
+> Both documents must be read **in full** before the first `drush scr` is written. Skipping either document is the single most common cause of multi-session fix loops.
 
 The Canvas module stores home pages as `canvas_page` entities — **not** standard nodes. They cannot be created with `node_create`. All structural page content must be wired via the `canvas_page`'s `components` field.
 
