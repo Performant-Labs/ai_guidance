@@ -1,0 +1,72 @@
+{#
+/**
+ * @file
+ * Full-width Canvas page template for the site front page (/page/1).
+ *
+ * Differences from the default page.html.twig:
+ * - Page title block is suppressed — Canvas section headings carry all titles.
+ * - The site-main wrapper has no container constraint; Canvas blocks fill the
+ *   full viewport edge-to-edge.
+ * - The body class `canvas-page` (added via performant_labs_20260411.theme)
+ *   can be used to scope any CSS targeting this template.
+ * - The header_third slot receives a hardcoded "Call today" CTA pill button
+ *   if no block is placed in that region.
+ *
+ * @see template_preprocess_page()
+ * @see neonbyte/templates/layout/page.html.twig
+ */
+#}
+<div class="layout-container">
+
+  {%- set header_cta -%}
+    <a href="/contact" class="header-cta">Call today</a>
+  {%- endset -%}
+
+  {{ include('neonbyte:header', {
+      header_first: page.header_first,
+      header_second: page.header_second,
+      header_third: page.header_third is not empty ? page.header_third : header_cta,
+      attributes: header_attributes,
+    }, with_context = false) }}
+
+  {{ page.fixed_middle_right }}
+  {{ page.fixed_bottom_right }}
+  {{ page.highlighted }}
+
+  {#
+    site-main has no container class — Canvas blocks are full-width.
+    The `canvas-page` body class allows targeted CSS without touching global layout.
+  #}
+  <main class="site-main canvas-page">
+    <a id="main-content" tabindex="-1"></a>
+
+    {{ include('@neonbyte/component-dev.html.twig', ignore_missing: true) }}
+
+    {# page.content renders the Canvas field output — no page title block here #}
+    {{ page.content }}
+  </main>
+
+  {% embed 'neonbyte:footer' with {
+    footer_top: page.footer_top,
+    footer_left: page.footer_left,
+    footer_right: page.footer_right,
+    footer_bottom: page.footer_bottom,
+    theme: footer_theme,
+  } only %}
+    {% block footer_top_content %}
+      {{- footer_top -}}
+    {% endblock %}
+
+    {% block footer_left_content %}
+      {{- footer_left -}}
+    {% endblock %}
+
+    {% block footer_right_content %}
+      {{- footer_right -}}
+    {% endblock %}
+
+    {% block footer_bottom_content %}
+      {{- footer_bottom -}}
+    {% endblock %}
+  {% endembed %}
+</div>

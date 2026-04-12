@@ -2,10 +2,34 @@
 
 /**
  * @file
- * Functions to support theming.
+ * Functions to support theming in performant_labs_20260411.
  */
 
 // Support autoloading of classes when composer is not used.
 if (file_exists(__DIR__ . '/../dripyard-classloader.php')) {
   require_once __DIR__ . '/../dripyard-classloader.php';
+}
+
+/**
+ * Implements hook_theme_suggestions_page_alter().
+ *
+ * Adds `page--documentation` suggestion for nodes of type `book`, so those
+ * pages use the two-column sidebar layout template.
+ */
+function performant_labs_20260411_theme_suggestions_page_alter(array &$suggestions, array $variables): void {
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if ($node instanceof \Drupal\node\NodeInterface && $node->getType() === 'book') {
+    $suggestions[] = 'page__documentation';
+  }
+}
+
+/**
+ * Implements hook_preprocess_page().
+ *
+ * Adds a `canvas-page` body class on the front page for CSS scoping.
+ */
+function performant_labs_20260411_preprocess_page(array &$variables): void {
+  if (\Drupal::service('path.matcher')->isFrontPage()) {
+    $variables['attributes']['class'][] = 'canvas-page';
+  }
 }

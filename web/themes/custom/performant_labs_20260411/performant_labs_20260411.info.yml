@@ -34,6 +34,7 @@ regions:
   header_third: Header third (right)
   highlighted: Highlighted
   content: Content
+  sidebar_first: Sidebar first (documentation nav)
   fixed_middle_right: Fixed middle right (local actions tabs)
   fixed_bottom_right: Fixed bottom right (messages)
   footer_top: Footer top

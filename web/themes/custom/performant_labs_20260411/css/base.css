@@ -1,20 +1,95 @@
 /**
  * @file
- * Global styles.
+ * Global styles — Performant Labs 20260411.
  */
 
-/* Architecturally Correct Semantic Overrides */
+/* =============================================================================
+   Brand colour tokens (dripyard_base OKLCH engine overrides)
+   ============================================================================= */
+
 :where(:root) {
-  /* 1. Base Primary & Secondary Anchors */
-  /* By setting these, the OKLCH engine calculates all 10 shades dynamically from YOUR hex codes */
-  --base-primary-color: #1B2638;
+  /* 1. Base primary & secondary anchors */
+  --base-primary-color:   #1B2638;
   --base-secondary-color: #F59E0B;
 
-  /* 2. Specific Neutral/Scale Overrides */
-  /* We intercept specific computed shades and force them to your exact secondary brand hexes */
-  --neutral-100: #F0F1F0;   /* Replaces the lightest background shade */
-  --neutral-600: #555F68;   /* Replaces the medium slate borders/text */
-  --neutral-800: #2D3E48;   /* Replaces the dark slate text/accents */
-  
-  --secondary-700: #92600A; /* Replaces the dark amber hover states */
+  /* 2. Specific neutral/scale overrides */
+  --neutral-100: #F0F1F0;   /* Lightest background */
+  --neutral-600: #555F68;   /* Medium slate borders/text */
+  --neutral-800: #2D3E48;   /* Dark slate text/accents */
+  --secondary-700: #92600A; /* Dark amber hover */
+}
+
+/* =============================================================================
+   Header CTA pill button (.header-cta)
+   Injected into header_third via page--front.html.twig and
+   page--documentation.html.twig when no block occupies that region.
+   ============================================================================= */
+
+.header-cta {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding-block: 0.5rem;
+  padding-inline: 1.25rem;
+  border-radius: 999px;
+  text-decoration: none;
+  background-color: #F59E0B;
+  color: #1B2638;
+  border: 2px solid transparent;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.header-cta:hover,
+.header-cta:focus-visible {
+  background-color: #92600A;
+  color: #F0F1F0;
+}
+
+/* =============================================================================
+   Canvas front page — full-width layout
+   ============================================================================= */
+
+/**
+ * Remove the default max-width container on the front page so Canvas sections
+ * can stretch edge-to-edge.
+ */
+.canvas-page .layout-container {
+  max-width: none;
+  padding-inline: 0;
+}
+
+/* =============================================================================
+   Documentation page — two-column sidebar layout
+   ============================================================================= */
+
+.docs-page .docs-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2rem;
+  align-items: start;
+  padding-block: 2rem;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+.docs-page .docs-sidebar {
+  position: sticky;
+  top: 5rem;
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+}
+
+/* Collapse sidebar on narrow viewports */
+@media (max-width: 900px) {
+  .docs-page .docs-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-page .docs-sidebar {
+    position: static;
+    max-height: none;
+  }
 }
