@@ -73,17 +73,43 @@ Ask the user to provide **all of the following** at once. Present it as a single
    ```
    > [!NOTE]
    > In NeonByte / Dripyard-based themes, the entire palette (all `--primary-*` and `--neutral-*` scale tokens) is derived from these two config values via `oklch()` in `variables-colors-semantic.css`. Setting them here drives all button colors, card borders, body backgrounds, and icon accents — no additional CSS is needed for the base palette.
-3. **Wire the logo**: Confirm `system.theme.global` → `logo.path` points to your theme's `logo.svg`, **not** the parent theme's path. Export the config:
+3. **Wire the logo**: There are **two independent config locations** for the logo — both must be set or the theme-specific one silently wins:
    ```bash
+   # Step A — global (may be overridden by theme-specific):
    [runtime_wrapper] drush config:get system.theme.global logo.path
-   # Must return: themes/custom/[primary_theme]_[timestamp]/logo.svg
-   # Must also confirm: use_default = false
+   [runtime_wrapper] drush config:get system.theme.global logo.use_default
+   # Both must be: path = themes/custom/[theme]/logo.svg, use_default = false
+
+   # Step B — theme-specific (takes priority over global):
+   [runtime_wrapper] drush php-eval "\$s = \Drupal::config('[theme_machine_name].settings'); echo \$s->get('logo.use_default').PHP_EOL; echo (\$s->get('logo.path') ?? '(not set)').PHP_EOL;"
+   # logo.use_default must be FALSE here too.
+   # If it is TRUE, the theme ignores system.theme.global and uses the parent
+   # theme's default logo — even if your custom SVG is on disk.
+   ```
+   Fix theme-specific settings if needed:
+   ```bash
+   [runtime_wrapper] drush php-eval "
+   \$c = \Drupal::configFactory()->getEditable('[theme_machine_name].settings');
+   \$c->set('logo.use_default', FALSE);
+   \$c->set('logo.path', 'themes/custom/[theme_machine_name]/logo.svg?v=1');
+   \$c->save();
+   "
+   [runtime_wrapper] drush cr
+   ```
+   > [!NOTE]
+   > Append `?v=1` to the logo path so browsers that previously cached the parent theme's logo at the same URL are forced to fetch the new file.
+
+   Confirm server is serving the correct file:
+   ```bash
+   curl -sk https://[site-url]/themes/custom/[theme_machine_name]/logo.svg | head -1
+   # Must start with <svg … aria-label="[Site Name]"
+   ```
+   Export and commit:
+   ```bash
    [runtime_wrapper] drush config:export --yes
    git add config/sync/ web/themes/custom/[primary_theme]_[timestamp]/logo.svg
    git commit -m "feat: brand assets — logo, palette, favicon"
    ```
-   > [!NOTE]
-   > Even with the correct SVG on disk and the correct config path, the **browser will continue to serve the cached NeonByte logo** until its HTTP cache for that asset expires or the user does a hard reload with DevTools open. This is a browser cache issue — not a server-side problem. Confirm via `curl -k https://[site-url]/themes/custom/[theme]/logo.svg | head -1` to verify the correct SVG is on disk.
 4. **Apply the favicon**: Place the file at `web/themes/custom/[primary_theme]_[timestamp]/favicon.ico` (or `.png`). Update `system.theme.global` → `favicon.path` to point to it.
 5. **Register brand fonts**: If custom Google Fonts are specified, add them to the theme's `.libraries.yml` and reference in `css/base.css`:
    ```css
@@ -94,15 +120,27 @@ Ask the user to provide **all of the following** at once. Present it as a single
 
 ### 2.3 Verification
 
-After applying, confirm in the browser that the `<html>` `style` attribute reflects the correct primary color:
+Run both checks before advancing. These are curl-only — no browser required:
 
 ```bash
-curl -k -s https://[site-url]/ | grep "theme-setting-base-primary-color"
-# Expected: --theme-setting-base-primary-color: #[your-hex];
+# 1. Confirm CSS custom properties are in the page:
+curl -sk https://[site-url]/ | grep -o 'theme-setting-base-primary-color:[^;]*'
+# Expected: --theme-setting-base-primary-color: #[your-primary-hex]
+
+# 2. Confirm logo URL in rendered HTML:
+curl -sk https://[site-url]/ | grep -o 'src="[^"]*logo[^"]*"'
+# Expected: src="/themes/custom/[theme]/logo.svg?v=1"
+
+# 3. Confirm logo file on disk is correct:
+curl -sk https://[site-url]/themes/custom/[theme]/logo.svg | head -1
+# Must start with <svg … aria-label="[Site Name]"
 ```
 
 > [!CAUTION]
-> **Do not skip this verification.** If the hex value returned is the parent theme's default (e.g., `#0000d9` for NeonByte), the config write did not persist — re-run the `drush php-eval` block and cache rebuild before advancing.
+> **Do not skip this verification.** If `theme-setting-base-primary-color` returns the parent default (e.g., `#0000d9` for NeonByte), the theme-specific config write did not persist. Re-run the `drush php-eval` block, then `drush cr`, and re-check.
+
+> [!IMPORTANT]
+> **Hero CTA contrast guard**: If the primary brand color is dark (e.g., navy `#1B2638`), Canvas hero/title-cta components with `button_style: primary` will be nearly invisible on dark hero backgrounds. Set `button_style: secondary` for any CTA placed on a dark section. Verify with a screenshot before exiting Phase 2.
 
 ### 2.4 Approval Checkpoint
 

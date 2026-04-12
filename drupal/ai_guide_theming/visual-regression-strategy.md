@@ -23,7 +23,24 @@ end-of-project step — it is a mandatory gate at the end of every structural ph
 
 ---
 
-## Structure Verification (Phase 6)
+## Execution Speed Rules
+
+These rules exist because browser subagent calls are slow (~60s each). Violating them creates the same slow feedback loops that kill velocity.
+
+| Rule | What to do | When to use browser instead |
+|---|---|---|
+| **Curl first** | Use `ddev exec "curl -sk [url]"` to check HTTP status, HTML content, CSS variables, and rendered text | Only when you need to see a visual rendering of layout, colour, or image |
+| **Check source, not screenshots, for text** | `curl … \| grep 'expected-string'` verifies copy, headings, class names, and CSS values in <1s | Never use a screenshot to confirm text content |
+| **Palette is a curl check** | `curl … \| grep -o 'theme-setting-base-primary-color:[^;]*'` confirms the palette instantly | Only screenshot colour if the curl check passes but user reports it looks wrong |
+| **Logo is a curl check** | `curl -sk [logo.svg url] \| head -1` confirms the server-side file. If correct, "NeonByte" in screenshots is browser cache — not a real issue. | Screenshot the SVG URL directly (not the page) to see the actual rendered result |
+| **Nav links are a curl check** | `ddev exec "curl -sk -o /dev/null -w '%{http_code}' [url]"` on every nav link catches 404s in seconds | Visual nav checks only for hover states and mobile menu appearance |
+
+> [!IMPORTANT]
+> **Nav link smoke test belongs in Phase 9 (assembly), not Phase 12 (VR).** Run an HTTP status check on every menu link immediately after registering them. A 404 caught in Phase 9 costs 30 seconds. The same 404 found in Phase 12 costs a full browser VR cycle.
+
+---
+
+
 
 **One browser subagent call. No design reference required.**
 
