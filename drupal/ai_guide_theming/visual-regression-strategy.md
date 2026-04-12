@@ -1,10 +1,98 @@
 # Visual Regression Strategy
 
-This document defines **how AI agents must execute Phase 10.2 (Visual Regression)**
-for this project. It covers pixel-level layout comparison only — content correctness
-is verified in Phase 10.1 (Content Audit) before this document's protocol begins.
-It exists because three consecutive agent sessions crashed attempting this phase.
-Read it in full before starting any comparison work.
+This document defines **how AI agents must execute Visual Regression (VR) gates**
+embedded throughout the AI-Guided Theme Generation SOP. VR is no longer a single
+end-of-project step — it is a mandatory gate at the end of every structural phase.
+**You cannot build upon problems you haven't caught.**
+
+> [!IMPORTANT]
+> VR gates are **blocking**. A phase must not begin until the previous phase's VR
+> gate passes. A Phase 7 ❌ must be resolved before Phase 8 starts — not patched
+> after Phase 9 content migration is already layered on top.
+
+## Phase Gate Summary
+
+| Phase | Gate name | Scope | Reference |
+|---|---|---|---|
+| 5 | Structure VR | Page renders, regions present, no errors | §Phase 5 Gate below |
+| 6 | Design Fidelity VR | Colors, fonts, no unstyled elements | §Phase 6 Gate below |
+| **7** | **Canvas Assembly VR** | **Full panel-by-panel vs. design reference** | **§Correct Execution Pattern** |
+| 8 | Navigation VR | Nav items, links, hover states | §Phase 8 Gate below |
+| 9 | Content Rendering VR | Each content type renders correctly | §Phase 9 Gate below |
+| 10.2 | Final Acceptance VR | Holistic sign-off; smaller scope if upstream gates caught issues | §Correct Execution Pattern |
+
+---
+
+## Phase 5 Gate — Structure
+
+**One browser subagent call. No design reference required.**
+
+Checks:
+1. HTTP 200 on `[site-url]/`
+2. Custom theme is active (not parent theme or Bartik)
+3. `<header>` and `<footer>` regions present in DOM
+4. No horizontal scroll at 1728 px viewport
+
+Pass: all four → commit → Approval Checkpoint.
+Fail: fix template/region → re-run →then Approval Checkpoint.
+
+---
+
+## Phase 6 Gate — Design Fidelity
+
+**Two browser subagent calls: header slice + hero slice only.**
+
+Use the `designs/00_menu.webp` and `designs/01_hero.webp` slices from the
+`designs/` directory. Do NOT use the full composite at this stage.
+
+Checks:
+1. Primary and accent hex values match brand spec (use browser inspector)
+2. Custom fonts loading (not browser system fallbacks)
+3. Gross section proportions match design reference
+4. No unstyled elements visible
+
+Pass: colors and fonts confirmed → proceed to Phase 7.
+Fail: fix CSS token / font loading → `drush cr` → re-run gate.
+
+---
+
+## Phase 8 Gate — Navigation
+
+**One browser subagent call.**
+
+Open the live site homepage. Checks:
+1. Header nav labels match `menu_link_content` list exactly
+2. All header nav links resolve (not 404)
+3. Footer nav labels and links correct
+4. Sidebar/book nav visible on a book page (if applicable)
+5. No empty `<li>` or `href="#"` placeholders
+
+Pass: all nav checks green → commit → Phase 9.
+Fail: fix menu wiring → re-run §8.4 structural gate → re-run this gate.
+
+---
+
+## Phase 9 Gate — Content Rendering
+
+**One browser subagent call, four pages.**
+
+Open each URL and confirm it renders without structural breakage:
+
+| URL | Content type | Must show |
+|---|---|---|
+| `/services` | Basic Page | Body copy, correct layout |
+| `/articles/[any-slug]` | Article | Body, tags, date |
+| Any book path | Book page | Body + sidebar nav block |
+| `/contact-us` | Page + Webform | Webform with all 5 fields |
+
+Pass: all four render correctly → proceed to Phase 10.
+Fail: fix template/field rendering → re-run affected URL → commit.
+
+---
+
+## Why Previous Full-VR Attempts Crashed (Phase 7 / 10.2)
+
+
 
 > [!IMPORTANT]
 > **Pre-condition: Phase 10.1 Content Audit must pass before running any VR subagent.** If any Canvas component still contains demo copy (Keytail, NeonByte, or other base-theme defaults), run Phase 10.1 first. A Phase 10.2 finding should never be "wrong text" — if it is, return to 10.1.

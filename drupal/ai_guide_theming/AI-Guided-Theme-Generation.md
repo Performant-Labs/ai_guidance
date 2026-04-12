@@ -205,7 +205,16 @@ Before writing any component markup or CSS, define the page shells that those co
 
    **Fail path**: fix the specific template or region → re-run the gate → do not advance until all checks are green.
 
-8. **Approval Checkpoint**: Confirm with the user that all required page structures are covered before proceeding to implementation.
+8. **Visual Regression Gate — Structure (Phase 5)**: Take one viewport screenshot of the live site (no design reference comparison required yet — CSS is not finished). Confirm:
+   - Custom theme is active (not parent theme or Bartik default)
+   - Page loads with HTTP 200 and no Twig/PHP errors in watchdog
+   - Header and footer regions are present in DOM
+   - No horizontal overflow at 1728 px viewport width
+
+   **Pass**: all four conditions true → proceed to Approval Checkpoint.
+   **Fail**: fix the template or region → re-run Structural Verification Gate (step 7) → re-run this VR gate before requesting approval.
+
+9. **Approval Checkpoint**: Confirm with the user that all required page structures are covered before proceeding to implementation.
 
 ---
 
@@ -228,6 +237,15 @@ Before writing any component markup or CSS, define the page shells that those co
    > ```
    > Writing to the project root keeps the file within the DDEV-mounted volume. Delete immediately after execution — never commit these scripts.
 5. **Version Control Snapshot**: Commit the newly generated SDC bundles and CSS wrappers before handing off to the verification stage (e.g. `git commit -m "feat: Implement Canvas SDC component suite"`).
+
+6. **Visual Regression Gate — Design Fidelity (Phase 6)**: First comparison against the design reference. Run one subagent per design slice for the header and hero only (sufficient to confirm tokens are correct). See `visual-regression-strategy.md §Phase 6 Gate`. Verify:
+   - Primary and accent hex values match brand spec exactly (use browser inspector or color picker)
+   - Custom fonts loading (not browser system fallbacks)
+   - Gross section proportions and spacing roughly match the design reference
+   - No unstyled elements (raw browser-default HTML)
+
+   **Pass**: colors and fonts confirmed correct → proceed to Phase 7.
+   **Fail**: fix the CSS token or font loading → `drush cr` → re-run this gate before Phase 7.
 
 ---
 
@@ -366,8 +384,22 @@ echo 'Done.'.PHP_EOL;
 # Must return 'Done.' with zero ORPHAN lines.
 ```
 
-**Pass**: all sections verified, no orphans → commit the full assembly snapshot → proceed to Phase 8.
+**Pass**: all sections verified, no orphans → commit the full assembly snapshot → proceed to Phase 7.8.
 **Fail**: fix the specific orphan or missing component → re-run 7.7 before proceeding.
+
+### 7.8 Visual Regression Gate — Canvas Assembly (Phase 7 — primary VR pass)
+
+This is the primary visual regression pass for the project. Run the full panel-by-panel protocol from [`visual-regression-strategy.md`](visual-regression-strategy.md). All nine slices must be compared against the live site before Phase 8 begins.
+
+**Scope**: Every Canvas section — header/nav, hero, features, carousel, content engine, teams, graph, FAQ, footer.
+
+**Pass conditions** (all must be true before Phase 8):
+- All 9 design slices return ✅ Match or ⚠️ Minor Gap
+- Zero ❌ Major Gap findings outstanding
+- Canvas placeholder copy scan returns 0 matches (no Keytail/NeonByte/lorem ipsum)
+- All orphan checks from §7.7 passed
+
+**Fail path**: For each ❌ — fix the specific Canvas component → re-run only the affected design slice → commit → continue to the next slice. Do not advance to Phase 8 until all slices are ✅ or ⚠️.
 
 ---
 
@@ -453,7 +485,22 @@ Then export: `[runtime_wrapper] drush config:export --yes`
 | Nav items visible to anon | `curl -sk [site-url]/ \| grep -i "[first nav item text]"` | match found |
 | No new errors | `[runtime_wrapper] drush watchdog:show --count=10 --severity=3` | 0 new errors |
 
-**Fail path**: fix the specific wiring issue → re-run only the failed check → commit → proceed to Phase 9 Content Migration only when all checks are green.
+**Fail path**: fix the specific wiring issue → re-run only the failed check → commit → proceed to Phase 8.5.
+
+### 8.5 Visual Regression Gate — Navigation (Phase 8)
+
+Open the live site in a browser subagent and verify navigation rendering. This is a targeted, lightweight check — one subagent call.
+
+| Check | Pass condition |
+|---|---|
+| Header nav labels | Match the menu_link_content list exactly (correct text, correct order) |
+| Header nav links | Each resolves to the correct route (not 404) |
+| Footer nav labels and links | Match the footer menu |
+| Sidebar/book nav | Visible on a book page if sidebar region is wired |
+| No broken nav items | No empty `<li>` elements or `href="#"` placeholders |
+
+**Pass**: all nav checks green → commit → proceed to Phase 9 Content Migration.
+**Fail**: fix the menu wiring or block placement → re-run §8.4 structural gate → re-run this VR gate before Phase 9.
 
 ---
 
@@ -467,7 +514,18 @@ Then export: `[runtime_wrapper] drush config:export --yes`
 3. **Run inventory** (cookbook §-1 → §0 → §8 inventory commands): Execute against the source site. Present each category as a structured table — one category at a time. Do not dump all categories simultaneously.
 4. **User selection gate**: For each category, the user assigns a disposition to every item (bring as-is / modify / placeholder stub / skip). **Do NOT proceed to migration until all categories have explicit dispositions.**
 5. **Execute migration in dependency order** (cookbook §-1 → §0 → §1 → §2 → §3 → §4 → §5 → §6 → §7 → §8). One category per script. Verify each category before moving to the next. Commit after each verified category.
-6. **Verification gate** (cookbook §Verification): Run node counts, alias spot-checks, media counts, image style audit, and Canvas placeholder scan. Must pass before Phase 10.
+6. **Verification gate** (cookbook §Verification): Run node counts, alias spot-checks, media counts, image style audit, and Canvas placeholder scan. Must pass before step 7.
+7. **Visual Regression Gate — Content Rendering (Phase 9)**: Open each migrated content type in a browser subagent and verify it renders without structural breakage:
+
+   | Content type | URL pattern | Check |
+   |---|---|---|
+   | Basic Page | `/services` | Body renders, correct layout, no unstyled content |
+   | Article | `/articles/[slug]` | Body, tags, created date visible; featured image if applicable |
+   | Book page | any book path | Body present, sidebar nav block visible and linked |
+   | Contact page | `/contact-us` | Webform renders with all fields (Name, Email, Company, Phone, Message) |
+
+   **Pass**: all four content types render correctly → proceed to Phase 10.
+   **Fail**: fix the content type template or field rendering → re-run the affected check → commit before Phase 10.
 
 > [!CAUTION]
 > **`block_content` broken-install risk**: On DCMS 2.0, a `config:import --partial` that touches `core.extension` can register `block_content` as enabled without running its install hook (no tables created). The site then crashes on any full bootstrap. **Prevention**: enable `block_content` via `drush pm:enable` before running any config import. **Resolution**: see cookbook §7 caution block.
@@ -479,7 +537,11 @@ Then export: `[runtime_wrapper] drush config:export --yes`
 
 ## Phase 10: Verification
 
-Verification is split into two sequential sub-phases. **Phase 10.2 must not begin until Phase 10.1 passes.** Structure was verified inline during Phases 5, 7, and 8 — Phase 10 tests visual presentation only.
+By the time Phase 10 begins, five VR gates have already fired (Phases 5, 6, 7, 8, 9).
+Phase 10 is the final sign-off, not the first catch. Its scope is narrower because
+problems should have been caught and fixed at the phase where they originated.
+
+**Phase 10.2 must not begin until Phase 10.1 passes.**
 
 ### Phase 10.1 — Content Audit
 
@@ -507,21 +569,23 @@ curl -sk [site-url]/ | grep -iE "[nav-label-1]|[nav-label-2]"
 > [!CAUTION]
 > A Phase 10.2 visual regression finding should **never** be "wrong text." If it is, Phase 10.1 was not run correctly. Return to 10.1.
 
-### Phase 10.2 — Visual Regression
+### Phase 10.2 — Final Acceptance Visual Regression
 
-Visually compare the rendered page against the original target design slices, panel by panel.
+This is the final holistic sign-off, not the primary VR pass (that was Phase 7.8).
+Scope is narrower: confirm no regressions were introduced during Phases 8 or 9, and
+that the complete site (with real content) still matches the design reference.
 
 > [!IMPORTANT]
-> **Do not attempt visual regression in a single subagent call.** Previous sessions crashed repeatedly because the scope (6+ screenshots + a 9,902 px reference image) exceeded the agent's context budget. You MUST follow the panel-by-panel protocol defined in:
+> **Do not attempt visual regression in a single subagent call.** Follow the
+> panel-by-panel protocol in:
 > **[`drupal/ai_guide_theming/visual-regression-strategy.md`](visual-regression-strategy.md)**
 >
 > Key rules:
-> - One subagent call = one design slice vs. one live viewport. Nine slices = nine sequential calls.
-> - Use the pre-sliced assets in `designs/` (`00_menu.webp` … `08_footer.webp`). Never pass the full composite image as a MediaPath — it will exhaust context alone.
-> - Each subagent call must append its findings to `drupal/ai_guide_theming/visual-regression-report.md` before returning.
-> - Phase 10.2 evaluates layout, color, spacing, and typography **only**. Content correctness is not re-evaluated here.
+> - One subagent call = one design slice vs. one live viewport.
+> - Use pre-sliced assets in `designs/` (`00_menu.webp` … `08_footer.webp`).
+> - Each call appends findings to `drupal/ai_guide_theming/visual-regression-report.md`.
+> - Evaluate layout, color, spacing, and typography **only** — content correctness was Phase 10.1.
 
-**Cascade Safety Check**: After visual regression, confirm custom CSS overrides remained encapsulated and did not pollute global typography or color tokens expected by the host site.
+**Expected outcome**: Fewer findings than Phase 7.8 because upstream gates caught structural issues. Any ⚠️ Minor Gap findings are scoped and scheduled; any ❌ Major Gap is fixed before go-live sign-off.
 
-**Failure path**: If visual regression fails, do NOT leave the broken state committed. Report the specific discrepancy, revert the Phase 6 implementation commit (`git revert HEAD`), and return to Phase 6 with the failures documented as explicit constraints.
-
+**Failure path**: Report the specific discrepancy → fix the isolated CSS/Canvas change → re-run only the affected slice → commit.
