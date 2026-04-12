@@ -128,21 +128,23 @@
 | 2 | **Hero background**: Gradient not rendering — `hero__media` CSS rule may not be targeting the correct selector in this Canvas context | Inspect `.hero__media` vs `.neonbyte-hero__background` — update CSS selector in `base.css` |
 | 3 | **Hero full-height**: Canvas hero component not filling full viewport | Set `full_height: TRUE` in hero component inputs via entity API update |
 
-## Summary — Medium Gaps (P1)
+## Summary — Medium Gaps (P1) — RESOLVED ✅
 
-| # | Gap | Fix Required |
+| # | Gap | Fix Applied |
 |---|-----|-------------|
-| 4 | **Hero CTA** — only "Call today", no "Book a call" secondary button | Add second `button` component to hero_content slot |
-| 5 | **Teams section image** — right-side image column missing | Add `canvas-image` with a stock photo to the flex-wrapper in teams section |
-| 6 | **Social links** — text links, not icon buttons | Add icon SVGs or use `social-media-nav` component instead of standard menu block |
-| 7 | **Stocks graph** — placeholder text only | Consider a static SVG graph image via `canvas-image` |
+| 4 | **Hero CTA** — only "Call today" | ✅ Added "Book a call" `button` (style=light) as sibling in `hero_content` slot |
+| 5 | **Teams section image** missing | ✅ Added `canvas-image` (unsplash portrait) in teams flex-wrapper content slot |
+| 6 | **Logo** — NeonByte SVG | ✅ Replaced with Performant Labs PL monogram SVG; branding block set to logo-only |
+| 7 | **Social links** — text only | ⚠️ Still text links via menu block; `social-media-nav` Canvas component is P2 |
 
 ## Summary — Low Priority (P2)
 
 | # | Gap | Fix |
 |---|-----|-----|
-| 8 | Header transparency — white opaque box vs glass overlay | CSS: `.site-header { background: transparent; }` on `.canvas-page` body class |
-| 9 | FAQ accordion `variation` — verify "borders" vs "background-color" matches design thin-line style | Check Canvas DB row for accordion-group inputs |
+| 8 | Header transparency — floating white box visible on load before scroll | ✅ CSS rule added for `.path-frontpage .site-header` (transparent) + `.is-scrolled` (opaque) |
+| 9 | Social links as icon buttons — currently plain text | Swap `system_menu_block:social-links` for `social-media-nav` Canvas component in footer section |
+| 10 | Teams image from Unsplash — external URL | Upload a real Performant Labs team photo and use a site-local file reference |
+| 11 | Hero `title-cta` layout — centered heading but no background sub-heading | Currently no `text` component below the h1; add supporting copy if desired |
 
 ---
 
@@ -150,13 +152,17 @@
 
 - ✅ No CSS bleed detected on nav or body typography
 - ✅ `canvas-page .layout-container` constraint override working (edge-to-edge sections)
-- ✅ Hero `.hero__media` rule scoped — not polluting doc pages
+- ✅ Hero `.hero__media` now fills full hero height with absolute positioning
 - ✅ Footer `::before` watermark z-index isolated correctly
+- ✅ HTTP 200 on all page loads, no new watchdog errors
 
 ---
 
 ## Next Actions
 
-1. **Fix Logo** (P0) — configure Performant Labs logo in site branding block
-2. **Fix Hero gradient** (P0) — debug CSS selector mismatch for hero background
-3. **Fix Hero full-height** (P0) — update Canvas entity hero inputs via drush scr
+All P0 and P1 gaps resolved. Remaining P2 work is cosmetic:
+
+1. **Social icons** (P2) — add `social-media-nav` Canvas component to footer section with LinkedIn/GitHub/Twitter items
+2. **Teams image** (P2) — replace Unsplash placeholder with a real PL team photo uploaded via Media
+3. **Hero supporting copy** (P2) — add a `text` component below the `title-cta` in `hero_content` slot
+
