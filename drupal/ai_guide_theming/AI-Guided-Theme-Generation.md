@@ -45,6 +45,14 @@ Before altering any structural CSS or Layout builder templates, preserve the cur
    ```
 4. **Result**: This preserves the original theme untouched. If the experimental implementations collapse the site layout, AIs can instantly revert the active system theme to the known-good configuration.
 5. **Version Control Snapshot**: Add and commit only the cloned theme directory using its explicit path (e.g. `git add web/themes/custom/[primary_theme]_[timestamp] && git commit -m "chore: Branch new component testbed theme"`). Do NOT use `git add .` here — only stage the new theme directory to avoid accidentally committing unrelated working files.
+6. **Canvas DB Snapshot**: Immediately after activating the new theme, take a snapshot of the Canvas component table. This is the rollback point if any assembly script puts the DB into a bad state:
+   ```bash
+   [runtime_wrapper] drush sql-dump --tables-list=canvas_page__components > drupal/ai_guide_theming/canvas_snapshot_pre_assembly.sql
+   ```
+   To restore: `[runtime_wrapper] drush sql-query --file=drupal/ai_guide_theming/canvas_snapshot_pre_assembly.sql`
+
+   > [!IMPORTANT]
+   > This snapshot file must NOT be committed to git — add it to `.gitignore`. It exists only as a local recovery tool.
 
 ---
 
@@ -67,7 +75,17 @@ Once the user provides the target design:
 5. **Gap Analysis**: Identify any bespoke elements in the screenshot that do not have a native equivalent in the base theme. These will require entirely custom CSS implementations.
 6. **Implementation Plan Generation**: Synthesize your structural component findings and draft your `theme_component_mapping_plan.md` strategy directly into the specific theme documentation folder that the user provided natively at run-time (e.g., `drupal/dripyard_themes/`).
 7. **Version Control Snapshot**: Immediately commit the raw target assets, the legacy audit (if generated), and your drafted component plan using explicit paths (e.g., `git add web/themes/custom/[primary_theme]_[timestamp]/designs web/themes/custom/[primary_theme]_[timestamp]/audits drupal/[theme_docs_namespace]/theme_component_mapping_plan.md && git commit -m "docs: Scaffold layout target assets and implementation mapping"`). Do NOT use `git add .` here.
-8. **Approval Checkpoint**: With the plan safely tracked in version control, you must explicitly STOP execution. Display your mapped strategy to the user and wait for their explicit manual approval before advancing into Phase 4 layout executions.
+8. **Component Cookbook** *(gate — must be complete before Approval Checkpoint)*: Before requesting user sign-off, build a lookup table of every component you plan to use in Phase 7 assembly. For each component, read its `.component.yml` and record:
+   - The exact `component_id` string (e.g. `sdc.dripyard_base.flex-wrapper`)
+   - Every **required** prop name with its valid enum values, copied verbatim from the schema
+   - Every **slot** name, copied verbatim from the schema
+
+   Save this table to `drupal/ai_guide_theming/component-cookbook.md`. It becomes the authoritative prop reference for every Phase 7 script — no prop name may be written from memory during assembly.
+
+   > [!CAUTION]
+   > Do not guess prop names. A wrong prop name causes a silent drop or a `RuntimeError` on save. The cookbook prevents the "fix the fix" cycle.
+
+9. **Approval Checkpoint**: With the plan and cookbook safely tracked in version control, you must explicitly STOP execution. Display your mapped strategy to the user and wait for their explicit manual approval before advancing into Phase 4 layout executions.
 
 ---
 
@@ -124,7 +142,18 @@ Before writing any component markup or CSS, define the page shells that those co
    - Clear the Drupal cache (e.g., `[runtime_wrapper] drush cr`) so the theme registry discovers your new SDCs.
    - Assemble the layout inside the Drupal Canvas UI using your generated components.
    - Provide you with the URL of the finalized page.
-2. **Browser Verification**: Once the user provides the rendered URL, load the Canvas page in the headless browser.
+2. **Browser Verification**: Once the user provides the rendered URL, load the Canvas page in the headless browser. Each browser subagent call must be **tightly scoped** — one task, one screenshot, one return. Do not ask a subagent to navigate, scroll, screenshot multiple sections, and report findings in a single call. That scope causes context budget failures and unreliable output.
+
+   Preferred pattern per section:
+   ```
+   Task: "Navigate to [URL]. Accept cert warnings. Wait 2s. Scroll to Y=[n]px. Take one screenshot. Return it immediately."
+   ```
+
+   For structural checks (confirming a link or element exists in the DOM without a screenshot):
+   ```bash
+   curl -k -s https://[site-url]/ | grep -i "[expected text or class]"
+   ```
+
 3. **Visual Regression**: Visually compare the rendered DOM output against the original target design slices.
 
    > [!IMPORTANT]
@@ -205,6 +234,29 @@ Known schema gotchas from `dripyard_base`:
 
 > [!NOTE]
 > A `RuntimeError` referencing a UUID whose DB data is correct usually means a **stale render cache** — not bad data. Always truncate `cache_render` before concluding the stored data is wrong.
+
+### 7.5 Canvas assembly cadence
+
+Assemble the Canvas page one visual section at a time, in top-to-bottom order matching the design. Each section is one script, one verification, one commit.
+
+```
+[Section name]  →  write script  →  run script  →  verify in browser  →  commit  →  next section
+```
+
+**Rules:**
+- One script covers exactly one visual section (hero, features, carousel, tabbed section, etc.). Never combine unrelated mutations in a single script.
+- Every script ends with a verification query that prints the written data — confirm it before clearing cache:
+  ```php
+  // At the end of every assembly script, before cache clear:
+  $rows = \Drupal::database()->select('canvas_page__components', 'c')
+    ->fields('c', ['components_uuid', 'components_component_id', 'components_inputs'])
+    ->condition('c.components_uuid', $uuid_you_just_wrote)
+    ->execute()->fetchAll();
+  print_r($rows); // Must return exactly one row with correct data
+  ```
+- Do not proceed to the next section until the browser confirms the current section renders correctly.
+- Commit after each verified section: `git commit -m "feat(canvas): assemble [section name] section"`
+- If a script fails, restore from the Phase 2 Canvas DB snapshot rather than writing a second fix script on top of an uncertain state.
 
 ---
 
