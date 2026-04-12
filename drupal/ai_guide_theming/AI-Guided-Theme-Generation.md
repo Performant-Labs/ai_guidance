@@ -24,7 +24,7 @@ Before cloning repositories or running commands, the AI must collect all foundat
    - **Target Local Project Path** (e.g., `~/Sites/pl-performantlabs.com`)
    - **Base Theme Documentation Namespace** (e.g., `drupal/dripyard_themes`)
    - **Location of Target Layout Screenshots**
-   - **Existing Site Audit**: Explicitly ask the user: *"Is there an existing version of this website already running locally that I should audit before building?"* If yes, ask for its local path (e.g., `~/Sites/pl-performantlabs.com`). Record the answer — a "yes" makes Phase 3 Step 2 **mandatory**, not optional.
+   - **Existing Site Audit**: Explicitly ask the user: *"Is there an existing version of this website already running locally that I should audit before building?"* If yes, ask for its local path (e.g., `~/Sites/pl-performantlabs.com`). Record the answer — a "yes" makes Phase 4 Step 2 **mandatory**, not optional.
    - **Local Runtime Environment**: Automatically test the target codebase to detect the active container wrapper (e.g., scan for `.ddev/` or `.lando.yml`). Report the detected runtime prefix (e.g., `ddev`, `lando`, or native) to the user rather than blindly assuming.
    - **Git Safety Check**: Run `git status` to verify the working tree is completely clean. If uncommitted changes exist, force the user to stash or commit them. Do not allow execution on a dirty tree.
 2. Display these collected values back to the user in a formatted list or table.
@@ -32,14 +32,14 @@ Before cloning repositories or running commands, the AI must collect all foundat
 
 ---
 
-## Phase 1B: Brand Asset Collection
+## Phase 2: Brand Asset Collection
 
 Before cloning a single file or running any Drush command, the AI must collect all **ancillary brand identity assets**. These items are entirely independent of templates and components — they configure *what the theme looks like* rather than *how it lays out content*. Collecting them here prevents the recurring failure mode where body colors, logos, and the favicon remain as inherited parent-theme defaults until visual regression exposes them near the end of the project.
 
 > [!IMPORTANT]
-> Do NOT advance to Phase 2 until every item in the checklist below has been explicitly provided by the user **or** explicitly marked as "use parent theme default / skip."
+> Do NOT advance to Phase 3 until every item in the checklist below has been explicitly provided by the user **or** explicitly marked as "use parent theme default / skip."
 
-### 1B.1 Required checklist
+### 2.1 Required checklist
 
 Ask the user to provide **all of the following** at once. Present it as a single structured prompt so the user can answer in one pass:
 
@@ -56,7 +56,7 @@ Ask the user to provide **all of the following** at once. Present it as a single
 | 9 | **Social / OG image** | A 1200×630 image for Open Graph / Twitter cards | File path, or `generate from logo` |
 | 10 | **Social profile URLs** | LinkedIn, GitHub, X/Twitter, etc. | List of full URLs; omit any that don't apply |
 
-### 1B.2 Execution steps (after user provides assets)
+### 2.2 Execution steps (after user provides assets)
 
 1. **Copy assets into the theme**: Place logos, favicons, and OG images into `web/themes/custom/[primary_theme]_[timestamp]/` (logo at root; others under `assets/`). Never reference parent-theme asset paths.
 2. **Apply the color palette**: Write the two hex values into the theme's configuration:
@@ -85,9 +85,9 @@ Ask the user to provide **all of the following** at once. Present it as a single
    @import url('https://fonts.googleapis.com/css2?family=[FontName]:wght@400;600;700&display=swap');
    :root { --font-heading: '[FontName]', sans-serif; }
    ```
-6. **Set social profile URLs**: Store these in the theme settings if the base theme provides social link fields, or note them for Twig injection in the footer template (Phase 6/7).
+6. **Set social profile URLs**: Store these in the theme settings if the base theme provides social link fields, or note them for Twig injection in the footer template (Phase 7/8).
 
-### 1B.3 Verification
+### 2.3 Verification
 
 After applying, confirm in the browser that the `<html>` `style` attribute reflects the correct primary color:
 
@@ -99,18 +99,19 @@ curl -k -s https://[site-url]/ | grep "theme-setting-base-primary-color"
 > [!CAUTION]
 > **Do not skip this verification.** If the hex value returned is the parent theme's default (e.g., `#0000d9` for NeonByte), the config write did not persist — re-run the `drush php-eval` block and cache rebuild before advancing.
 
-### 1B.4 Approval Checkpoint
+### 2.4 Approval Checkpoint
 
-Display the resolved asset list to the user (confirmed hex values, logo path, favicon path) and ask: *"Brand assets confirmed — shall I proceed to Phase 2?"* Do NOT advance until the user approves.
+Display the resolved asset list to the user (confirmed hex values, logo path, favicon path) and ask: *"Brand assets confirmed — shall I proceed to Phase 3?"* Do NOT advance until the user approves.
 
 ---
 
-## Phase 2: Establish the Baseline Backup
+## Phase 3: Establish the Baseline Backup
 Before altering any structural CSS or Layout builder templates, preserve the current customized primary theme.
 
 1. **Clone**: Duplicate the primary stable directory (`web/themes/custom/[primary_theme]`) to a new working directory appending a date/timestamp (e.g., `web/themes/custom/[primary_theme]_20260411`).
 2. **Refactor**: Perform a targeted find-and-replace to rename all machine names inside configuration files only. Scope this strictly to `.info.yml`, `.breakpoints.yml`, `.theme`, `.libraries.yml`, and `.yml` files. Do NOT run a broad replacement across all files — binary assets, images, and generic CSS class names must not be touched.
 3. **Activate**: Enable the newly cloned layout theme and set it as the default theme via Drush, utilizing the runtime wrapper detected in Phase 1:
+
    ```bash
    [runtime_wrapper] drush theme:enable [primary_theme]_[timestamp]
    [runtime_wrapper] drush config:set system.theme default [primary_theme]_[timestamp] -y
@@ -129,11 +130,12 @@ Before altering any structural CSS or Layout builder templates, preserve the cur
 
 ---
 
-## Phase 3: Screenshot Ingestion & Component Mapping
+## Phase 4: Screenshot Ingestion & Component Mapping
 Once the user provides the target design:
 
 1. **Asset Storage**: Immediately save the provided screenshot into a `/designs` or `/reference` directory inside the newly created active theme (e.g., `web/themes/custom/[primary_theme]_[timestamp]/designs/screenshot.png`). This ensures the AI context and layout references are permanently shipped alongside the theme files.
 2. **Legacy Architecture Audit** *(mandatory if the user confirmed an existing site in Phase 1 — do not skip)*: Before making any assumptions about content types, block regions, menus, or page templates, you must audit the existing site. Skipping this step when a legacy site exists will cause structural mismatches in templates and sidebar wiring.
+
    - Target the local legacy codebase path recorded in Phase 1 (e.g., `~/Sites/pl-performantlabs.com`). **First, independently detect its runtime wrapper** (scan for `.ddev/`, `.lando.yml`, etc.) — it may differ from the primary project detected in Phase 1.
    - Audit all of the following via Drush introspection and structural analysis:
      - **Content types** and their field structures (which types serve as documentation, landing pages, articles, etc.)
@@ -153,16 +155,16 @@ Once the user provides the target design:
    - Every **required** prop name with its valid enum values, copied verbatim from the schema
    - Every **slot** name, copied verbatim from the schema
 
-   Save this table to `drupal/ai_guide_theming/component-cookbook.md`. It becomes the authoritative prop reference for every Phase 7 script — no prop name may be written from memory during assembly.
+   Save this table to `drupal/ai_guide_theming/component-cookbook.md`. It becomes the authoritative prop reference for every Phase 8 assembly script — no prop name may be written from memory during assembly.
 
    > [!CAUTION]
    > Do not guess prop names. A wrong prop name causes a silent drop or a `RuntimeError` on save. The cookbook prevents the "fix the fix" cycle.
 
-9. **Approval Checkpoint**: With the plan and cookbook safely tracked in version control, you must explicitly STOP execution. Display your mapped strategy to the user and wait for their explicit manual approval before advancing into Phase 4 layout executions.
+9. **Approval Checkpoint**: With the plan and cookbook safely tracked in version control, you must explicitly STOP execution. Display your mapped strategy to the user and wait for their explicit manual approval before advancing into Phase 5 layout executions.
 
 ---
 
-## Phase 4: Page Template Architecture
+## Phase 5: Page Template Architecture
 Before writing any component markup or CSS, define the page shells that those components will inhabit. This prevents building components that have no route to render into.
 
 1. **Inventory page types in scope**: Determine all page structures the theme must support (e.g., full-width Canvas marketing page, documentation interior page with sidebar, standard utility page). Do not assume a single template covers the site.
@@ -188,7 +190,7 @@ Before writing any component markup or CSS, define the page shells that those co
 
 ---
 
-## Phase 5: Implementation Execution
+## Phase 6: Implementation Execution
 1. **Component Markup (Twig)**: For each mapped component in the approved strategy, author its structural markup as a Twig template (`.twig`) inside the relevant SDC bundle. Apply the proper `theme--[name]` CSS scoping wrappers inside the Twig output so each component inherits the theme's color palette overrides from `css/base.css` without hardcoding color values.
 2. **Global CSS Overrides (Native Components)**: If the design dictates nuanced spacing or styling modifications for existing native components, append custom CSS explicitly targeting the Component Layer inside the new canvas theme's `css/base.css` file. DO NOT attempt to override semantic variables directly.
 3. **Integration Strategy (Bespoke SDCs Enforced)**: When generating custom layout elements that do not exist natively, you MUST exclusively output standard **Single Directory Components (SDCs)** formatted within the active theme's `components/` directory (e.g., creating the `.component.yml`, `.twig`, and `.css` bundle). The styling for these bespoke components must be encapsulated entirely inside their local `.css` file, NOT in `base.css`. Do NOT output raw disconnected HTML payloads, and do NOT architect the output using custom Drupal Blocks, Layout Builder, or root Twig templates.
@@ -210,7 +212,7 @@ Before writing any component markup or CSS, define the page shells that those co
 
 ---
 
-## Phase 6: Canvas Page Programmatic Assembly
+## Phase 7: Canvas Page Programmatic Assembly
 
 The Canvas module stores home pages as `canvas_page` entities — **not** standard nodes. They cannot be created with `node_create`. All structural page content must be wired via the `canvas_page`'s `components` field.
 
@@ -296,15 +298,16 @@ Assemble the Canvas page one visual section at a time, in top-to-bottom order ma
   ```
 - Do not proceed to the next section until the browser confirms the current section renders correctly.
 - Commit after each verified section: `git commit -m "feat(canvas): assemble [section name] section"`
-- If a script fails, restore from the Phase 2 Canvas DB snapshot rather than writing a second fix script on top of an uncertain state.
+- If a script fails, restore from the Phase 3 Canvas DB snapshot rather than writing a second fix script on top of an uncertain state.
 
 ---
 
-## Phase 7: Menu & Block Wiring (Programmatic)
+## Phase 8: Menu & Block Wiring (Programmatic)
 
 Never use the Drupal admin UI to wire menus or place blocks. Use `drush scr` scripts for all wiring.
 
 ### 8.1 Menu population pattern
+
 
 ```php
 <?php
@@ -382,7 +385,7 @@ Screenshots alone are not sufficient — a link that appears absent in a screens
 
 ---
 
-## Phase 8: Verification
+## Phase 9: Verification
 
 1. **Browser Verification**: Once the Canvas page is assembled and menus are wired, load the live URL in the headless browser. Each browser subagent call must be **tightly scoped** — one task, one screenshot, one return. Do not ask a subagent to navigate, scroll, screenshot multiple sections, and report findings in a single call. That scope causes context budget failures and unreliable output.
 
@@ -408,5 +411,5 @@ Screenshots alone are not sufficient — a link that appears absent in a screens
    > - Each subagent call must write its findings to `drupal/ai_guide_theming/visual-regression-report.md` before returning.
 
 3. **Cascade Safety Check**: Verify that your custom CSS overrides remained perfectly encapsulated within the Canvas components and did not accidentally poison the broader global typography or color matrices expected natively by the host site.
-4. **Failure Path**: If visual regression fails or the cascade check identifies layout pollution, do NOT leave the broken state committed. Immediately report the specific discrepancy to the user, revert the Phase 5 implementation commit (e.g. `git revert HEAD`), and return to Phase 5 Step 1 with the identified failures explicitly documented as constraints for the next attempt.
+4. **Failure Path**: If visual regression fails or the cascade check identifies layout pollution, do NOT leave the broken state committed. Immediately report the specific discrepancy to the user, revert the Phase 6 implementation commit (e.g. `git revert HEAD`), and return to Phase 6 Step 1 with the identified failures explicitly documented as constraints for the next attempt.
 
