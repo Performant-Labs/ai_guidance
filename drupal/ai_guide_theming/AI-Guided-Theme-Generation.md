@@ -61,7 +61,33 @@ Once the user provides the target design:
 
 ---
 
-## Phase 4: Implementation Execution
+## Phase 4: Page Template Architecture
+Before writing any component markup or CSS, define the page shells that those components will inhabit. This prevents building components that have no route to render into.
+
+1. **Inventory page types in scope**: Determine all page structures the theme must support (e.g., full-width Canvas marketing page, documentation interior page with sidebar, standard utility page). Do not assume a single template covers the site.
+2. **Identify the Canvas homepage node**: Confirm which node (or path) is the site front page. Do not create a new node if one already exists — verify via `system.site` configuration.
+3. **Author the full-width Canvas page template**: Create `page--front.html.twig` (or `page--node--[nid].html.twig` if a specific node is the target) inside `web/themes/custom/[primary_theme]_[timestamp]/templates/layout/`. This template must:
+   - Suppress the page title block (`page.page_title` or the `page-title.html.twig` region)
+   - Remove any sidebar or constrained-width wrappers
+   - Render `{{ page.content }}` edge-to-edge so Canvas blocks fill the full viewport width
+   - Include the header and footer via the base theme's standard embeds
+4. **Author the interior documentation page template**: Create a sidebar variant (e.g., `page--documentation.html.twig` or use a Layout Builder layout) that provides:
+   - A persistent left sidebar region wired to a block region (e.g., `sidebar_first`) for the documentation index/TOC menu
+   - A main content region for the body
+   - Standard header and footer
+   - Consider using a CSS Grid or Flexbox two-column layout scoped to this template; add the CSS to `css/base.css` under a page-level body class
+5. **Wire up block regions**: Ensure the `[primary_theme]_[timestamp].info.yml` declares any new regions (e.g., `sidebar_first: Sidebar first`) required by the new templates. Verify the theme's `config/optional/` block placements cover these regions.
+6. **Version Control Snapshot**: Commit all new template files and any `info.yml` region additions using explicit paths before advancing:
+   ```bash
+   git add web/themes/custom/[primary_theme]_[timestamp]/templates \
+           web/themes/custom/[primary_theme]_[timestamp]/[primary_theme]_[timestamp].info.yml
+   git commit -m "feat: scaffold page template variants (Canvas full-width + docs sidebar)"
+   ```
+7. **Approval Checkpoint**: Confirm with the user that all required page structures are covered before proceeding to implementation.
+
+---
+
+## Phase 5: Implementation Execution
 1. **Component Markup (Twig)**: For each mapped component in the approved strategy, author its structural markup as a Twig template (`.twig`) inside the relevant SDC bundle. Apply the proper `theme--[name]` CSS scoping wrappers inside the Twig output so each component inherits the theme's color palette overrides from `css/base.css` without hardcoding color values.
 2. **Global CSS Overrides (Native Components)**: If the design dictates nuanced spacing or styling modifications for existing native components, append custom CSS explicitly targeting the Component Layer inside the new canvas theme's `css/base.css` file. DO NOT attempt to override semantic variables directly.
 3. **Integration Strategy (Bespoke SDCs Enforced)**: When generating custom layout elements that do not exist natively, you MUST exclusively output standard **Single Directory Components (SDCs)** formatted within the active theme's `components/` directory (e.g., creating the `.component.yml`, `.twig`, and `.css` bundle). The styling for these bespoke components must be encapsulated entirely inside their local `.css` file, NOT in `base.css`. Do NOT output raw disconnected HTML payloads, and do NOT architect the output using custom Drupal Blocks, Layout Builder, or root Twig templates.
@@ -76,7 +102,7 @@ Once the user provides the target design:
 
 ---
 
-## Phase 5: Verification
+## Phase 6: Verification
 1. **Manual Canvas Assembly Hold**: Because you just scaffolded structural SDC bundles into the `components/` directory, these elements are not inherently attached to a live route. You must STOP execution and explicitly instruct the user to:
    - Clear the Drupal cache (e.g., `[runtime_wrapper] drush cr`) so the theme registry discovers your new SDCs.
    - Assemble the layout inside the Drupal Canvas UI using your generated components.

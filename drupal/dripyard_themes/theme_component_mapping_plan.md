@@ -5,7 +5,7 @@ This document is the **Phase 3 output** of the AI-Guided Theme Generation SOP.
 It maps every design slice to native Dripyard SDC components, identifies gaps
 requiring bespoke SDCs, and defines the Canvas assembly strategy.
 
-**Status**: Draft — awaiting user approval before any code is written.
+**Status**: Approved — Phase 4 (Page Template Architecture) is next.
 
 ---
 
@@ -326,4 +326,4 @@ Sections will be assembled in the Canvas editor in this sequence:
 - Global overrides only for cross-component concerns → `css/base.css`
 - No HTML files on disk — Canvas blocks authored via Heredoc stdin
 - Commit each SDC and CSS file with explicit path-scoped `git add`
-- Hard stop before Phase 4 begins — user must approve this plan
+- **Phase 4 (Page Template Architecture) must complete before Phase 5 (Implementation) begins**
