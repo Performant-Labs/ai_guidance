@@ -109,3 +109,199 @@ html .theme--black {
     padding-inline-end: 0;
   }
 }
+
+/* =============================================================================
+   Sticky Transparent Header (.site-header)
+   ============================================================================= */
+
+/**
+ * The Neonbyte header transitions from transparent (over the hero) to opaque
+ * on scroll. position: sticky keeps it in the viewport; the backdrop-filter
+ * adds a frosted-glass effect once the user scrolls past the hero.
+ */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+/* Scrolled state — toggled by JS or :has() when hero leaves viewport */
+.site-header--scrolled,
+.is-scrolled .site-header {
+  background-color: color-mix(in oklch, var(--theme-surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+/* =============================================================================
+   Hero Section — Gradient Background + Clipped Dashboard Image
+   ============================================================================= */
+
+/**
+ * Applied to the hero__media slot (background-image component inside neonbyte
+ * hero). Overrides any plain background-color with the Keytail green/teal
+ * radial gradient.
+ */
+.hero__media {
+  /* Radial green-to-teal gradient, darkening toward bottom-right to navy */
+  background: radial-gradient(
+    ellipse 80% 60% at 30% 40%,
+    #0f7b5e 0%,
+    #0a5c47 30%,
+    #063d30 55%,
+    #1B2638 100%
+  ) !important;
+  overflow: visible; /* allow dashboard image to bleed out */
+}
+
+/**
+ * Dashboard screenshot — absolutely positioned, clipped at the bottom,
+ * bleeding out of the right edge of the hero section.
+ */
+.hero__media::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 10%;
+  inset-inline-end: -5%;
+  width: 55%;
+  aspect-ratio: 16 / 10;
+  background-image: var(--hero-dashboard-image, none);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: top left;
+  clip-path: inset(0 0 15% 0 round 12px);
+  pointer-events: none;
+}
+
+/* =============================================================================
+   Amber CTA Button (.button--cta)
+   ============================================================================= */
+
+/**
+ * Primary call-to-action button using the Keytail amber brand colour.
+ * Applied by adding the `button--cta` class to any Dripyard button component.
+ */
+.button--cta,
+.button--cta:visited {
+  background-color: #F59E0B;
+  color: #1B2638;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.button--cta:hover,
+.button--cta:focus-visible {
+  background-color: #92600A;
+  color: #F0F1F0;
+  border-color: transparent;
+}
+
+/* =============================================================================
+   Horizontal Carousel Snap-Scroll (.carousel__track)
+   ============================================================================= */
+
+/**
+ * Override the default carousel to scroll horizontally with CSS snap,
+ * showing partial cards to hint at overflow content.
+ */
+.carousel__track {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  gap: 1.5rem;
+  padding-block-end: 1rem; /* space for shadow */
+}
+
+.carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel__track > * {
+  scroll-snap-align: start;
+  flex: 0 0 calc(25% - 1.125rem); /* 4-up at desktop */
+  min-width: 260px;
+}
+
+@media (max-width: 900px) {
+  .carousel__track > * {
+    flex: 0 0 80%; /* 1.25-up on mobile */
+  }
+}
+
+/* =============================================================================
+   Black Pill Button (.button--pill-dark)
+   ============================================================================= */
+
+/**
+ * Used as the "→" arrow CTA inside carousel cards.
+ */
+.button--pill-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #1B2638;
+  color: #F0F1F0;
+  border-radius: 999px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.button--pill-dark:hover,
+.button--pill-dark:focus-visible {
+  background-color: #2D3E48;
+  color: #FFFFFF;
+}
+
+/* =============================================================================
+   Icon List — Amber Checkmark Icons (.icon-list__icon)
+   ============================================================================= */
+
+/**
+ * Forces the icon-list icon colour to amber to match the Keytail brand.
+ * Applies to the "Designed for Teams" section icon bullets.
+ */
+.icon-list__icon {
+  color: #F59E0B;
+  fill: #F59E0B;
+}
+
+/* =============================================================================
+   Footer "K" Watermark (.site-footer::before)
+   ============================================================================= */
+
+/**
+ * Massive oversized "K" letterform positioned behind the footer content.
+ * Uses the system font stack for weight, scaled via clamp() for responsiveness.
+ * z-index: 0 keeps it behind the footer content (z-index: 1).
+ */
+.site-footer {
+  position: relative;
+  overflow: hidden;
+}
+
+.site-footer::before {
+  content: 'K';
+  position: absolute;
+  inset-block-start: -10%;
+  inset-inline-start: -2%;
+  font-size: clamp(12rem, 30vw, 28rem);
+  font-weight: 900;
+  line-height: 1;
+  color: color-mix(in oklch, var(--theme-surface-alt) 40%, transparent);
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+/* Ensure footer content sits above the watermark */
+.site-footer > * {
+  position: relative;
+  z-index: 1;
+}

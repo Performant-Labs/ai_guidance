@@ -5,6 +5,16 @@ type: theme
 description: ''
 core_version_requirement: ^11
 
+libraries-extend:
+  # Append Keytail scoped CSS onto the matching dripyard_base SDC libraries.
+  # These load automatically whenever the base component is rendered.
+  core/components.dripyard_base--content-card:
+    - performant_labs_20260411/content-card
+  core/components.dripyard_base--tabs:
+    - performant_labs_20260411/tabs
+  core/components.dripyard_base--accordion:
+    - performant_labs_20260411/accordion
+
 libraries:
   - performant_labs_20260411/base
 version: 1.0.0

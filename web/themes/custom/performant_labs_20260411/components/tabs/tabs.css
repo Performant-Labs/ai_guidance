@@ -1,0 +1,93 @@
+/**
+ * @file
+ * Keytail overrides for the dripyard_base tabs component.
+ *
+ * Scope: encapsulated here — never in base.css.
+ * Affects:
+ *   - Slice 04 "Content Engine" dashboard tab switcher (underline style)
+ *   - Slice 06 "Just like stocks" metric tab switcher (pill style)
+ */
+
+/* ==========================================================================
+   Shared tab group base
+   ========================================================================== */
+
+.tab-group {
+  border-bottom: none; /* remove default ruled border */
+}
+
+/* ==========================================================================
+   Underline variant (Content Engine — Slice 04)
+   Applied via Canvas section class: .tabs--underline
+   ========================================================================== */
+
+.tabs--underline .tab-group {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  border-bottom: 2px solid var(--theme-border-color);
+  margin-block-end: 2rem;
+}
+
+.tabs--underline .tab {
+  padding: 0.75rem 0;
+  font-weight: 600;
+  color: var(--theme-text-color-medium);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px; /* overlap the tab-group border */
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+
+.tabs--underline .tab[aria-selected="true"],
+.tabs--underline .tab:hover {
+  color: var(--theme-text-color-loud);
+  border-bottom-color: #F59E0B; /* amber underline */
+}
+
+/* Dashboard image panel — rounded corners, prominent shadow */
+.tabs--underline .tab__panel img,
+.tabs--underline .tab__panel .canvas-image {
+  border-radius: 12px;
+  box-shadow:
+    0 20px 60px -12px rgb(0 0 0 / 0.25),
+    0 4px 16px -4px rgb(0 0 0 / 0.12);
+  width: 100%;
+}
+
+/* ==========================================================================
+   Pill variant (Graph / Stocks — Slice 06)
+   Applied via Canvas section class: .tabs--pill
+   ========================================================================== */
+
+.tabs--pill .tab-group {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  background-color: color-mix(in oklch, var(--theme-border-color) 20%, transparent);
+  border-radius: 999px;
+  padding: 0.25rem;
+  margin-block-end: 2.5rem;
+}
+
+.tabs--pill .tab {
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--theme-text-color-medium);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tabs--pill .tab[aria-selected="true"] {
+  background-color: var(--theme-surface-alt, #FFFFFF);
+  color: var(--theme-text-color-loud);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.1);
+}

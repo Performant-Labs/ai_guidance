@@ -1,0 +1,49 @@
+/**
+ * @file
+ * Keytail overrides for the dripyard_base content-card component.
+ *
+ * Scope: encapsulated here — never in base.css.
+ * Affects: Slice 02 "Search has changed" feature card grid.
+ */
+
+/* Elevated floating card appearance */
+.content-card {
+  border-radius: 16px;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.08),
+    0 10px 32px -4px rgb(0 0 0 / 0.12);
+  overflow: hidden;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  background-color: var(--theme-surface-alt, #FFFFFF);
+}
+
+.content-card:hover {
+  box-shadow:
+    0 8px 16px -2px rgb(0 0 0 / 0.12),
+    0 24px 48px -8px rgb(0 0 0 / 0.16);
+  transform: translateY(-4px);
+}
+
+/* Screenshot image fills the card top flush to edges */
+.content-card__media {
+  border-radius: 0;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+}
+
+.content-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top left;
+}
+
+/* Card body padding */
+.content-card__body {
+  padding: 1.5rem;
+}
+
+.content-card__title {
+  font-weight: 700;
+  margin-block-end: 0.5rem;
+}

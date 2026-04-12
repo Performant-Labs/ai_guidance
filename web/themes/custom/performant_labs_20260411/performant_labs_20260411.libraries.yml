@@ -4,21 +4,21 @@ base:
     theme:
       css/base.css: {}
 
-# Example library definition (used in testtheme.info.yml). Note the CSS file
-# will need to be created.
-# @see https://www.drupal.org/docs/develop/theming-drupal/adding-assets-css-js-to-a-drupal-theme-via-librariesyml
+# Scoped component overrides — loaded via libraries-extend or Canvas attachment.
+# These encapsulate Keytail-specific styling for individual SDC components
+# without polluting the global cascade.
 
-# user-login-form:
-#   css:
-#     component:
-#       css/user-login-form.css: {}
+content-card:
+  css:
+    component:
+      components/content-card/content-card.css: {}
 
-# Another Example library definition (used in testtheme.info.yml). Note the
-# CSS file will need to be created.
+tabs:
+  css:
+    component:
+      components/tabs/tabs.css: {}
 
-# status-messages:
-#   css:
-#     component:
-#       css/status-messages.css: {}
-#   js:
-#     js/status-messages.js: {}
+accordion:
+  css:
+    component:
+      components/accordion/accordion.css: {}
