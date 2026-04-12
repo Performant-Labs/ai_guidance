@@ -2,11 +2,14 @@ uuid: 1890b228-b326-4773-a866-d5eb3195cb12
 langcode: en
 status: true
 dependencies:
+  config:
+    - filter.format.webform_default
   module:
     - captcha
     - coffee
     - contextual
     - file
+    - filter
     - honeypot
     - klaro
     - media
@@ -29,6 +32,7 @@ permissions:
   - 'delete own files'
   - 'skip CAPTCHA'
   - 'use klaro'
+  - 'use text format webform_default'
   - 'view media'
   - 'view own unpublished content'
   - 'view the administration theme'

@@ -17,6 +17,7 @@ Migrate in this order — do not skip ahead:
 
 | Step | Category | Reason for this position |
 |---|---|---|
+| **§-1** | **Module Audit** | Modules must be reconciled before content types, Views, or forms are migrated — missing modules will silently block everything downstream |
 | §0 | **Site configuration** | Image styles, text formats, Views — everything else depends on these |
 | §1 | **Taxonomy** | Nodes reference terms via field |
 | §2 | **Media** | Nodes reference media entities via field |
@@ -54,6 +55,77 @@ ddev list
 > The router conflict seen in early sessions was caused by a stale Docker
 > container (`docker rm -f ddev-router` resolves it). It is not a
 > fundamental DDEV limitation.
+
+---
+
+## §-1 — Module Audit (run first, before everything)
+
+> [!IMPORTANT]
+> This step was added after a live migration revealed that Webform was
+> missing on the target — causing §8 to require a reactive install rather
+> than a planned one. Always run this step before §0.
+
+Modules that provide content types, fields, Views, or form builders must
+exist on the **target** before their config or content is migrated.
+Running a config import for a View that depends on a missing module will
+fail silently or throw a schema validation error with a confusing message.
+
+### Inventory commands
+
+```bash
+# 1. Export enabled module list from SOURCE:
+cd [source-path]
+ddev drush pm:list --status=enabled --field=name 2>/dev/null | sort > /tmp/source_modules.txt
+
+# 2. Export enabled module list from TARGET:
+cd [target-path]
+ddev drush pm:list --status=enabled --field=name 2>/dev/null | sort > /tmp/target_modules.txt
+
+# 3. Show what is on SOURCE but NOT on TARGET (the delta):
+comm -23 /tmp/source_modules.txt /tmp/target_modules.txt
+```
+
+### Decision framework
+
+For each module in the delta, assign one of these dispositions:
+
+| Disposition | When to use |
+|---|---|
+| ✅ **Install on target** | Module provides functionality the new site needs (e.g. Webform, Redirect) |
+| 🔄 **DCMS equivalent exists** | Source module is superseded by a DCMS module (e.g. `layout_builder` → Canvas/SDC, `entity_browser` → `media_library`) |
+| ❌ **Skip** | Internal dev tooling, legacy module, or no content depends on it |
+
+### Common source → DCMS equivalents
+
+| Source module | DCMS equivalent | Notes |
+|---|---|---|
+| `layout_builder` + `layout_builder_kit` | Canvas / SDC components | DCMS uses Canvas for page building |
+| `entity_browser` / `media_entity_browser` | `media_library` | DCMS ships `media_library` |
+| `paragraphs` / `entity_reference_revisions` | Canvas component fields | Not needed if Canvas is used |
+| `responsive_menu` | Navigation module or theme | DCMS uses the Navigation module |
+| `manage_display` | Core display modes | Core handles this natively |
+| `publication_date` | Scheduler / core `created` field | DCMS uses Scheduler |
+| `allowed_formats` | `content_format` text format | DCMS has a single rich-text format |
+| `ga4_google_analytics` | Assess: install or use tag manager | Install if site needs GA4 |
+
+### Install pattern
+
+```bash
+cd [target-path]
+
+# Install a module:
+ddev composer require drupal/[module_name]
+ddev drush pm:enable --yes [module_machine_name]
+ddev drush cr
+
+# Export the updated config immediately:
+ddev drush config:export --yes
+```
+
+> [!CAUTION]
+> Install all required modules **before** importing any config that depends
+> on them. A `config:import --partial` run against a module that is not
+> yet installed will fail with a dependency error.
 
 ---
 
