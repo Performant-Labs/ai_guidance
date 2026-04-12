@@ -8,21 +8,16 @@
    ============================================================================= */
 
 :where(:root) {
-  /* 1. Base primary & secondary anchors */
   --base-primary-color:   #1B2638;
   --base-secondary-color: #F59E0B;
-
-  /* 2. Specific neutral/scale overrides */
-  --neutral-100: #F0F1F0;   /* Lightest background */
-  --neutral-600: #555F68;   /* Medium slate borders/text */
-  --neutral-800: #2D3E48;   /* Dark slate text/accents */
-  --secondary-700: #92600A; /* Dark amber hover */
+  --neutral-100: #F0F1F0;
+  --neutral-600: #555F68;
+  --neutral-800: #2D3E48;
+  --secondary-700: #92600A;
 }
 
 /* =============================================================================
    Header CTA pill button (.header-cta)
-   Injected into header_third via page--front.html.twig and
-   page--documentation.html.twig when no block occupies that region.
    ============================================================================= */
 
 .header-cta {
@@ -48,13 +43,20 @@
 }
 
 /* =============================================================================
+   Sticky header — transparent on load, opaque on scroll
+   ============================================================================= */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: background-color 0.25s ease, backdrop-filter 0.25s ease;
+}
+
+/* =============================================================================
    Canvas front page — full-width layout
    ============================================================================= */
 
-/**
- * Remove the default max-width container on the front page so Canvas sections
- * can stretch edge-to-edge.
- */
 .canvas-page .layout-container {
   max-width: none;
   padding-inline: 0;
@@ -82,14 +84,143 @@
   overflow-y: auto;
 }
 
-/* Collapse sidebar on narrow viewports */
 @media (max-width: 900px) {
   .docs-page .docs-layout {
     grid-template-columns: 1fr;
   }
-
   .docs-page .docs-sidebar {
     position: static;
     max-height: none;
   }
 }
+
+/* =============================================================================
+   Hero — navy-to-amber gradient background (Slice 01)
+   Applied to .hero__media so it sits behind hero content.
+   ============================================================================= */
+
+.hero__media {
+  background: radial-gradient(
+    ellipse at 30% 40%,
+    #1e4a6b 0%,
+    #1B2638 45%,
+    #3d1f00 80%,
+    #F59E0B 130%
+  ) !important;
+}
+
+/* Dashboard screenshot image positioned inside hero background */
+.hero__media img {
+  position: absolute;
+  inset-inline-end: -5%;
+  inset-block-end: -10%;
+  width: 58%;
+  max-width: 800px;
+  border-radius: 0.75rem 0.75rem 0 0;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  clip-path: inset(0 0 0 0 round 0.75rem 0.75rem 0 0);
+  object-fit: cover;
+}
+
+/* =============================================================================
+   Amber CTA button variant (.button--cta) — Slice 00 header
+   ============================================================================= */
+
+.button--cta,
+a.button--cta {
+  background-color: #F59E0B;
+  color: #1B2638;
+  border-color: transparent;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.button--cta:hover,
+.button--cta:focus-visible {
+  background-color: #92600A;
+  color: #F0F1F0;
+}
+
+/* =============================================================================
+   Horizontal carousel snap-scroll — Slice 03
+   ============================================================================= */
+
+.carousel__track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  gap: 1.5rem;
+  padding-block-end: 1rem;
+  scrollbar-width: none;
+}
+
+.carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel__track > * {
+  scroll-snap-align: start;
+  flex: 0 0 calc(25% - 1.125rem);
+  min-width: 260px;
+}
+
+/* =============================================================================
+   Black pill button variant (.button--pill-dark) — Slice 03 card CTA
+   ============================================================================= */
+
+.button--pill-dark,
+a.button--pill-dark {
+  background-color: #1B2638;
+  color: #F0F1F0;
+  border-radius: 999px;
+  border-color: transparent;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.button--pill-dark:hover,
+.button--pill-dark:focus-visible {
+  background-color: #F59E0B;
+  color: #1B2638;
+}
+
+/* =============================================================================
+   Amber icon colour for icon-list checkmarks — Slice 05
+   ============================================================================= */
+
+.icon-list .icon-list-item__icon,
+.icon-list__icon {
+  color: #F59E0B;
+}
+
+/* =============================================================================
+   Footer "K" watermark pseudo-element — Slice 08
+   Absolutely positioned behind footer content using CSS font rendering.
+   ============================================================================= */
+
+.site-footer {
+  position: relative;
+  overflow: hidden;
+}
+
+.site-footer::before {
+  content: 'K';
+  position: absolute;
+  inset-block-start: -0.2em;
+  inset-inline-start: -0.05em;
+  font-size: clamp(16rem, 40vw, 32rem);
+  font-weight: 900;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+/* Ensure footer content sits above the watermark */
+.site-footer > * {
+  position: relative;
+  z-index: 1;
+}
+
