@@ -442,7 +442,7 @@ Then export: `[runtime_wrapper] drush config:export --yes`
 > [!NOTE]
 > `settings.php` is gitignored (contains secrets). This setting must be added on each environment or via a post-provision hook. It does not get committed.
 
-### 8.4 Structural Verification Gate *(all checks must pass before proceeding to Phase 9)*
+### 8.4 Structural Verification Gate *(all checks must pass before proceeding to Phase 9 Content Migration)*
 
 | Check | Command | Pass condition |
 |---|---|---|
@@ -453,7 +453,7 @@ Then export: `[runtime_wrapper] drush config:export --yes`
 | Nav items visible to anon | `curl -sk [site-url]/ \| grep -i "[first nav item text]"` | match found |
 | No new errors | `[runtime_wrapper] drush watchdog:show --count=10 --severity=3` | 0 new errors |
 
-**Fail path**: fix the specific wiring issue → re-run only the failed check → commit → proceed to Phase 9 only when all checks are green.
+**Fail path**: fix the specific wiring issue → re-run only the failed check → commit → proceed to Phase 9 Content Migration only when all checks are green.
 
 ---
 
@@ -512,7 +512,7 @@ Visually compare the rendered page against the original target design slices, pa
 > - One subagent call = one design slice vs. one live viewport. Nine slices = nine sequential calls.
 > - Use the pre-sliced assets in `designs/` (`00_menu.webp` … `08_footer.webp`). Never pass the full composite image as a MediaPath — it will exhaust context alone.
 > - Each subagent call must append its findings to `drupal/ai_guide_theming/visual-regression-report.md` before returning.
-> - Phase 9.2 evaluates layout, color, spacing, and typography **only**. Content correctness is not re-evaluated here.
+> - Phase 10.2 evaluates layout, color, spacing, and typography **only**. Content correctness is not re-evaluated here.
 
 **Cascade Safety Check**: After visual regression, confirm custom CSS overrides remained encapsulated and did not pollute global typography or color tokens expected by the host site.
 

@@ -1,13 +1,13 @@
 # Visual Regression Strategy
 
-This document defines **how AI agents must execute Phase 9.2 (Visual Regression)**
+This document defines **how AI agents must execute Phase 10.2 (Visual Regression)**
 for this project. It covers pixel-level layout comparison only — content correctness
-is verified in Phase 9.1 (Content Audit) before this document's protocol begins.
+is verified in Phase 10.1 (Content Audit) before this document's protocol begins.
 It exists because three consecutive agent sessions crashed attempting this phase.
 Read it in full before starting any comparison work.
 
 > [!IMPORTANT]
-> **Pre-condition: Phase 9.1 Content Audit must pass before running any VR subagent.** If any Canvas component still contains demo copy (Keytail, NeonByte, or other base-theme defaults), run Phase 9.1 first. A Phase 9.2 finding should never be "wrong text" — if it is, return to 9.1.
+> **Pre-condition: Phase 10.1 Content Audit must pass before running any VR subagent.** If any Canvas component still contains demo copy (Keytail, NeonByte, or other base-theme defaults), run Phase 10.1 first. A Phase 10.2 finding should never be "wrong text" — if it is, return to 10.1.
 
 ---
 
@@ -140,4 +140,4 @@ This strategy is referenced from the master SOP at:
 drupal/ai_guide_theming/AI-Guided-Theme-Generation.md
 ```
 
-under **Phase 9.2: Visual Regression**.
+under **Phase 10.2: Visual Regression**.

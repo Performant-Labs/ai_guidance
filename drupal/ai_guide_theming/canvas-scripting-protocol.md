@@ -89,7 +89,7 @@ curl -k -s https://[site-url]/[expected-logo-path] | head -1
 > [!NOTE]
 > Browser cache will continue to serve the old logo even after the correct SVG is on disk. Confirm server-side via `curl` rather than a browser screenshot. Hard reload (Cmd+Shift+R with DevTools open, "Disable cache" checked) is required to verify visually.
 
-### 7. Placeholder Content Scrub (required before Phase 9.1 Content Audit)
+### 7. Placeholder Content Scrub (required before Phase 10.1 Content Audit)
 
 Base themes ship demo copy in Canvas components. Before any visual regression screenshot is taken, scan for and replace all non-client text:
 
