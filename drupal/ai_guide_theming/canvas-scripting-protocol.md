@@ -73,6 +73,34 @@ ddev drush sql-query "SELECT delta, components_uuid, components_component_id, co
 - [ ] The parent/slot relationships you intend to create don't already exist (avoid duplicates)
 - [ ] After any previous script ran, verify it actually committed before running the next one
 
+### 6. Logo Path Verification (required when branding changes are involved)
+
+```bash
+[runtime_wrapper] drush php-eval "
+\$g = \Drupal::config('system.theme.global')->get();
+echo 'use_default: ' . var_export(\$g['logo']['use_default'], true) . PHP_EOL;
+echo 'path: ' . \$g['logo']['path'] . PHP_EOL;
+"
+# use_default must be FALSE and path must point to the custom theme, not contrib
+curl -k -s https://[site-url]/[expected-logo-path] | head -1
+# Must return the correct SVG opening tag, not the parent theme's fallback
+```
+
+> [!NOTE]
+> Browser cache will continue to serve the old logo even after the correct SVG is on disk. Confirm server-side via `curl` rather than a browser screenshot. Hard reload (Cmd+Shift+R with DevTools open, "Disable cache" checked) is required to verify visually.
+
+### 7. Placeholder Content Scrub (required before Phase 9 visual regression)
+
+Base themes ship demo copy in Canvas components. Before any visual regression screenshot is taken, scan for and replace all non-client text:
+
+```bash
+[runtime_wrapper] drush sql-query \
+  "SELECT delta, components_component_id, components_inputs FROM canvas_page__components WHERE entity_id=1 ORDER BY delta;" \
+  | grep -i 'keytail\|neonbyte\|SDRs hit\|Get found\|Search and outreach'
+```
+
+If any matches appear, update them via the entity API (see **Keyed replacement pattern** in Script Writing Rules below).
+
 ---
 
 ## Script Writing Rules
@@ -125,6 +153,42 @@ $entity = \Drupal\block_content\Entity\BlockContent::create([...]);
 // CORRECT — always use the entity type manager:
 $entity = \Drupal::entityTypeManager()->getStorage('block_content')->create([...]);
 ```
+
+### Keyed replacement pattern for bulk content updates
+
+When replacing multiple placeholder strings across many components, use a keyed array and iterate — never write one script per field:
+
+```php
+<?php
+$replacements = [
+  'Old demo headline text'   => 'New client headline text',
+  'Another demo string'      => 'Another client string',
+];
+
+$page = \Drupal::entityTypeManager()->getStorage('canvas_page')->load(1);
+$comps = $page->get('components')->getValue();
+
+foreach ($comps as &$comp) {
+  $inputs = json_decode($comp['inputs'] ?? '{}', true);
+  $changed = false;
+  foreach (['title', 'text'] as $field) {
+    if (isset($inputs[$field])) {
+      $clean = strip_tags($inputs[$field]);
+      if (array_key_exists($clean, $replacements)) {
+        $inputs[$field] = $replacements[$clean];
+        $changed = true;
+      }
+    }
+  }
+  if ($changed) { $comp['inputs'] = json_encode($inputs); }
+}
+unset($comp);
+
+$page->set('components', $comps)->save();
+```
+
+> [!NOTE]
+> `strip_tags()` is required before the key lookup because some text fields contain HTML (`<p>` wrappers). The replacement value is stored as plain text — the SDC template wraps it appropriately.
 
 ---
 

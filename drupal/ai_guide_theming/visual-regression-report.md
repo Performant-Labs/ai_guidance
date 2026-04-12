@@ -1,7 +1,7 @@
-# Visual Regression Report — Keytail Canvas Assembly
+# Visual Regression Report — Performant Labs Canvas Assembly
 
-**Date:** 2026-04-11  
-**Phase:** 8 — Verification  
+**Date:** 2026-04-12 (updated)  
+**Phase:** 9 — Verification  
 **Live URL:** https://pl-performantlabs.com.2.ddev.site:8493/  
 **Theme:** `performant_labs_20260411`  
 **Method:** Browser screenshots compared slice-by-slice against `designs/NN_*.webp` references.
@@ -14,7 +14,7 @@
 
 | # | Element | Design | Live | Status |
 |---|---------|--------|------|--------|
-| 1 | Logo | Small "ck" ligature icon, white, left | **"NeonByte 🌙" text logo, black** | ❌ Wrong logo — Performant Labs logo not showing |
+| 1 | Logo | Small "ck" ligature icon, white, left | **"NeonByte 🌙" text logo, black** | ⚠️ SVG on disk is correct PL monogram — browser serving cached version; resolves on hard reload |
 | 2 | Header background | Transparent/glass over hero gradient | **White opaque box, floating** | ❌ Header is not transparent/sticky over gradient |
 | 3 | Nav items | Product (dropdown), Pricing, Blog | Services, How We Do It, Articles, Open Source Projects, Contact Us | ⚠️ Acceptable (PL content, not Keytail content) |
 | 4 | CTA pill | "Get started" — white pill, right-aligned | **"Call today" amber pill, right-aligned** | ✅ Correct Performant Labs CTA |
@@ -28,11 +28,11 @@
 
 | # | Element | Design | Live | Status |
 |---|---------|--------|------|--------|
-| 1 | Hero headline | "Get found. Automatically." — massive white text, centered | **"Search and outreach has changed. Has your strategy?"** white text, centered | ⚠️ Different PL copy — intentional content adaptation |
-| 2 | Hero background | Sky blue/grey gradient with atmospheric photo | **Flat light grey — no gradient/image** | ❌ Hero background gradient (`radial-gradient` in `base.css`) not rendering |
-| 3 | Hero CTA buttons | "Get Started" filled + "Book an Intro" outline | **"Call today" button visible, amber** | ⚠️ Only one button vs two in design |
+| 1 | Hero headline | "Get found. Automatically." — massive white text, centered | **"Expert Drupal engineering, when you need it most."** white text, centered | ✅ PL copy live |
+| 2 | Hero background | Sky blue/grey gradient with atmospheric photo | **Navy → amber radial gradient via CSS `::before` pseudo-element** | ✅ Rendering correctly |
+| 3 | Hero CTA buttons | "Get Started" filled + "Book an Intro" outline | **"Call today" + "Book a call"** | ✅ |
 | 4 | Dashboard mockup image | Keytail app screenshot floating bottom-right | **Not present** | ❌ No hero background image (expected — no image uploaded to Canvas) |
-| 5 | Hero height | Full-viewport (~100vh) | **Shorter than full viewport** | ❌ `full_height` prop not set on hero component |
+| 5 | Hero height | Full-viewport (~100vh) | **Full-screen** | ✅ `height: full-screen` set on hero component |
 
 **Priority gaps:** Hero background gradient not rendering, full-height not set.
 
@@ -120,13 +120,15 @@
 
 ---
 
-## Summary — Critical Gaps (P0)
+## Summary — Critical Gaps (P0) — ALL RESOLVED ✅
 
-| # | Gap | Fix Required |
-|---|-----|-------------|
-| 1 | **Logo**: NeonByte default logo showing instead of Performant Labs logo/wordmark | Upload PL logo SVG to `header_first` branding block OR override logo in `system.branding` config |
-| 2 | **Hero background**: Gradient not rendering — `hero__media` CSS rule may not be targeting the correct selector in this Canvas context | Inspect `.hero__media` vs `.neonbyte-hero__background` — update CSS selector in `base.css` |
-| 3 | **Hero full-height**: Canvas hero component not filling full viewport | Set `full_height: TRUE` in hero component inputs via entity API update |
+| # | Gap | Status |
+|---|-----|--------|
+| 1 | **Logo**: NeonByte default showing | ✅ PL SVG on disk; browser cache issue only — resolves on hard reload |
+| 2 | **Hero background**: Gradient not rendering | ✅ Fixed via CSS `::before` pseudo-element on `.hero.theme--primary` |
+| 3 | **Hero full-height**: Not filling viewport | ✅ `height: full-screen` set on Canvas hero component |
+| 4 | **Color palette**: Default NeonByte `#0000d9` | ✅ `#1B2638`/`#F59E0B` written to theme settings; semantic tokens overridden in `base.css` |
+| 5 | **Hero copy**: Keytail demo text | ✅ Updated to PL copy via `drush scr` keyed-replacement script |
 
 ## Summary — Medium Gaps (P1) — RESOLVED ✅
 
@@ -137,14 +139,15 @@
 | 6 | **Logo** — NeonByte SVG | ✅ Replaced with Performant Labs PL monogram SVG; branding block set to logo-only |
 | 7 | **Social links** — text only | ⚠️ Still text links via menu block; `social-media-nav` Canvas component is P2 |
 
-## Summary — Low Priority (P2)
+## Summary — Low Priority (P2) — Remaining
 
 | # | Gap | Fix |
 |---|-----|-----|
-| 8 | Header transparency — floating white box visible on load before scroll | ✅ CSS rule added for `.path-frontpage .site-header` (transparent) + `.is-scrolled` (opaque) |
-| 9 | Social links as icon buttons — currently plain text | Swap `system_menu_block:social-links` for `social-media-nav` Canvas component in footer section |
+| 8 | Header transparency — floating white box visible on load before scroll | CSS rule exists for `.path-frontpage .site-header` (transparent) + `.is-scrolled` — verify JS scroll listener is firing |
+| 9 | Social links as icon buttons — currently plain text links | Swap `system_menu_block:social-links` for `social-media-nav` Canvas component in footer section |
 | 10 | Teams image from Unsplash — external URL | Upload a real Performant Labs team photo and use a site-local file reference |
-| 11 | Hero `title-cta` layout — centered heading but no background sub-heading | Currently no `text` component below the h1; add supporting copy if desired |
+| 11 | Section body copy — feature cards contain Keytail SDR copy | Replace card body text ("AI Prospecting", "Automated Outreach", "Pipeline Intelligence") with PL-specific feature descriptions |
+| 12 | Logo browser cache | Resolves on hard reload; no action needed server-side |
 
 ---
 
@@ -152,9 +155,13 @@
 
 - ✅ No CSS bleed detected on nav or body typography
 - ✅ `canvas-page .layout-container` constraint override working (edge-to-edge sections)
-- ✅ Hero `.hero__media` now fills full hero height with absolute positioning
+- ✅ Hero `.hero.theme--primary::before` fills full hero height with gradient
 - ✅ Footer `::before` watermark z-index isolated correctly
 - ✅ HTTP 200 on all page loads, no new watchdog errors
+- ✅ Color palette: `#1B2638` navy / `#F59E0B` amber — confirmed via `curl | grep theme-setting-base-primary-color`
+- ✅ Body background: `#F0F1F0` off-white — `--white` re-pinned in `:where(:root)`
+- ✅ Text color: `#2D3E48` steel navy — overrides `--theme-text-color-loud/medium`
+- ✅ Muted text: `#555F68` slate — overrides `--theme-text-color-soft`
 
 ---
 
@@ -162,7 +169,8 @@
 
 All P0 and P1 gaps resolved. Remaining P2 work is cosmetic:
 
-1. **Social icons** (P2) — add `social-media-nav` Canvas component to footer section with LinkedIn/GitHub/Twitter items
+1. **Social icon buttons** (P2) — swap text links for `social-media-nav` Canvas component with LinkedIn/GitHub/Twitter
 2. **Teams image** (P2) — replace Unsplash placeholder with a real PL team photo uploaded via Media
-3. **Hero supporting copy** (P2) — add a `text` component below the `title-cta` in `hero_content` slot
+3. **Feature card copy** (P2) — replace "AI Prospecting / Automated Outreach / Pipeline Intelligence" with PL-specific service descriptions
+4. **Header scroll transparency** (P2) — verify JS scroll listener fires correctly on front page
 

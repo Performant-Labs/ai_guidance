@@ -75,10 +75,15 @@ Ask the user to provide **all of the following** at once. Present it as a single
    > In NeonByte / Dripyard-based themes, the entire palette (all `--primary-*` and `--neutral-*` scale tokens) is derived from these two config values via `oklch()` in `variables-colors-semantic.css`. Setting them here drives all button colors, card borders, body backgrounds, and icon accents — no additional CSS is needed for the base palette.
 3. **Wire the logo**: Confirm `system.theme.global` → `logo.path` points to your theme's `logo.svg`, **not** the parent theme's path. Export the config:
    ```bash
+   [runtime_wrapper] drush config:get system.theme.global logo.path
+   # Must return: themes/custom/[primary_theme]_[timestamp]/logo.svg
+   # Must also confirm: use_default = false
    [runtime_wrapper] drush config:export --yes
    git add config/sync/ web/themes/custom/[primary_theme]_[timestamp]/logo.svg
    git commit -m "feat: brand assets — logo, palette, favicon"
    ```
+   > [!NOTE]
+   > Even with the correct SVG on disk and the correct config path, the **browser will continue to serve the cached NeonByte logo** until its HTTP cache for that asset expires or the user does a hard reload with DevTools open. This is a browser cache issue — not a server-side problem. Confirm via `curl -k https://[site-url]/themes/custom/[theme]/logo.svg | head -1` to verify the correct SVG is on disk.
 4. **Apply the favicon**: Place the file at `web/themes/custom/[primary_theme]_[timestamp]/favicon.ico` (or `.png`). Update `system.theme.global` → `favicon.path` to point to it.
 5. **Register brand fonts**: If custom Google Fonts are specified, add them to the theme's `.libraries.yml` and reference in `css/base.css`:
    ```css
@@ -299,6 +304,23 @@ Assemble the Canvas page one visual section at a time, in top-to-bottom order ma
 - Do not proceed to the next section until the browser confirms the current section renders correctly.
 - Commit after each verified section: `git commit -m "feat(canvas): assemble [section name] section"`
 - If a script fails, restore from the Phase 3 Canvas DB snapshot rather than writing a second fix script on top of an uncertain state.
+
+### 7.6 Placeholder content scrub (mandatory before Phase 9 verification)
+
+Base themes (e.g., NeonByte/Keytail) ship with demo copy pre-loaded into Canvas components. After assembly, scan every text-bearing component and replace any demo content with client copy **before** running visual regression.
+
+```bash
+# Audit all text and heading inputs for non-client copy:
+[runtime_wrapper] drush sql-query \
+  "SELECT components_component_id, components_inputs FROM canvas_page__components WHERE entity_id=1;"
+# Grep output for known demo phrases:
+# 'Keytail', 'NeonByte', 'SDRs hit quota', 'Get found. Automatically.'
+```
+
+Update via a targeted `drush scr` script using the `json_decode → mutate → json_encode → $page->save()` pattern. Never update text in the DB layer directly — always use the entity API to preserve field validation and cache invalidation.
+
+> [!CAUTION]
+> Placeholder content that passes visual regression is invisible — it looks correct in structure but contains the wrong words. A content scrub **must** be its own explicit step, run before the browser agent opens the page for the first time.
 
 ---
 

@@ -381,3 +381,84 @@ When writing a `canvas_page__components` row:
 | `logo-grid` | omit any of 3 required | `layout` + `logo_size` + `logo_background` all required |
 | `Canvas entity API` | set `component_version => ''` | **omit `component_version` entirely** — preSave() resolves it |
 | `Canvas entity API` | call `$storage->load()` after a failed save | call `$storage->resetCache([id])` first to avoid stale state |
+
+---
+
+## Brand Token Override Pattern (NeonByte / Dripyard)
+
+When applying a custom color palette to a NeonByte-based theme, **do not** try
+to override OKLCH-derived neutrals directly. Instead, target the semantic
+token layer in `css/base.css`, scoped to `.theme--white` so dark zones
+(hero, footer) remain unaffected.
+
+### Palette → Token mapping
+
+```css
+/* css/base.css */
+
+/* 1. Re-pin --white so all var(--white) surfaces use brand off-white */
+:where(:root) {
+  --white: #F0F1F0;
+}
+
+/* 2. Override semantic tokens for light-zone surfaces only */
+:where(:root), .theme--white {
+  --theme-text-color-loud:   #2D3E48;  /* headings */
+  --theme-text-color-medium: #2D3E48;  /* body text */
+  --theme-text-color-soft:   #555F68;  /* muted / captions */
+  --theme-border-color:      #555F68;  /* card / divider borders */
+  --theme-link-color:        #F59E0B;  /* amber links */
+  --theme-link-color-hover:  #92600A;  /* dark amber hover */
+}
+```
+
+### Primary/secondary (drives the OKLCH engine)
+
+Write primary and secondary colors to theme settings, **not** CSS:
+
+```bash
+ddev drush php-eval "
+\$config = \Drupal::configFactory()->getEditable('[theme_machine_name].settings');
+\$colors = \$config->get('theme_colors.colors') ?? [];
+\$colors['base_primary_color']   = '#1B2638';
+\$colors['base_secondary_color'] = '#F59E0B';
+\$config->set('theme_colors.colors', \$colors)->save();
+"
+# Verify immediately:
+curl -sk https://[site-url]/ | grep -o 'theme-setting-base-primary-color:[^;]*'
+# Must return: theme-setting-base-primary-color:#1b2638
+```
+
+### Logo verification pattern
+
+```bash
+# 1. Confirm server-side (not browser cache):
+curl -sk https://[site-url]/themes/custom/[theme]/logo.svg | head -1
+# Must match your SVG's opening tag, e.g.: <svg width="160" height="32" ...
+
+# 2. Confirm Drupal config points to the right file:
+ddev drush php-eval "
+\$g = \Drupal::config('system.theme.global')->get();
+echo 'use_default: ' . var_export(\$g['logo']['use_default'], true) . PHP_EOL;
+echo 'path: ' . \$g['logo']['path'] . PHP_EOL;
+"
+# use_default must be FALSE; path must match custom theme
+```
+
+> [!NOTE]
+> If `curl` returns correct SVG but the browser shows the parent theme logo,
+> this is a **browser HTTP cache** issue — not a server problem.
+> Fix: open DevTools → Network → check "Disable cache" → hard reload.
+> No drush or file change is needed.
+
+---
+
+## Cache Flush Sequence (after any Canvas or CSS change)
+
+```bash
+ddev drush sql-query "TRUNCATE TABLE cache_render;"
+ddev drush cr
+# For CSS aggregate issues, also bust the CSS cache:
+ddev drush php-eval "\Drupal::service('asset.css.collection_optimizer')->deleteAll();"
+ddev drush cr
+```

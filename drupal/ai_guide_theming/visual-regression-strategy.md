@@ -1,8 +1,11 @@
 # Visual Regression Strategy
 
-This document defines **how AI agents must execute Phase 6 visual regression**
+This document defines **how AI agents must execute Phase 9 visual regression**
 for this project. It exists because three consecutive agent sessions crashed
 attempting this phase. Read it in full before starting any comparison work.
+
+> [!IMPORTANT]
+> **Pre-condition: Placeholder Content Scrub must be complete before running any VR subagent.** If any Canvas component still contains demo copy (Keytail, NeonByte, or other base-theme defaults), the visual regression is meaningless — structure will appear correct but content will be wrong. Run the scrub check in `canvas-scripting-protocol.md` (Pre-flight Item 7) first.
 
 ---
 
