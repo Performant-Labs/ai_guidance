@@ -348,25 +348,27 @@ foreach(\$nodes as \$n) {
 use Drupal\node\Entity\Node;
 use Drupal\path_alias\Entity\PathAlias;
 
-\$node = Node::create([
+$node = Node::create([
   'type'          => 'page',
   'title'         => 'Services',
   'field_content' => [            // DCMS uses field_content not body
     'value'  => '<p>Body copy here.</p>',
     'format' => 'content_format', // DCMS text format (not basic_html)
   ],
-  'status' => 1,
+  'status'            => 1,
+  'moderation_state'  => 'published', // Required on DCMS — content_moderation
+                                      // overrides status => 1 without this
 ]);
-\$node->save();
+$node->save();
 
 // Set URL alias immediately after save:
 PathAlias::create([
-  'path'     => '/node/' . \$node->id(),
+  'path'     => '/node/' . $node->id(),
   'alias'    => '/services',
   'langcode' => 'en',
 ])->save();
 
-echo 'Page created: '.\$node->id().' at /services'.PHP_EOL;
+echo 'Page created: '.$node->id().' at /services'.PHP_EOL;
 ```
 
 ---
@@ -687,6 +689,29 @@ One category at a time — do not present all categories simultaneously.
 - ❌ **Skip** — do not migrate
 
 ---
+
+> [!CAUTION]
+> **`block_content` broken-install on DCMS fresh installs**: On a DCMS 2.0
+> site, `block_content` may appear in `core.extension` (marked as enabled)
+> but have no database tables — leaving Drupal in an unbootable state for
+> any command that triggers a full bootstrap querying the entity.
+>
+> **Root cause**: An earlier `config:import --partial` populated
+> `core.extension` without running the module's install hook (which creates
+> the tables). `drush pm:enable` then sees it as "already installed" and
+> skips the hook; `drush cr` fails because a module queries the missing
+> table during boot.
+>
+> **Resolution options**:
+> 1. Fix via `ddev drush php-eval "\Drupal::service('module_installer')->install(['block_content']);"` (bypasses the "already installed" guard).
+> 2. If that fails, embed block HTML directly in node `field_content` or
+>    as Canvas components rather than using reusable block_content entities.
+>    Project logos → add to page body. Copyright/tagline → theme config.
+>    Newsletter → Canvas HTML component.
+>
+> **Prevention**: Run §-1 Module Audit before any `config:import` so
+> block_content is enabled and fully installed BEFORE any config that
+> references it is imported.
 
 ## Verification Gate
 
