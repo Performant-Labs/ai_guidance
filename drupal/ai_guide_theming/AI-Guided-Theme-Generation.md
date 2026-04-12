@@ -13,6 +13,9 @@ To ensure absolute safety and maintain a functional baseline for the host projec
 > [!IMPORTANT]
 > **Visual Remediation Phase**: When fixing structural or CSS gaps against a design reference (i.e., any work after the initial assembly), you MUST follow the `canvas-scripting-protocol.md` in this directory before writing any Drush script or Twig override. That document defines mandatory pre-flight checks, schema verification steps, script writing rules, and verification requirements that apply to all Canvas component work — initial build, additions, and updates alike.
 
+> [!NOTE]
+> **Before starting any run**, read [`operational-guidance.md`](operational-guidance.md) in this directory. It documents efficiency rules and failure patterns distilled from live execution — covering verification shortcuts, known config traps, Canvas content persistence, and screenshot timing. Applying it avoids the most common time-consuming errors.
+
 ---
 
 
@@ -650,6 +653,7 @@ that the complete site with real content still matches the design reference.
 > - Use pre-sliced assets in `designs/` (`00_menu.webp` … `08_footer.webp`).
 > - Each call appends findings to `drupal/ai_guide_theming/visual-regression-report.md`.
 > - Evaluate layout, color, spacing, and typography **only** — content correctness was Phase 15.
+> - For efficiency rules (curl-first, animation timing, batched screenshots), see [`operational-guidance.md`](operational-guidance.md).
 
 **Expected outcome**: Fewer findings than Phase 10 because upstream gates caught structural issues. Any ⚠️ Minor Gap findings are scoped and scheduled; any ❌ Major Gap is fixed before go-live sign-off.
 
