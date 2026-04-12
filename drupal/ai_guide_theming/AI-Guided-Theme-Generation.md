@@ -20,7 +20,7 @@ Before cloning repositories or running commands, the AI must collect all foundat
    - **Target Local Project Path** (e.g., `~/Sites/pl-performantlabs.com`)
    - **Base Theme Documentation Namespace** (e.g., `drupal/dripyard_themes`)
    - **Location of Target Layout Screenshots**
-   - **Legacy Audit Requirement** (Required/Skipped — whether the existing site architecture needs structural mapping)
+   - **Existing Site Audit**: Explicitly ask the user: *"Is there an existing version of this website already running locally that I should audit before building?"* If yes, ask for its local path (e.g., `~/Sites/pl-performantlabs.com`). Record the answer — a "yes" makes Phase 3 Step 2 **mandatory**, not optional.
    - **Local Runtime Environment**: Automatically test the target codebase to detect the active container wrapper (e.g., scan for `.ddev/` or `.lando.yml`). Report the detected runtime prefix (e.g., `ddev`, `lando`, or native) to the user rather than blindly assuming.
    - **Git Safety Check**: Run `git status` to verify the working tree is completely clean. If uncommitted changes exist, force the user to stash or commit them. Do not allow execution on a dirty tree.
 2. Display these collected values back to the user in a formatted list or table.
@@ -48,10 +48,16 @@ Before altering any structural CSS or Layout builder templates, preserve the cur
 Once the user provides the target design:
 
 1. **Asset Storage**: Immediately save the provided screenshot into a `/designs` or `/reference` directory inside the newly created active theme (e.g., `web/themes/custom/[primary_theme]_[timestamp]/designs/screenshot.png`). This ensures the AI context and layout references are permanently shipped alongside the theme files.
-2. *(Optional)* **Legacy Architecture Audit**: If the objective is to migrate or upgrade an existing live website into the new Canvas architecture, perform a comprehensive structural audit of the legacy site before making assumptions about the new layout.
-   - Target the local legacy codebase environment (e.g., navigating into `~/Sites/pl-performantlabs.com`). **First, independently detect its runtime wrapper** (scan for `.ddev/`, `.lando.yml`, etc.) — it may differ from the primary project detected in Phase 1.
-   - Utilize native database introspection, Drush commands (via the legacy site's detected wrapper), or structural DOM analysis to dissect the existing content framework (tracking how legacy blocks, node fields, and taxonomies are routed).
-   - Draft this architectural dissection into an explicit Markdown file and save it within an `/audits` directory positioned as a direct peer to the `/designs` directory inside the new active theme (e.g., `web/themes/custom/[primary_theme]_[timestamp]/audits/legacy_dissection.md`).
+2. **Legacy Architecture Audit** *(mandatory if the user confirmed an existing site in Phase 1 — do not skip)*: Before making any assumptions about content types, block regions, menus, or page templates, you must audit the existing site. Skipping this step when a legacy site exists will cause structural mismatches in templates and sidebar wiring.
+   - Target the local legacy codebase path recorded in Phase 1 (e.g., `~/Sites/pl-performantlabs.com`). **First, independently detect its runtime wrapper** (scan for `.ddev/`, `.lando.yml`, etc.) — it may differ from the primary project detected in Phase 1.
+   - Audit all of the following via Drush introspection and structural analysis:
+     - **Content types** and their field structures (which types serve as documentation, landing pages, articles, etc.)
+     - **Menu structure** (primary nav, footer nav, any sidebar/TOC navigation menus)
+     - **Block regions and placements** (which blocks go in which regions)
+     - **Taxonomy vocabularies** (how content is organised and categorised)
+     - **Active modules** that affect layout or routing (Views, Layout Builder, Paragraphs, etc.)
+   - Draft this architectural dissection into an explicit Markdown file and save it within an `/audits` directory inside the new active theme (e.g., `web/themes/custom/[primary_theme]_[timestamp]/audits/legacy_dissection.md`).
+   - The dissection output directly informs: template suggestion hooks, sidebar menu block choices, region wiring, and any additional content types to replicate.
 3. **Visual Decomposition**: Analyze the screenshot to break down the UI into logical horizontal bands (e.g., Hero Banners, Feature Grids, Logo Arrays, Call-to-Action blocks).
 4. **Component Cross-referencing**: Check these visual bands against your base theme's component library (identified via the documentation folder provided by the user) to identify completely reusable Twig structures and native CSS modifier classes.
 5. **Gap Analysis**: Identify any bespoke elements in the screenshot that do not have a native equivalent in the base theme. These will require entirely custom CSS implementations.
