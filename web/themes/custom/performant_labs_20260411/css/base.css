@@ -115,30 +115,40 @@
 
 /* =============================================================================
    Hero — navy-to-amber gradient background (Slice 01)
-   .hero__media is empty (no Canvas background-image component) so it needs
-   absolute positioning to fill the entire hero container area.
+   ROOT CAUSE: .hero__media has display:contents — position/inset have no effect.
+   FIX: override --hero-background CSS variable on .hero.theme--primary directly,
+   and use ::before pseudo-element for the gradient fill.
    ============================================================================= */
 
-.hero__media {
-  position: absolute !important;
-  inset: 0 !important;
+/* Override the CSS variable that drives background-color on the hero wrapper */
+.hero.theme--primary {
+  --hero-background: #1B2638;
+}
+
+/* Gradient via ::before pseudo-element (sits behind all content via z-index) */
+.hero.theme--primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: radial-gradient(
     ellipse at 30% 40%,
     #1e4a6b 0%,
     #1B2638 45%,
     #3d1f00 80%,
     #F59E0B 130%
-  ) !important;
+  );
   z-index: 0;
+  pointer-events: none;
 }
 
-/* Ensure hero content sits above the gradient */
-.hero__container {
+/* Ensure hero content and __media sit above the ::before gradient */
+.hero.theme--primary .hero__container,
+.hero.theme--primary .hero__media {
   position: relative;
   z-index: 1;
 }
 
-/* Dashboard screenshot image positioned inside hero background */
+/* Dashboard screenshot image — positioned absolutely within hero */
 .hero__media img {
   position: absolute;
   inset-inline-end: -5%;
@@ -150,6 +160,7 @@
   clip-path: inset(0 0 0 0 round 0.75rem 0.75rem 0 0);
   object-fit: cover;
 }
+
 
 /* =============================================================================
    Amber CTA button variant (.button--cta) — Slice 00 header
