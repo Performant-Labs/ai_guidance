@@ -11,6 +11,6 @@ features:
   favicon: true
   node_user_picture: true
 logo:
-  path: themes/custom/performant_labs_20260411/logo.png
+  path: themes/custom/performant_labs_20260411/logo.svg
   url: null
   use_default: false

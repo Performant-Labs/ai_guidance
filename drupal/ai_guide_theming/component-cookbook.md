@@ -115,7 +115,7 @@ When writing a `canvas_page__components` row:
 | `text` | string | **yes** | Button label |
 | `href` | string | no | URL |
 | `style` | string | no | `"default"` `"primary"` `"secondary"` `"light"` `"dark"` `"outline"` `"bare"` |
-| `size` | string | no | `"small"` `"medium"` `"large"` |
+| `size` | string | no | `"xs"` `"small"` `"medium"` — ⚠️ NOT `"large"` |
 | `target` | boolean\|null | no | Open in new window |
 
 ---
@@ -164,11 +164,18 @@ When writing a `canvas_page__components` row:
 ### `dripyard_base:canvas-image`
 **Component ID:** `sdc.dripyard_base.canvas-image`
 
+> [!CAUTION]
+> **Schema verified.** `src` and `max_width` are NOT top-level props. The image is an **object** under the `image` key. `loading` is required.
+
 | Prop name | Type | Required | Valid values / notes |
 |---|---|---|---|
-| `image` | object | **yes** | `{ "src": "...", "alt": "...", "width": 1200, "height": 675 }` |
-| `loading` | string | **yes** | `"eager"` or `"lazy"` — ⚠️ omitting this causes a `RuntimeError` |
-| `aspect_ratio` | string | no | `"square"` `"wide"` `"ultrawide"` `"portrait"` |
+| `loading` | string | **yes** | `"eager"` or `"lazy"` — ⚠️ omitting causes a `RuntimeError` |
+| `image` | object | no | `{ "src": "...", "alt": "...", "width": 1200, "height": 675 }` |
+| `image_link` | string | no | URL to wrap image in a link |
+| `border_radius` | string | no | `"small"` `"medium"` `"large"` |
+| `width` | number | no | CSS pixel width override (e.g. `480`) |
+| `aspect_ratio` | string | no | `"square"` `"landscape"` `"portrait"` `"wide"` `"tall"` |
+| `alt` | string\|null | no | Alt text override |
 
 ---
 
