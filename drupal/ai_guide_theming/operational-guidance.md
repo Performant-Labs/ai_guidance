@@ -249,6 +249,37 @@ The `.gitignore` is a safety net, not a substitute for intentional staging.
 
 ---
 
+## 16. Browser subagent calls: one objective, one return condition
+
+A browser subagent has a fixed context and output budget. The more you ask it to do in one
+call, the more likely it is to crash mid-task, skip steps silently, or return a partial result
+with no indication that it failed.
+
+**Design every subagent call around a single, clearly stated objective:**
+
+| ❌ Complex (likely to crash or skip) | ✅ Simple (reliable) |
+|---|---|
+| "Navigate to the site, scroll through all 8 sections, screenshot each, compare to designs, and write a full report" | "Navigate to the site, scroll to Y=900, take one screenshot, return it" |
+| "Log in, open the Canvas editor, add 5 components, save, then verify the page looks correct" | "Log in and open `/page/1/edit` — return confirmation that the edit form loaded" |
+| "Check nav links, verify palette, take screenshots of hero and footer, and report any gaps" | One curl-verified check per item; only use a subagent if visual rendering is genuinely needed |
+| "Fill out the webform, submit it, then verify the confirmation message appears" | Fine as-is — this is one interaction flow with one outcome |
+
+**The decomposition rule**: if you can describe more than one thing the subagent needs to
+*verify and report on*, split it into multiple calls. Orchestrate the sequence in the outer
+agent, not inside the subagent.
+
+**The return condition rule**: every subagent call must have a single, unambiguous condition
+for returning. "Return when you have the screenshot" is good. "Return when you've finished
+checking everything" is not — the agent will decide what "finished" means and will often
+decide it too early.
+
+**Write findings immediately**: any subagent that produces a report, comparison, or audit
+result must write its findings to a file *before* returning. Do not rely on the return value
+alone — if the outer agent is rate-limited or the call is retried, the return value is lost
+but the file persists.
+
+---
+
 *Last updated: 2026-04-12 — items 1–10 from Phase 10–16 live run; items 11–15 extracted from*
 *`canvas-scripting-protocol.md`, `visual-regression-strategy.md`, `content-migration-cookbook.md`,*
-*and `session-2026-04-11.md` during document review.*
+*and `session-2026-04-11.md` during document review; item 16 added during retrospective.*
