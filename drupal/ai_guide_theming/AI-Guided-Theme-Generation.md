@@ -90,7 +90,7 @@ Ask the user to provide **all of the following** at once. Present it as a single
    @import url('https://fonts.googleapis.com/css2?family=[FontName]:wght@400;600;700&display=swap');
    :root { --font-heading: '[FontName]', sans-serif; }
    ```
-6. **Set social profile URLs**: Store these in the theme settings if the base theme provides social link fields, or note them for Twig injection in the footer template (Phase 7/8).
+6. **Set social profile URLs**: Store these in the theme settings if the base theme provides social link fields, or note them for Twig injection in the footer template (Phase 9/11).
 
 ### 2.3 Verification
 
@@ -155,17 +155,17 @@ Once the user provides the target design:
 5. **Gap Analysis**: Identify any bespoke elements in the screenshot that do not have a native equivalent in the base theme. These will require entirely custom CSS implementations.
 6. **Implementation Plan Generation**: Synthesize your structural component findings and draft your `theme_component_mapping_plan.md` strategy directly into the specific theme documentation folder that the user provided natively at run-time (e.g., `drupal/dripyard_themes/`).
 7. **Version Control Snapshot**: Immediately commit the raw target assets, the legacy audit (if generated), and your drafted component plan using explicit paths (e.g., `git add web/themes/custom/[primary_theme]_[timestamp]/designs web/themes/custom/[primary_theme]_[timestamp]/audits drupal/[theme_docs_namespace]/theme_component_mapping_plan.md && git commit -m "docs: Scaffold layout target assets and implementation mapping"`). Do NOT use `git add .` here.
-8. **Component Cookbook** *(gate — must be complete before Approval Checkpoint)*: Before requesting user sign-off, build a lookup table of every component you plan to use in Phase 7 assembly. For each component, read its `.component.yml` and record:
+8. **Component Cookbook** *(gate — must be complete before Approval Checkpoint)*: Before requesting user sign-off, build a lookup table of every component you plan to use in Phase 9 assembly. For each component, read its `.component.yml` and record:
    - The exact `component_id` string (e.g. `sdc.dripyard_base.flex-wrapper`)
    - Every **required** prop name with its valid enum values, copied verbatim from the schema
    - Every **slot** name, copied verbatim from the schema
 
-   Save this table to `drupal/ai_guide_theming/component-cookbook.md`. It becomes the authoritative prop reference for every Phase 7 assembly script — no prop name may be written from memory during assembly.
+   Save this table to `drupal/ai_guide_theming/component-cookbook.md`. It becomes the authoritative prop reference for every Phase 9 assembly script — no prop name may be written from memory during assembly.
 
    > [!CAUTION]
    > Do not guess prop names. A wrong prop name causes a silent drop or a `RuntimeError` on save. The cookbook prevents the "fix the fix" cycle.
    >
-   > **Reference document**: [`drupal/ai_guide_theming/component-cookbook.md`](component-cookbook.md) — read this file in full at the start of Phase 7 before writing a single assembly script. It contains verbatim prop/slot names and a "Common Mistakes" table of props that have caused silent failures in past sessions.
+   > **Reference document**: [`drupal/ai_guide_theming/component-cookbook.md`](component-cookbook.md) — read this file in full at the start of Phase 9 before writing a single assembly script. It contains verbatim prop/slot names and a "Common Mistakes" table of props that have caused silent failures in past sessions.
 
 9. **Approval Checkpoint**: With the plan and cookbook safely tracked in version control, you must explicitly STOP execution. Display your mapped strategy to the user and wait for their explicit manual approval before advancing into Phase 5 layout executions.
 
@@ -205,20 +205,28 @@ Before writing any component markup or CSS, define the page shells that those co
 
    **Fail path**: fix the specific template or region → re-run the gate → do not advance until all checks are green.
 
-8. **Visual Regression Gate — Structure (Phase 5)**: Take one viewport screenshot of the live site (no design reference comparison required yet — CSS is not finished). Confirm:
-   - Custom theme is active (not parent theme or Bartik default)
-   - Page loads with HTTP 200 and no Twig/PHP errors in watchdog
-   - Header and footer regions are present in DOM
-   - No horizontal overflow at 1728 px viewport width
-
-   **Pass**: all four conditions true → proceed to Approval Checkpoint.
-   **Fail**: fix the template or region → re-run Structural Verification Gate (step 7) → re-run this VR gate before requesting approval.
-
-9. **Approval Checkpoint**: Confirm with the user that all required page structures are covered before proceeding to implementation.
+8. **Approval Checkpoint**: Confirm with the user that all required page structures are covered before proceeding to Phase 6.
 
 ---
 
-## Phase 6: Implementation Execution
+## Phase 6: Structure Verification
+
+Take one viewport screenshot of the live site (no design reference comparison required yet — CSS is not finished). Confirm:
+
+| Check | Pass condition |
+|---|---|
+| Custom theme active | Not the parent theme or Bartik |
+| HTTP 200 | No 500/403 on front page |
+| No Twig/PHP errors | `drush watchdog:show --count=10 --severity=3` → 0 new errors |
+| Header & footer regions in DOM | Both present in page source |
+| No horizontal overflow | 1728 px viewport, no x-scrollbar |
+
+**Pass**: all five conditions true → proceed to Phase 7.
+**Fail**: fix the template or region → re-run Phase 5 Structural Verification Gate → re-run this check before Phase 7.
+
+---
+
+## Phase 7: Implementation Execution
 1. **Component Markup (Twig)**: For each mapped component in the approved strategy, author its structural markup as a Twig template (`.twig`) inside the relevant SDC bundle. Apply the proper `theme--[name]` CSS scoping wrappers inside the Twig output so each component inherits the theme's color palette overrides from `css/base.css` without hardcoding color values.
 2. **Global CSS Overrides (Native Components)**: If the design dictates nuanced spacing or styling modifications for existing native components, append custom CSS explicitly targeting the Component Layer inside the new canvas theme's `css/base.css` file. DO NOT attempt to override semantic variables directly.
 3. **Integration Strategy (Bespoke SDCs Enforced)**: When generating custom layout elements that do not exist natively, you MUST exclusively output standard **Single Directory Components (SDCs)** formatted within the active theme's `components/` directory (e.g., creating the `.component.yml`, `.twig`, and `.css` bundle). The styling for these bespoke components must be encapsulated entirely inside their local `.css` file, NOT in `base.css`. Do NOT output raw disconnected HTML payloads, and do NOT architect the output using custom Drupal Blocks, Layout Builder, or root Twig templates.
@@ -238,18 +246,26 @@ Before writing any component markup or CSS, define the page shells that those co
    > Writing to the project root keeps the file within the DDEV-mounted volume. Delete immediately after execution — never commit these scripts.
 5. **Version Control Snapshot**: Commit the newly generated SDC bundles and CSS wrappers before handing off to the verification stage (e.g. `git commit -m "feat: Implement Canvas SDC component suite"`).
 
-6. **Visual Regression Gate — Design Fidelity (Phase 6)**: First comparison against the design reference. Run one subagent per design slice for the header and hero only (sufficient to confirm tokens are correct). See `visual-regression-strategy.md §Phase 6 Gate`. Verify:
-   - Primary and accent hex values match brand spec exactly (use browser inspector or color picker)
-   - Custom fonts loading (not browser system fallbacks)
-   - Gross section proportions and spacing roughly match the design reference
-   - No unstyled elements (raw browser-default HTML)
+---
 
-   **Pass**: colors and fonts confirmed correct → proceed to Phase 7.
-   **Fail**: fix the CSS token or font loading → `drush cr` → re-run this gate before Phase 7.
+## Phase 8: Design Fidelity Verification
+
+First comparison against the design reference. Run one browser subagent per slice — header and hero only (two calls — sufficient to confirm token application). See `visual-regression-strategy.md §Design Fidelity Verification`.
+
+| Check | Pass condition |
+|---|---|
+| Primary hex | Matches brand spec exactly (browser inspector) |
+| Accent hex | Matches brand spec exactly |
+| Fonts loading | Custom fonts rendering, not browser system fallbacks |
+| Gross proportions | Section heights/widths roughly match design reference |
+| No unstyled elements | No raw browser-default HTML visible |
+
+**Pass**: all five confirmed → proceed to Phase 9.
+**Fail**: fix CSS token or font loading → `drush cr` → re-run this check before Phase 9.
 
 ---
 
-## Phase 7: Canvas Page Programmatic Assembly
+## Phase 9: Canvas Page Programmatic Assembly
 
 > [!IMPORTANT]
 > **Mandatory pre-reading before writing any script in this phase:**
@@ -260,7 +276,7 @@ Before writing any component markup or CSS, define the page shells that those co
 
 The Canvas module stores home pages as `canvas_page` entities — **not** standard nodes. They cannot be created with `node_create`. All structural page content must be wired via the `canvas_page`'s `components` field.
 
-### 7.1 Locating the Canvas home page
+### 9.1 Locating the Canvas home page
 
 ```bash
 # Confirm the site front page route:
@@ -271,7 +287,7 @@ The Canvas module stores home pages as `canvas_page` entities — **not** standa
 > [!IMPORTANT]
 > Do NOT assume the front page is a node. `system.site page.front` may return `/page/[id]` (Canvas), not `/node/[nid]`.
 
-### 7.2 Canvas component tree structure
+### 9.2 Canvas component tree structure
 
 The `components` field is a **flat array**. Nesting is expressed by `parent_uuid` references — not by PHP array nesting. Every component item requires these keys:
 
@@ -286,7 +302,7 @@ The `components` field is a **flat array**. Nesting is expressed by `parent_uuid
 | `label` | `NULL` is safe. |
 | `weight` | Integer position relative to siblings. |
 
-### 7.3 SDC schema validation rules
+### 9.3 SDC schema validation rules
 
 > [!CAUTION]
 > Canvas validates every `inputs` array against the component's `.component.yml` schema on save. Any violation silently drops the component or throws a `RuntimeError` during rendering. Always cross-reference the actual `.component.yml` file before setting props.
@@ -303,7 +319,7 @@ Known schema gotchas from `dripyard_base`:
 > [!TIP]
 > If a `canvas-image` has no real image source yet, **replace it with `sdc.[theme].text`** as a placeholder. The `text` component has no required props that cause rendering failures.
 
-### 7.4 Diagnosing Canvas rendering errors
+### 9.4 Diagnosing Canvas rendering errors
 
 ```bash
 # Check watchdog for RuntimeError entries:
@@ -321,7 +337,7 @@ Known schema gotchas from `dripyard_base`:
 > [!NOTE]
 > A `RuntimeError` referencing a UUID whose DB data is correct usually means a **stale render cache** — not bad data. Always truncate `cache_render` before concluding the stored data is wrong.
 
-### 7.5 Canvas assembly cadence
+### 9.5 Canvas assembly cadence
 
 Assemble the Canvas page one visual section at a time, in top-to-bottom order matching the design. Each section is one script, one verification, one commit.
 
@@ -343,7 +359,7 @@ Assemble the Canvas page one visual section at a time, in top-to-bottom order ma
 - Commit after each verified section: `git commit -m "feat(canvas): assemble [section name] section"`
 - If a script fails, restore from the Phase 3 Canvas DB snapshot rather than writing a second fix script on top of an uncertain state.
 
-### 7.6 Per-section structural gate *(run after every assembly script)*
+### 9.6 Per-section structural gate *(run after every assembly script)*
 
 Before committing a section and moving to the next, two checks must pass:
 
@@ -361,7 +377,7 @@ curl -sk [site-url]/ | grep -i "[unique class or landmark text from this section
 
 **Fail path**: do not write a second fix script on top of uncertain state. Restore from the Phase 3 Canvas DB snapshot, identify the root cause against the pre-flight checklist in `canvas-scripting-protocol.md`, and re-run the section script.
 
-### 7.7 End-of-phase full tree audit *(run once after all sections assembled)*
+### 9.7 End-of-phase full tree audit *(run once after all sections assembled)*
 
 ```bash
 # Count total components — must match your cookbook's expected total:
@@ -384,30 +400,32 @@ echo 'Done.'.PHP_EOL;
 # Must return 'Done.' with zero ORPHAN lines.
 ```
 
-**Pass**: all sections verified, no orphans → commit the full assembly snapshot → proceed to Phase 7.8.
-**Fail**: fix the specific orphan or missing component → re-run 7.7 before proceeding.
-
-### 7.8 Visual Regression Gate — Canvas Assembly (Phase 7 — primary VR pass)
-
-This is the primary visual regression pass for the project. Run the full panel-by-panel protocol from [`visual-regression-strategy.md`](visual-regression-strategy.md). All nine slices must be compared against the live site before Phase 8 begins.
-
-**Scope**: Every Canvas section — header/nav, hero, features, carousel, content engine, teams, graph, FAQ, footer.
-
-**Pass conditions** (all must be true before Phase 8):
-- All 9 design slices return ✅ Match or ⚠️ Minor Gap
-- Zero ❌ Major Gap findings outstanding
-- Canvas placeholder copy scan returns 0 matches (no Keytail/NeonByte/lorem ipsum)
-- All orphan checks from §7.7 passed
-
-**Fail path**: For each ❌ — fix the specific Canvas component → re-run only the affected design slice → commit → continue to the next slice. Do not advance to Phase 8 until all slices are ✅ or ⚠️.
+**Pass**: all sections verified, no orphans → commit the full assembly snapshot → proceed to Phase 10.
+**Fail**: fix the specific orphan or missing component → re-run §9.7 before proceeding.
 
 ---
 
-## Phase 8: Menu & Block Wiring (Programmatic)
+## Phase 10: Canvas Assembly Verification
+
+This is the primary visual regression pass for the project. Run the full panel-by-panel protocol from [`visual-regression-strategy.md`](visual-regression-strategy.md). All nine slices must be compared against the live site before Phase 11 begins.
+
+**Scope**: Every Canvas section — header/nav, hero, features, carousel, content engine, teams, graph, FAQ, footer.
+
+**Pass conditions** (all must be true before Phase 11):
+- All 9 design slices return ✅ Match or ⚠️ Minor Gap
+- Zero ❌ Major Gap findings outstanding
+- Canvas placeholder copy scan returns 0 matches (no Keytail/NeonByte/lorem ipsum)
+- All orphan checks from §9.7 passed
+
+**Fail path**: For each ❌ — fix the specific Canvas component → re-run only the affected design slice → commit → continue. Do not advance to Phase 11 until all slices are ✅ or ⚠️.
+
+---
+
+## Phase 11: Menu & Block Wiring (Programmatic)
 
 Never use the Drupal admin UI to wire menus or place blocks. Use `drush scr` scripts for all wiring.
 
-### 8.1 Menu population pattern
+### 11.1 Menu population pattern
 
 
 ```php
@@ -433,7 +451,7 @@ MenuLinkContent::create([
 > [!WARNING]
 > **Menu links to inaccessible routes are silently hidden for anonymous users.** If a menu item disappears, check the target node's publication state. If content moderation is active, `$node->set('status', 1)->save()` alone does NOT publish a node — you must set `$node->set('moderation_state', 'published')->save()`. Verify with: `drush php-eval "\$n = \Drupal::entityTypeManager()->getStorage('node')->load([nid]); echo \$n->moderation_state->value;"`
 
-### 8.2 Block placement pattern
+### 11.2 Block placement pattern
 
 ```php
 <?php
@@ -459,7 +477,7 @@ Block::create([
 ])->save();
 ```
 
-### 8.3 Config sync directory
+### 11.3 Config sync directory
 
 DDEV defaults `config_sync_directory` to `sites/default/files/sync` (gitignored) unless overridden. To track config in the project root's `config/sync` directory, add this to `settings.php` **before** the DDEV include block:
 
@@ -474,7 +492,7 @@ Then export: `[runtime_wrapper] drush config:export --yes`
 > [!NOTE]
 > `settings.php` is gitignored (contains secrets). This setting must be added on each environment or via a post-provision hook. It does not get committed.
 
-### 8.4 Structural Verification Gate *(all checks must pass before proceeding to Phase 9 Content Migration)*
+### 11.4 Structural Verification Gate *(all checks must pass before proceeding to Phase 13 Content Migration)*
 
 | Check | Command | Pass condition |
 |---|---|---|
@@ -485,26 +503,28 @@ Then export: `[runtime_wrapper] drush config:export --yes`
 | Nav items visible to anon | `curl -sk [site-url]/ \| grep -i "[first nav item text]"` | match found |
 | No new errors | `[runtime_wrapper] drush watchdog:show --count=10 --severity=3` | 0 new errors |
 
-**Fail path**: fix the specific wiring issue → re-run only the failed check → commit → proceed to Phase 8.5.
-
-### 8.5 Visual Regression Gate — Navigation (Phase 8)
-
-Open the live site in a browser subagent and verify navigation rendering. This is a targeted, lightweight check — one subagent call.
-
-| Check | Pass condition |
-|---|---|
-| Header nav labels | Match the menu_link_content list exactly (correct text, correct order) |
-| Header nav links | Each resolves to the correct route (not 404) |
-| Footer nav labels and links | Match the footer menu |
-| Sidebar/book nav | Visible on a book page if sidebar region is wired |
-| No broken nav items | No empty `<li>` elements or `href="#"` placeholders |
-
-**Pass**: all nav checks green → commit → proceed to Phase 9 Content Migration.
-**Fail**: fix the menu wiring or block placement → re-run §8.4 structural gate → re-run this VR gate before Phase 9.
+**Fail path**: fix the specific wiring issue → re-run only the failed check → commit → proceed to Phase 12.
 
 ---
 
-## Phase 9: Content Migration
+## Phase 12: Navigation Verification
+
+Open the live site in a browser subagent and verify navigation rendering. One subagent call.
+
+| Check | Pass condition |
+|---|---|
+| Header nav labels | Match `menu_link_content` list exactly (correct text, correct order) |
+| Header nav links | Each resolves to the correct route (not 404) |
+| Footer nav labels and links | Match the footer menu |
+| Sidebar/book nav | Visible on a book page if sidebar region is wired |
+| No broken nav items | No empty `<li>` or `href="#"` placeholders |
+
+**Pass**: all nav checks green → commit → proceed to Phase 13.
+**Fail**: fix menu wiring or block placement → re-run §11.4 structural gate → re-run this check before Phase 13.
+
+---
+
+## Phase 13: Content Migration
 
 > [!IMPORTANT]
 > **Mandatory pre-reading**: Read [`drupal/ai_guide_theming/content-migration-cookbook.md`](content-migration-cookbook.md) in full before writing any script or running any Drush command in this phase. It contains all inventory commands, migration patterns, dependency ordering, the form framework assessment, and the verification gate.
@@ -514,18 +534,7 @@ Open the live site in a browser subagent and verify navigation rendering. This i
 3. **Run inventory** (cookbook §-1 → §0 → §8 inventory commands): Execute against the source site. Present each category as a structured table — one category at a time. Do not dump all categories simultaneously.
 4. **User selection gate**: For each category, the user assigns a disposition to every item (bring as-is / modify / placeholder stub / skip). **Do NOT proceed to migration until all categories have explicit dispositions.**
 5. **Execute migration in dependency order** (cookbook §-1 → §0 → §1 → §2 → §3 → §4 → §5 → §6 → §7 → §8). One category per script. Verify each category before moving to the next. Commit after each verified category.
-6. **Verification gate** (cookbook §Verification): Run node counts, alias spot-checks, media counts, image style audit, and Canvas placeholder scan. Must pass before step 7.
-7. **Visual Regression Gate — Content Rendering (Phase 9)**: Open each migrated content type in a browser subagent and verify it renders without structural breakage:
-
-   | Content type | URL pattern | Check |
-   |---|---|---|
-   | Basic Page | `/services` | Body renders, correct layout, no unstyled content |
-   | Article | `/articles/[slug]` | Body, tags, created date visible; featured image if applicable |
-   | Book page | any book path | Body present, sidebar nav block visible and linked |
-   | Contact page | `/contact-us` | Webform renders with all fields (Name, Email, Company, Phone, Message) |
-
-   **Pass**: all four content types render correctly → proceed to Phase 10.
-   **Fail**: fix the content type template or field rendering → re-run the affected check → commit before Phase 10.
+6. **Verification gate** (cookbook §Verification): Run node counts, alias spot-checks, media counts, image style audit, and Canvas placeholder scan. Must pass before Phase 14.
 
 > [!CAUTION]
 > **`block_content` broken-install risk**: On DCMS 2.0, a `config:import --partial` that touches `core.extension` can register `block_content` as enabled without running its install hook (no tables created). The site then crashes on any full bootstrap. **Prevention**: enable `block_content` via `drush pm:enable` before running any config import. **Resolution**: see cookbook §7 caution block.
@@ -535,15 +544,31 @@ Open the live site in a browser subagent and verify navigation rendering. This i
 
 ---
 
-## Phase 10: Verification
+## Phase 14: Content Rendering Verification
 
-By the time Phase 10 begins, five VR gates have already fired (Phases 5, 6, 7, 8, 9).
-Phase 10 is the final sign-off, not the first catch. Its scope is narrower because
-problems should have been caught and fixed at the phase where they originated.
+Open each migrated content type in a browser subagent and confirm it renders without structural breakage. One subagent call, four URLs.
 
-**Phase 10.2 must not begin until Phase 10.1 passes.**
+| Content type | URL | Must show |
+|---|---|---|
+| Basic Page | `/services` | Body copy, correct layout, no unstyled content |
+| Article | `/articles/[any-slug]` | Body, tags, created date, featured image if applicable |
+| Book page | any book path | Body + sidebar nav block visible and linked |
+| Contact page | `/contact-us` | Webform with all 5 fields (Name, Email, Company, Phone, Message) |
 
-### Phase 10.1 — Content Audit
+**Pass**: all four render correctly → proceed to Phase 15.
+**Fail**: fix the content type template or field rendering → re-run the affected URL → commit before Phase 15.
+
+---
+
+## Phase 15: Content Audit
+
+
+By the time Phase 15 begins, five VR gates have already fired (Phases 6, 8, 10, 12, 14).
+This is the final content correctness check before the acceptance screenshot pass.
+
+**Phase 16 must not begin until Phase 15 passes.**
+
+### Audit procedure
 
 Scan every Canvas text-bearing component for placeholder copy before any screenshot is taken. Base themes (NeonByte, Keytail, Dripyard) ship demo content that is structurally invisible — it passes layout checks but contains the wrong words.
 
@@ -563,17 +588,19 @@ curl -sk [site-url]/ | grep -i "[approved hero headline]"
 curl -sk [site-url]/ | grep -iE "[nav-label-1]|[nav-label-2]"
 ```
 
-**Pass**: 0 placeholder matches, all approved copy present → proceed to Phase 10.2.
+**Pass**: 0 placeholder matches, all approved copy present → proceed to Phase 16.
 **Fail**: update via the keyed-replacement pattern in `canvas-scripting-protocol.md` → re-run the scan → do not open a browser until this gate is green.
 
 > [!CAUTION]
-> A Phase 10.2 visual regression finding should **never** be "wrong text." If it is, Phase 10.1 was not run correctly. Return to 10.1.
+> A Phase 16 finding should **never** be "wrong text." If it is, Phase 15 was not run correctly.
 
-### Phase 10.2 — Final Acceptance Visual Regression
+---
 
-This is the final holistic sign-off, not the primary VR pass (that was Phase 7.8).
-Scope is narrower: confirm no regressions were introduced during Phases 8 or 9, and
-that the complete site (with real content) still matches the design reference.
+## Phase 16: Final Acceptance Verification
+
+This is the final holistic sign-off, not the primary VR pass (that was Phase 10).
+Scope is narrower: confirm no regressions were introduced during Phases 11–14, and
+that the complete site with real content still matches the design reference.
 
 > [!IMPORTANT]
 > **Do not attempt visual regression in a single subagent call.** Follow the
@@ -584,8 +611,8 @@ that the complete site (with real content) still matches the design reference.
 > - One subagent call = one design slice vs. one live viewport.
 > - Use pre-sliced assets in `designs/` (`00_menu.webp` … `08_footer.webp`).
 > - Each call appends findings to `drupal/ai_guide_theming/visual-regression-report.md`.
-> - Evaluate layout, color, spacing, and typography **only** — content correctness was Phase 10.1.
+> - Evaluate layout, color, spacing, and typography **only** — content correctness was Phase 15.
 
-**Expected outcome**: Fewer findings than Phase 7.8 because upstream gates caught structural issues. Any ⚠️ Minor Gap findings are scoped and scheduled; any ❌ Major Gap is fixed before go-live sign-off.
+**Expected outcome**: Fewer findings than Phase 10 because upstream gates caught structural issues. Any ⚠️ Minor Gap findings are scoped and scheduled; any ❌ Major Gap is fixed before go-live sign-off.
 
 **Failure path**: Report the specific discrepancy → fix the isolated CSS/Canvas change → re-run only the affected slice → commit.

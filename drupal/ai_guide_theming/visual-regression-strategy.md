@@ -14,16 +14,16 @@ end-of-project step — it is a mandatory gate at the end of every structural ph
 
 | Phase | Gate name | Scope | Reference |
 |---|---|---|---|
-| 5 | Structure VR | Page renders, regions present, no errors | §Phase 5 Gate below |
-| 6 | Design Fidelity VR | Colors, fonts, no unstyled elements | §Phase 6 Gate below |
-| **7** | **Canvas Assembly VR** | **Full panel-by-panel vs. design reference** | **§Correct Execution Pattern** |
-| 8 | Navigation VR | Nav items, links, hover states | §Phase 8 Gate below |
-| 9 | Content Rendering VR | Each content type renders correctly | §Phase 9 Gate below |
-| 10.2 | Final Acceptance VR | Holistic sign-off; smaller scope if upstream gates caught issues | §Correct Execution Pattern |
+| 6 | Structure Verification | Page renders, regions present, no errors | §Structure Verification below |
+| 8 | Design Fidelity Verification | Colors, fonts, no unstyled elements | §Design Fidelity Verification below |
+| **10** | **Canvas Assembly Verification** | **Full panel-by-panel vs. design reference** | **§Correct Execution Pattern** |
+| 12 | Navigation Verification | Nav items, links, hover states | §Navigation Verification below |
+| 14 | Content Rendering Verification | Each content type renders correctly | §Content Rendering Verification below |
+| 16 | Final Acceptance Verification | Holistic sign-off; smaller scope if upstream gates caught issues | §Correct Execution Pattern |
 
 ---
 
-## Phase 5 Gate — Structure
+## Structure Verification (Phase 6)
 
 **One browser subagent call. No design reference required.**
 
@@ -38,7 +38,7 @@ Fail: fix template/region → re-run →then Approval Checkpoint.
 
 ---
 
-## Phase 6 Gate — Design Fidelity
+## Design Fidelity Verification (Phase 8)
 
 **Two browser subagent calls: header slice + hero slice only.**
 
@@ -56,7 +56,7 @@ Fail: fix CSS token / font loading → `drush cr` → re-run gate.
 
 ---
 
-## Phase 8 Gate — Navigation
+## Navigation Verification (Phase 12)
 
 **One browser subagent call.**
 
@@ -72,7 +72,7 @@ Fail: fix menu wiring → re-run §8.4 structural gate → re-run this gate.
 
 ---
 
-## Phase 9 Gate — Content Rendering
+## Content Rendering Verification (Phase 14)
 
 **One browser subagent call, four pages.**
 
@@ -90,7 +90,7 @@ Fail: fix template/field rendering → re-run affected URL → commit.
 
 ---
 
-## Why Previous Full-VR Attempts Crashed (Phase 7 / 10.2)
+## Why Previous Full-VR Attempts Crashed (Phases 10 & 16)
 
 
 
