@@ -469,6 +469,12 @@ Then export: `[runtime_wrapper] drush config:export --yes`
 5. **Execute migration in dependency order** (cookbook §-1 → §0 → §1 → §2 → §3 → §4 → §5 → §6 → §7 → §8). One category per script. Verify each category before moving to the next. Commit after each verified category.
 6. **Verification gate** (cookbook §Verification): Run node counts, alias spot-checks, media counts, image style audit, and Canvas placeholder scan. Must pass before Phase 10.
 
+> [!CAUTION]
+> **`block_content` broken-install risk**: On DCMS 2.0, a `config:import --partial` that touches `core.extension` can register `block_content` as enabled without running its install hook (no tables created). The site then crashes on any full bootstrap. **Prevention**: enable `block_content` via `drush pm:enable` before running any config import. **Resolution**: see cookbook §7 caution block.
+
+> [!CAUTION]
+> **Content Moderation overrides `status => 1`**: On DCMS 2.0 with Content Moderation active, `Node::create(['status' => 1])` creates a draft node (unpublished). You must also set `'moderation_state' => 'published'` in the create array, or call `$node->set('moderation_state', 'published')->save()` after creation.
+
 ---
 
 ## Phase 10: Verification
