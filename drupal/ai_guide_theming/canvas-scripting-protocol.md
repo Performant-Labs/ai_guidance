@@ -1,6 +1,6 @@
-# Canvas Remediation Protocol
+# Canvas Scripting Protocol
 
-This document defines the mandatory pre-flight checklist that must pass before any Drush script or Twig override is written during the visual remediation phase. It was created after a session where multiple fix scripts were required due to skipping these checks.
+This document defines the mandatory pre-flight checklist that must pass before any Drush script or Twig override is written that touches Canvas page components. It applies equally to initial assembly, additions, and corrections. It was created after a session where multiple fix scripts were required because these checks were skipped.
 
 ---
 
@@ -12,7 +12,7 @@ Every failure in that session shared one root cause: **writing code before verif
 - Module availability was assumed instead of verified
 - Component rendering behaviour was inferred instead of read from the Twig template
 
-The rule is simple: **read before you write.**
+The rule is simple: **read before you write.** This applies equally whether building from scratch or making a targeted change.
 
 ---
 

@@ -11,7 +11,7 @@ The primary objective is to ingest a UI screenshot, map its visual elements to t
 To ensure absolute safety and maintain a functional baseline for the host project, **AIs must first duplicate the existing stable theme into a new working directory before making any experimental layout or styling changes.**
 
 > [!IMPORTANT]
-> **Visual Remediation Phase**: When fixing structural or CSS gaps against a design reference (i.e., any work after the initial assembly), you MUST follow the `canvas-remediation-protocol.md` in this directory before writing any Drush script or Twig override. That document supersedes general best-guess approaches and defines mandatory pre-flight checks, schema verification steps, script writing rules, and verification requirements.
+> **Visual Remediation Phase**: When fixing structural or CSS gaps against a design reference (i.e., any work after the initial assembly), you MUST follow the `canvas-scripting-protocol.md` in this directory before writing any Drush script or Twig override. That document defines mandatory pre-flight checks, schema verification steps, script writing rules, and verification requirements that apply to all Canvas component work — initial build, additions, and updates alike.
 
 ---
 
