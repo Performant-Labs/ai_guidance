@@ -205,8 +205,25 @@ ddev drush cr
 > [!CAUTION]
 > **Check for dependency conflicts before importing Views.** A View
 > that references a field or content type that does not exist on the
-> target site will throw a schema validation error on import. Inspect
-> each `views.view.*.yml` file before copying.
+> target site will throw a schema validation error on import. **Views
+> that reference article/book content types must not be imported until
+> those content types exist on the target.** Inspect each
+> `views.view.*.yml` file before copying.
+
+> [!CAUTION]
+> **Do not import `field.storage.*` configs that already exist on the
+> target.** DCMS 2.0 ships its own `field_tags`, `field_featured_image`,
+> etc. Importing source versions will cause a "Delete" action in the
+> diff which removes the target's field storage. Check with
+> `drush php-eval` before copying any `field.storage.node.*.yml`.
+
+> [!NOTE]
+> **Text format mapping**: Source sites commonly use `basic_html` or
+> `full_html` for body fields. DCMS 2.0 uses `content_format` as its
+> single rich-text format. When importing `field.field.node.article.body.yml`
+> or similar, patch the format reference before import:
+> `sed -i '' 's/full_html/content_format/g' field.field.node.article.body.yml`
+> and use `'format' => 'content_format'` in all `Node::create()` calls.
 
 ---
 
@@ -320,17 +337,23 @@ foreach(\$nodes as \$n) {
 
 ### Migration pattern
 
+> [!NOTE]
+> DCMS 2.0 uses `field_content` (text_long) instead of `body`, and
+> `content_format` instead of `basic_html`/`full_html`. Check what
+> fields the target page type has before running:
+> `drush php-eval "foreach(\Drupal::service('entity_field.manager')->getFieldDefinitions('node','page') as \$n=>\$d) if(str_starts_with(\$n,'field_')||\$n==='body') echo \$n.' ('.$d->getType().')\n';"`
+
 ```php
 <?php
 use Drupal\node\Entity\Node;
 use Drupal\path_alias\Entity\PathAlias;
 
 \$node = Node::create([
-  'type'   => 'page',
-  'title'  => 'Services',
-  'body'   => [
+  'type'          => 'page',
+  'title'         => 'Services',
+  'field_content' => [            // DCMS uses field_content not body
     'value'  => '<p>Body copy here.</p>',
-    'format' => 'basic_html',
+    'format' => 'content_format', // DCMS text format (not basic_html)
   ],
   'status' => 1,
 ]);
@@ -369,7 +392,38 @@ foreach(\$nodes as \$n) {
 }"
 ```
 
-### Migration pattern
+### Content type migration
+
+The `article` content type may not exist on the target DCMS site. Import
+it via config before creating any article nodes:
+
+```bash
+# 1. Export source config:
+cd [source-path] && ddev drush config:export --yes
+
+# 2. Copy minimal config (do NOT copy display/form displays — they have
+#    module dependencies that will fail on the target):
+cp [source]/config/sync/node.type.article.yml            [target]/config/sync/
+cp [source]/config/sync/field.storage.node.body.yml      [target]/config/sync/
+cp [source]/config/sync/field.storage.node.field_summary.yml [target]/config/sync/
+cp [source]/config/sync/field.storage.node.field_image.yml   [target]/config/sync/
+cp [source]/config/sync/field.field.node.article.body.yml    [target]/config/sync/
+cp [source]/config/sync/field.field.node.article.field_tags.yml  [target]/config/sync/
+cp [source]/config/sync/field.field.node.article.field_summary.yml [target]/config/sync/
+cp [source]/config/sync/field.field.node.article.field_image.yml   [target]/config/sync/
+# DO NOT copy: field.storage.node.field_tags (already exists on target)
+# DO NOT copy: core.entity_view_display.node.article.* (has module deps)
+# DO NOT copy: core.entity_form_display.node.article.* (has module deps)
+
+# 3. Patch text format references in the field configs:
+sed -i '' 's/full_html/content_format/g' [target]/config/sync/field.field.node.article.body.yml
+sed -i '' 's/basic_html/content_format/g' [target]/config/sync/field.field.node.article.field_summary.yml
+
+# 4. Import:
+cd [target-path] && ddev drush config:import --partial --yes
+```
+
+### Node migration pattern
 
 ```php
 <?php
@@ -378,9 +432,12 @@ use Drupal\path_alias\Entity\PathAlias;
 
 // Use term IDs recorded during §1 migration:
 \$node = Node::create([
-  'type'        => 'article',
-  'title'       => 'Why Drupal?',
-  'body'        => ['value' => '<p>...</p>', 'format' => 'basic_html'],
+  'type'       => 'article',
+  'title'      => 'Why Drupal?',
+  'body'       => [
+    'value'    => '<p>...</p>',
+    'format'   => 'content_format', // NOT basic_html
+  ],
   'field_tags'  => [['target_id' => \$term_id_automated_testing]],
   'field_image' => [['target_id' => \$media_id_hero]],  // optional
   'status'      => 1,
@@ -428,28 +485,54 @@ foreach(\$nodes as \$n) echo \$n->id().' | '.\$n->label().PHP_EOL;"
 
 ### Migration pattern (if needed)
 
+> [!CAUTION]
+> Setting `'book' => [...]` inside `Node::create()` does **not** persist
+> the book hierarchy. The `book` table is a separate database record.
+> Always use `\Drupal::database()->merge('book')` after `->save()`.
+> Sort nodes by `depth` ascending before iterating so parents are
+> created before their children, and build a `source_nid → target_nid`
+> map to resolve `pid` (parent ID) references.
+
 ```php
 <?php
 use Drupal\node\Entity\Node;
+use Drupal\path_alias\Entity\PathAlias;
 
-// Find the book root node ID first:
-\$root = \Drupal::entityTypeManager()->getStorage('node')
-  ->loadByProperties(['type'=>'book','title'=>'[root book title]']);
-\$root = reset(\$root);
-\$book_nid = \$root->id();
+// $items = nodes sorted by depth ASC (roots first)
+// $nid_map = [source_nid => target_nid] built as nodes are created
 
 \$node = Node::create([
   'type'   => 'book',
   'title'  => 'Getting Started',
-  'body'   => ['value' => '<p>...</p>', 'format' => 'basic_html'],
-  'book'   => [
-    'bid'    => \$book_nid,    // root book node ID
-    'pid'    => \$parent_nid,  // parent chapter (0 = top level)
-    'weight' => 0,
-  ],
+  'body'   => ['value' => '<p>...</p>', 'format' => 'content_format'],
   'status' => 1,
 ]);
 \$node->save();
+\$new_nid = \$node->id();
+\$nid_map[\$source_nid] = \$new_nid;
+
+// For root nodes (bid == nid on source), target_bid = own new nid:
+\$target_bid = (\$source_bid === \$source_nid)
+  ? \$new_nid
+  : \$nid_map[\$source_bid];
+\$target_pid = \$nid_map[\$source_pid] ?? 0;
+
+// Write book hierarchy directly to the book table:
+\Drupal::database()->merge('book')
+  ->key('nid', \$new_nid)
+  ->fields([
+    'nid'    => \$new_nid,
+    'bid'    => \$target_bid,
+    'pid'    => \$target_pid,
+    'weight' => \$item['weight'],
+    'depth'  => \$item['depth'],
+  ])
+  ->execute();
+
+// Set alias:
+PathAlias::create([
+  'path' => '/node/' . \$new_nid, 'alias' => \$item['alias'], 'langcode' => 'en',
+])->save();
 ```
 
 ---
@@ -516,7 +599,7 @@ use Drupal\block_content\Entity\BlockContent;
 \$block = BlockContent::create([
   'type'  => 'basic',
   'info'  => 'Footer CTA',
-  'body'  => ['value' => '<p>...</p>', 'format' => 'basic_html'],
+  'body'  => ['value' => '<p>...</p>', 'format' => 'content_format'],
 ]);
 \$block->save();
 ```
@@ -549,7 +632,7 @@ ddev drush pm:list --status=enabled 2>/dev/null | grep -iE "form|webform|contact
 | Target has | Recommendation |
 |---|---|
 | Webform enabled | Export source `webform.[id].yml` → `config:import --partial`. Webform field config travels with the config entity. |
-| Webform not installed | Assess: install Webform (`composer require drupal/webform && drush pm:enable webform`) OR use Drupal core Contact module for a simple name/email/message form. Present both options to user. |
+| Webform not installed | Install: `ddev composer require "drupal/webform:^6.3@beta"` (Drupal 11 requires 6.3.x; 6.2.x is D10 only) then `ddev drush pm:enable webform && ddev drush cr`. Then recreate the form fields via the API or export/import. |
 | A DCMS-native form module | Recreate the form fields using that module's API/UI. Note which fields existed on the source form. |
 
 ### Source form inventory

@@ -463,10 +463,11 @@ Then export: `[runtime_wrapper] drush config:export --yes`
 > **Mandatory pre-reading**: Read [`drupal/ai_guide_theming/content-migration-cookbook.md`](content-migration-cookbook.md) in full before writing any script or running any Drush command in this phase. It contains all inventory commands, migration patterns, dependency ordering, the form framework assessment, and the verification gate.
 
 1. **DDEV multi-project**: Start the source site alongside the target — `cd [source-path] && ddev start`. Both run simultaneously; the shared `ddev-router` handles both by subdomain. No conflict expected.
-2. **Run inventory** (cookbook §0–§8 inventory commands): Execute against the source site. Present each category as a structured table — one category at a time. Do not dump all categories simultaneously.
-3. **User selection gate**: For each category, the user assigns a disposition to every item (bring as-is / modify / placeholder stub / skip). **Do NOT proceed to migration until all categories have explicit dispositions.**
-4. **Execute migration in dependency order** (cookbook §0 → §1 → §2 → §3 → §4 → §5 → §6 → §7 → §8). One category per script. Verify each category before moving to the next. Commit after each verified category.
-5. **Verification gate** (cookbook §Verification): Run node counts, alias spot-checks, media counts, image style audit, and Canvas placeholder scan. Must pass before Phase 10.
+2. **§-1 Module Audit first** (cookbook §-1): Compare enabled modules between source and target. Install any modules the migrated content depends on **before** touching config or content. Webform, Redirect, and GA4 are common gaps between legacy sites and fresh DCMS installs.
+3. **Run inventory** (cookbook §-1 → §0 → §8 inventory commands): Execute against the source site. Present each category as a structured table — one category at a time. Do not dump all categories simultaneously.
+4. **User selection gate**: For each category, the user assigns a disposition to every item (bring as-is / modify / placeholder stub / skip). **Do NOT proceed to migration until all categories have explicit dispositions.**
+5. **Execute migration in dependency order** (cookbook §-1 → §0 → §1 → §2 → §3 → §4 → §5 → §6 → §7 → §8). One category per script. Verify each category before moving to the next. Commit after each verified category.
+6. **Verification gate** (cookbook §Verification): Run node counts, alias spot-checks, media counts, image style audit, and Canvas placeholder scan. Must pass before Phase 10.
 
 ---
 
