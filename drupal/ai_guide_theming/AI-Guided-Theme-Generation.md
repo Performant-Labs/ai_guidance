@@ -10,7 +10,11 @@ The primary objective is to ingest a UI screenshot, map its visual elements to t
 
 To ensure absolute safety and maintain a functional baseline for the host project, **AIs must first duplicate the existing stable theme into a new working directory before making any experimental layout or styling changes.**
 
+> [!IMPORTANT]
+> **Visual Remediation Phase**: When fixing structural or CSS gaps against a design reference (i.e., any work after the initial assembly), you MUST follow the `canvas-remediation-protocol.md` in this directory before writing any Drush script or Twig override. That document supersedes general best-guess approaches and defines mandatory pre-flight checks, schema verification steps, script writing rules, and verification requirements.
+
 ---
+
 
 ## Phase 1: Pre-Execution Discovery
 Before cloning repositories or running commands, the AI must collect all foundational environment variables and display them to the user for explicit confirmation.
@@ -121,7 +125,17 @@ Before writing any component markup or CSS, define the page shells that those co
    - Assemble the layout inside the Drupal Canvas UI using your generated components.
    - Provide you with the URL of the finalized page.
 2. **Browser Verification**: Once the user provides the rendered URL, load the Canvas page in the headless browser.
-3. **Visual Regression**: Visually compare the rendered DOM output against the original target screenshot.
+3. **Visual Regression**: Visually compare the rendered DOM output against the original target design slices.
+
+   > [!IMPORTANT]
+   > **Do not attempt visual regression in a single subagent call.** Previous sessions crashed repeatedly because the scope (6+ screenshots + a 9,902 px reference image) exceeded the agent's context budget. You MUST follow the panel-by-panel protocol defined in:
+   > **`drupal/ai_guide_theming/visual-regression-strategy.md`**
+   >
+   > Key rules from that document:
+   > - One subagent call = one design slice vs. one live viewport. Nine slices = nine sequential calls.
+   > - Use the pre-sliced assets in `designs/` (`00_menu.webp` … `08_footer.webp`). Never pass `keytail-desktop.webp` as a MediaPath — it is 9,902 px tall and will exhaust context alone.
+   > - Each subagent call must write its findings to `drupal/ai_guide_theming/visual-regression-report.md` before returning.
+
 4. **Cascade Safety Check**: Verify that your custom CSS overrides remained perfectly encapsulated within the Canvas components and did not accidentally poison the broader global typography or color matrices expected natively by the host site.
 5. **Failure Path**: If visual regression fails or the cascade check identifies layout pollution, do NOT leave the broken state committed. Immediately report the specific discrepancy to the user, revert the Phase 4 implementation commit (e.g. `git revert HEAD`), and return to Phase 4 Step 1 with the identified failures explicitly documented as constraints for the next attempt.
 
