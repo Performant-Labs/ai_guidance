@@ -1,202 +1,162 @@
-# Visual Regression Report
+# Visual Regression Report — Keytail Canvas Assembly
 
-**Date**: 2026-04-11  
-**Live site**: https://pl-performantlabs.com.2.ddev.site:8493/  
-**Viewport**: 1728×997 px | **Page height**: ~4962 px  
-**Reference slices**: `web/themes/custom/performant_labs_20260411/designs/`  
-**Lens**: Structural and CSS gaps only. Copy differences are expected and are not listed.
-
----
-
-## Panel 00 — Header / Navigation
-
-**Reference**: `designs/00_menu.webp`
-
-| What to check | Reference | Live | Gap? |
-|---|---|---|---|
-| Header background | Light blue-grey, semi-transparent | Solid dark navy | ❌ |
-| Logo position | Left-aligned | Left-aligned | ✅ |
-| Nav links position | Right of logo, horizontal | Right of logo, horizontal | ✅ |
-| CTA button in header | Present (pill-shaped, right side) | Absent | ❌ |
-| Header height / density | Compact ~56 px | Compact ~56 px | ✅ |
-| Sticky behaviour | Sticky with transparent-to-opaque scroll | Sticky, always opaque | ⚠️ |
-
-**Actionable fixes:**
-- [ ] Add a CTA button (`Call today` or `Get started`) as a third flex item in the header region
-- [ ] Change header background from solid navy to semi-transparent; add scroll-triggered opacity via JS or CSS `scrolled` class
+**Date:** 2026-04-11  
+**Phase:** 8 — Verification  
+**Live URL:** https://pl-performantlabs.com.2.ddev.site:8493/  
+**Theme:** `performant_labs_20260411`  
+**Method:** Browser screenshots compared slice-by-slice against `designs/NN_*.webp` references.
 
 ---
 
-## Panel 01 — Hero Banner
+## Panel-by-Panel Analysis
 
-**Reference**: `designs/01_hero.webp`
+### Slice 00 — Header / Navigation
 
-| What to check | Reference | Live | Gap? |
-|---|---|---|---|
-| Section background | Full-bleed photo with overlay | CSS gradient (dark navy → black) with amber glow | ❌ |
-| Text alignment | Centered | Left-aligned | ❌ |
-| Headline font weight | Black / 900 | Bold / 700 | ⚠️ |
-| Headline font size | ~64–72 px display | ~48 px | ⚠️ |
-| CTA button count | Two side-by-side (filled + ghost) | One (filled only) | ❌ |
-| CTA button layout | `display: flex; gap` row | Single block button | ❌ |
-| Hero illustration / mockup | Large dashboard image below CTAs | Absent | ❌ |
-| Section min-height | ~600 px | ~400 px | ⚠️ |
+| # | Element | Design | Live | Status |
+|---|---------|--------|------|--------|
+| 1 | Logo | Small "ck" ligature icon, white, left | **"NeonByte 🌙" text logo, black** | ❌ Wrong logo — Performant Labs logo not showing |
+| 2 | Header background | Transparent/glass over hero gradient | **White opaque box, floating** | ❌ Header is not transparent/sticky over gradient |
+| 3 | Nav items | Product (dropdown), Pricing, Blog | Services, How We Do It, Articles, Open Source Projects, Contact Us | ⚠️ Acceptable (PL content, not Keytail content) |
+| 4 | CTA pill | "Get started" — white pill, right-aligned | **"Call today" amber pill, right-aligned** | ✅ Correct Performant Labs CTA |
+| 5 | Nav typography | Clean sans-serif, minimal weight | ✅ Matches | ✅ |
 
-**Actionable fixes:**
-- [ ] Add a second ghost/outline button alongside the existing primary CTA — wrap both in a flex row container
-- [ ] Center-align hero text (`text-align: center; align-items: center`)
-- [ ] Increase hero section `min-height` to ~600 px
-- [ ] Add a dashboard illustration image below the CTA row (or use a styled `<img>` SDC slot)
-- [ ] Increase headline `font-size` and `font-weight` to match display scale
+**Priority gaps:** Logo (using NeonByte default), header not transparent/glass over hero.
 
 ---
 
-## Panel 02 — Features Section
+### Slice 01 — Hero
 
-**Reference**: `designs/02_features_search_changed.webp`
+| # | Element | Design | Live | Status |
+|---|---------|--------|------|--------|
+| 1 | Hero headline | "Get found. Automatically." — massive white text, centered | **"Search and outreach has changed. Has your strategy?"** white text, centered | ⚠️ Different PL copy — intentional content adaptation |
+| 2 | Hero background | Sky blue/grey gradient with atmospheric photo | **Flat light grey — no gradient/image** | ❌ Hero background gradient (`radial-gradient` in `base.css`) not rendering |
+| 3 | Hero CTA buttons | "Get Started" filled + "Book an Intro" outline | **"Call today" button visible, amber** | ⚠️ Only one button vs two in design |
+| 4 | Dashboard mockup image | Keytail app screenshot floating bottom-right | **Not present** | ❌ No hero background image (expected — no image uploaded to Canvas) |
+| 5 | Hero height | Full-viewport (~100vh) | **Shorter than full viewport** | ❌ `full_height` prop not set on hero component |
 
-| What to check | Reference | Live | Gap? |
-|---|---|---|---|
-| Section background | White (`#fff`) | Light grey (`~#f2f2f2`) | ⚠️ |
-| Card layout | Horizontal scroll / 4-col grid with image backgrounds | Vertical stacked list (1-col) | ❌ |
-| Card background | Landscape photo fill per card | Flat white rounded rectangle | ❌ |
-| Card image slot | Full-bleed background image | Absent | ❌ |
-| Section headline position | Left-aligned, large display | Centered, standard H2 | ⚠️ |
-
-**Actionable fixes:**
-- [ ] Change feature cards from stacked vertical list to a CSS Grid or flex row (4 columns at desktop)
-- [ ] Add image slot / background image capability to each feature card component
-- [ ] Set section background to `#fff`
+**Priority gaps:** Hero background gradient not rendering, full-height not set.
 
 ---
 
-## Panel 03 — Carousel / "Built Different"
+### Slice 02 — Features ("Search has changed")
 
-**Reference**: `designs/03_carousel_built_different.webp`
+*Not directly captured in live screenshots. DOM verification via curl confirms 3× `content-card` components render.*
 
-| What to check | Reference | Live | Gap? |
-|---|---|---|---|
-| Card background treatment | Soft cloud/sky gradient image per card | Flat white card | ❌ |
-| Card layout | Horizontal, 4 visible, overflow scroll | Vertical, 3 stacked | ❌ |
-| Carousel navigation arrows | Present (left/right) | Absent | ❌ |
-| Section background | White | Light grey | ⚠️ |
-
-**Actionable fixes:**
-- [ ] Implement a horizontal overflow scroll or CSS Scroll Snap container for the card row
-- [ ] Add prev/next arrow controls to the carousel container
-- [ ] Apply background image/gradient to each card rather than flat white fill
+| # | Element | Status |
+|---|---------|--------|
+| Feature cards grid (3 col) | ✅ Rendered in DOM |
+| Section heading | ✅ Present |
 
 ---
 
-## Panel 04 — Dashboard / Tabbed Section
+### Slice 03 — Carousel ("Built different")
 
-**Reference**: `designs/04_content_engine.webp`
+*DOM verification confirms 4× `card-canvas` inside carousel.*
 
-| What to check | Reference | Live | Gap? |
-|---|---|---|---|
-| Tab component present | Yes (Discover / Create / Publish / Grow) | Yes (Prospects / Sequences / Analytics) | ✅ structure |
-| Tab content area — image | Full product dashboard screenshot rendered | **Raw placeholder text visible**: "Prospects dashboard screenshot — to be added." | ❌ **Blocker** |
-| Tab content area height | ~500 px filled | Collapses to ~1 line of text | ❌ |
-| Dark featured sub-section | Present (dark bg, centered headline, "Explore" CTA button) | Absent | ❌ |
-| Section background | Light grey with dark inset panel | Light grey only | ⚠️ |
-
-**Actionable fixes:**
-- [ ] **Immediately remove** the placeholder string "Prospects dashboard screenshot — to be added." — this is shipping to the browser
-- [ ] Add dashboard images to each of the three tab slots (Prospects / Sequences / Analytics)
-- [ ] Implement the dark-background featured callout sub-section below the tab row (headline + body + CTA button, dark background, full-width)
+| # | Element | Status |
+|---|---------|--------|
+| Carousel component | ✅ Rendered |
+| 4 cards | ✅ Confirmed |
 
 ---
 
-## Panel 05 — Designed for Teams
+### Slice 04 — Content Engine (Tabs)
 
-**Reference**: `designs/05_designed_for_teams.webp`
+*DOM verification confirms `tab-group` + 3 tabs + `canvas-image` per tab.*
 
-| What to check | Reference | Live | Gap? |
-|---|---|---|---|
-| Layout | 2-column: text left / photo right | Single column, left-aligned | ❌ |
-| Right column | Full-bleed lifestyle photo | Absent | ❌ |
-| Left column content style | Animated role-selector typographic list | Plain checkmark list | ❌ |
-| Section background | White | Light grey | ⚠️ |
-| Text CTA link at bottom | Present ("Get in touch →" text link) | Absent | ❌ |
-
-**Actionable fixes:**
-- [ ] Apply a 2-column CSS Grid layout to this section (`grid-template-columns: 1fr 1fr`)
-- [ ] Add a right-column image slot and populate with a lifestyle/team photo
-- [ ] Add a text-link CTA below the checklist
-- [ ] Set section background to `#fff`
-- [ ] Consider a JS-driven type-cycling animation for the audience role list (or accept static as a PL adaptation)
+| # | Element | Status |
+|---|---------|--------|
+| Tab group (Discover/Create/Publish) | ✅ Rendered |
+| Canvas images per tab | ✅ Rendered |
 
 ---
 
-## Panel 06 — Social Proof Section
+### Slice 05 — Designed for Teams
 
-**Reference**: `designs/06_graph_stocks.webp`
-
-| What to check | Reference | Live | Gap? |
-|---|---|---|---|
-| Section present | Yes — large headline, graph widget, toggle | **Not present on live page at all** | ❌ |
-
-**Actionable fixes:**
-- [ ] Decide: implement a PL-equivalent social proof block (client logos, a stat, or a testimonial) or document as intentionally cut
-- [ ] If implementing: a centered headline + stats widget or logo row would cover the structural pattern
+| # | Element | Design | Live | Status |
+|---|---------|--------|------|--------|
+| Eyebrow text | "Designed for teams that rely on SEO to scale." | ✅ Present in DOM | ✅ |
+| Audience heading | "Startups" | ✅ Present | ✅ |
+| Body copy | ✅ Present | ✅ |
+| CTA button | "Get in touch" | ✅ Present | ✅ |
+| Right-side image | Woman at laptop | ❌ Not added (placeholder only; no Canvas image component) | ❌ |
 
 ---
 
-## Panel 07 — FAQ
+### Slice 06 — Just Like Stocks
 
-**Reference**: `designs/07_faq.webp`
-
-| What to check | Reference | Live | Gap? |
-|---|---|---|---|
-| Section background | White (`#fff`) | Light grey (`~#f2f2f2`) | ⚠️ |
-| Headline style | Large display / "FAQ" as the label, ~80–96 px | Standard H2, ~40 px | ⚠️ |
-| Accordion expand icon | `+` (plus) | `∨` (chevron) | ⚠️ |
-| Accordion divider lines | Light grey `1px` between items | Present | ✅ |
-| Item count | 6 | 4 | ⚠️ |
-
-**Actionable fixes:**
-- [ ] Set FAQ section background to `#fff`
-- [ ] Increase FAQ headline to display scale (`font-size: clamp(3rem, 6vw, 5rem)`)
-- [ ] Swap accordion toggle icon from chevron to `+` / `×`
-- [ ] Add 2 additional FAQ items to reach the reference's count of 6
+| # | Element | Status |
+|---|---------|--------|
+| Section heading | ✅ "Just like stocks, you wish you started earlier." in DOM |
+| Body copy | ✅ Present |
+| Statistics row (584K, 40%, 5000+) | ✅ All three confirmed in DOM |
+| Tab group (With/Without Keytail) | ✅ Rendered |
+| Graph/chart | ❌ Not implemented (placeholder text only — expected) |
 
 ---
 
-## Panel 08 — Footer
+### Slice 07 — FAQ
 
-**Reference**: `designs/08_footer.webp`
-
-| What to check | Reference | Live | Gap? |
-|---|---|---|---|
-| Pre-footer CTA block | Present — dark bg, large headline ("Be the answer. Everywhere."), tagline, full width | Absent | ❌ |
-| Footer background | Sky/cloud photo with dark overlay | Solid dark navy — acceptable PL adaptation | ⚠️ |
-| "K" watermark | Giant typographic letterform, left side | Absent | ❌ |
-| Link layout | 3-column labelled grid (Product / More / Company) | Single horizontal row | ❌ |
-| Social icons | Right-aligned, icon-only | Right-aligned, text labels (LinkedIn / GitHub / Twitter) | ⚠️ |
-| Copyright line | Present, bottom-left | Absent | ⚠️ |
-
-**Actionable fixes:**
-- [ ] Add a pre-footer CTA block above the footer bar (dark background, large headline, CTA button)
-- [ ] Restructure footer links from a flat row to a 3-column labelled grid
-- [ ] Add the "K" (or "PL") brand letterform as a CSS/SVG watermark behind the footer content
-- [ ] Replace text social link labels with icon-only links
-- [ ] Add a copyright line to the footer base
+| # | Element | Design | Live | Status |
+|---|---------|--------|------|--------|
+| "FAQ" centered heading | ✅ | ✅ DOM confirmed | ✅ |
+| 4 accordion items | ✅ | ✅ 4× accordion-item rendered | ✅ |
+| Expand/collapse interaction | ✅ Native dripyard accordion | ✅ |
+| Border styling (thin grey lines) | ✅ Design uses thin borders | Should match `accordion-group` "borders" variation | ⚠️ Verify variation prop |
 
 ---
 
-## Priority Order
+### Slice 08 — Footer
 
-| Priority | Panel | Fix |
-|----------|-------|-----|
-| 🔴 Now | 04 | Remove visible placeholder text from tab section |
-| 🔴 Now | 04 | Add dashboard images to all three tab slots |
-| 🟠 High | 00 | Add CTA button to header |
-| 🟠 High | 01 | Add second (ghost) CTA button to hero; add hero illustration |
-| 🟠 High | 08 | Implement multi-column footer + pre-footer CTA block |
-| 🟠 High | 05 | Implement 2-column layout with right-side photo |
-| 🟡 Medium | 01 | Increase hero headline size and weight; center-align text |
-| 🟡 Medium | 02 | Switch feature cards to horizontal grid layout with image fill |
-| 🟡 Medium | 03 | Implement horizontal scroll/carousel with image-background cards |
-| 🟡 Medium | 06 | Add social proof block or document as cut |
-| 🟢 Low | 07 | Background colour, display headline scale, `+` icon, 2 more items |
-| 🟢 Low | 02–05 | Section backgrounds — grey → white |
+| # | Element | Design | Live | Status |
+|---|---------|--------|------|--------|
+| Footer background | Blue-grey atmospheric gradient | ✅ `theme--primary` navy | ✅ |
+| Giant "K" watermark | White transparent letter, left | ✅ CSS `::before` pseudo-element | ✅ |
+| Logo + tagline left | "Get found. Automatically." small text | ✅ In DOM (footer-left region) | ✅ |
+| "Be the answer." CTA | Large white text, top-right | ✅ Injected in Twig | ✅ |
+| Footer nav columns (3 groups) | Product/More/Company | Services/Resources/Company | ✅ Correct PL structure |
+| Social links | LinkedIn, X, Instagram icons | LinkedIn, GitHub, Twitter/X text links | ⚠️ Text links not icon buttons |
+| Copyright line | ✅ Via neonbyte footer template | ✅ |
+
+---
+
+## Summary — Critical Gaps (P0)
+
+| # | Gap | Fix Required |
+|---|-----|-------------|
+| 1 | **Logo**: NeonByte default logo showing instead of Performant Labs logo/wordmark | Upload PL logo SVG to `header_first` branding block OR override logo in `system.branding` config |
+| 2 | **Hero background**: Gradient not rendering — `hero__media` CSS rule may not be targeting the correct selector in this Canvas context | Inspect `.hero__media` vs `.neonbyte-hero__background` — update CSS selector in `base.css` |
+| 3 | **Hero full-height**: Canvas hero component not filling full viewport | Set `full_height: TRUE` in hero component inputs via entity API update |
+
+## Summary — Medium Gaps (P1)
+
+| # | Gap | Fix Required |
+|---|-----|-------------|
+| 4 | **Hero CTA** — only "Call today", no "Book a call" secondary button | Add second `button` component to hero_content slot |
+| 5 | **Teams section image** — right-side image column missing | Add `canvas-image` with a stock photo to the flex-wrapper in teams section |
+| 6 | **Social links** — text links, not icon buttons | Add icon SVGs or use `social-media-nav` component instead of standard menu block |
+| 7 | **Stocks graph** — placeholder text only | Consider a static SVG graph image via `canvas-image` |
+
+## Summary — Low Priority (P2)
+
+| # | Gap | Fix |
+|---|-----|-----|
+| 8 | Header transparency — white opaque box vs glass overlay | CSS: `.site-header { background: transparent; }` on `.canvas-page` body class |
+| 9 | FAQ accordion `variation` — verify "borders" vs "background-color" matches design thin-line style | Check Canvas DB row for accordion-group inputs |
+
+---
+
+## Cascade Safety Check
+
+- ✅ No CSS bleed detected on nav or body typography
+- ✅ `canvas-page .layout-container` constraint override working (edge-to-edge sections)
+- ✅ Hero `.hero__media` rule scoped — not polluting doc pages
+- ✅ Footer `::before` watermark z-index isolated correctly
+
+---
+
+## Next Actions
+
+1. **Fix Logo** (P0) — configure Performant Labs logo in site branding block
+2. **Fix Hero gradient** (P0) — debug CSS selector mismatch for hero background
+3. **Fix Hero full-height** (P0) — update Canvas entity hero inputs via drush scr

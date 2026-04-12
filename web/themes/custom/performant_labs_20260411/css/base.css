@@ -95,11 +95,33 @@
 }
 
 /* =============================================================================
+   Hero — transparent sticky header on canvas/front pages
+   ============================================================================= */
+
+/* On the front canvas page, the header floats transparently over the hero */
+.path-frontpage .site-header,
+.canvas-page .site-header {
+  background: transparent;
+  box-shadow: none;
+}
+
+/* On scroll (JS adds .is-scrolled via neonbyte), restore solid header */
+.path-frontpage .site-header.is-scrolled,
+.canvas-page .site-header.is-scrolled {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+
+/* =============================================================================
    Hero — navy-to-amber gradient background (Slice 01)
-   Applied to .hero__media so it sits behind hero content.
+   .hero__media is empty (no Canvas background-image component) so it needs
+   absolute positioning to fill the entire hero container area.
    ============================================================================= */
 
 .hero__media {
+  position: absolute !important;
+  inset: 0 !important;
   background: radial-gradient(
     ellipse at 30% 40%,
     #1e4a6b 0%,
@@ -107,6 +129,13 @@
     #3d1f00 80%,
     #F59E0B 130%
   ) !important;
+  z-index: 0;
+}
+
+/* Ensure hero content sits above the gradient */
+.hero__container {
+  position: relative;
+  z-index: 1;
 }
 
 /* Dashboard screenshot image positioned inside hero background */
