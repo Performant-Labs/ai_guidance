@@ -177,6 +177,40 @@ When writing a `canvas_page__components` row:
 | `aspect_ratio` | string | no | `"square"` `"landscape"` `"portrait"` `"wide"` `"tall"` |
 | `alt` | string\|null | no | Alt text override |
 
+#### `canvas-image` — src path rules
+
+> [!CAUTION]
+> **Never use a contrib theme path as `src`.** Paths like `/themes/contrib/dripyard_base/components/card/images/placeholder.webp` are not guaranteed to be web-accessible from Canvas's rendering context. Using one causes a silent component hydration failure with this exact signature in watchdog:
+> ```
+> AssertionError: assert($component instanceof Component)
+> in canvas/src/Plugin/Field/FieldType/ComponentTreeItemList.php:470
+> ```
+> This error fires on **every page load** and is invisible in the browser — the page returns 200 but the component is silently dropped.
+
+**Valid `src` values:**
+
+| Scenario | Correct `src` format |
+|---|---|
+| Image uploaded via Drupal Media | `/sites/default/files/[year-month]/[filename.ext]` |
+| External image | `https://[full-url-to-image]` |
+| No real image yet | **Do not use `canvas-image` at all** — use `sdc.dripyard_base.text` as a placeholder sibling instead |
+
+**Asset reachability check** — run this before writing any `canvas-image` inputs:
+
+```bash
+curl -k -o /dev/null -s -w "%{http_code}" "https://[site-url]/[image-src-path]"
+# Must return 200. Any other code = do not use this path.
+```
+
+**No-image fallback pattern:**
+
+```php
+// Instead of a canvas-image with a placeholder src, use a text component:
+$comp['component_id'] = 'sdc.dripyard_base.text';
+$comp['inputs'] = json_encode(['text' => 'Image coming soon.']);
+// Replace with a real canvas-image once a verified src path is available.
+```
+
 ---
 
 ### `dripyard_base:icon-card`
@@ -372,6 +406,7 @@ When writing a `canvas_page__components` row:
 | `title-cta` | `"layout": "start"` | only `"default"` or `"center"` are valid |
 | `icon-list-item` | `"text": "label"` | `"title": "label"` |
 | `canvas-image` | omit `loading` | `"loading": "lazy"` |
+| `canvas-image` | `"src": "/themes/contrib/[anything]"` | **Never use contrib paths** — causes `AssertionError: assert($component instanceof Component)` on every page load. Use `/sites/default/files/...`, a full `https://` URL, or replace the whole component with `sdc.dripyard_base.text` if no image is ready |
 | `flex-wrapper` | `"direction": "row"` | no `direction` prop — use `columns` |
 | `flex-wrapper` | `"gap": "md"` | use `column_gutter` + `row_gutter` |
 | `flex-wrapper` | `"align_y": "start"` | enum is `top/center/bottom/stretch` — not `start` |
