@@ -793,3 +793,16 @@ The following MUST be clean before deploying to production:
 
 **Pass**: all six confirmed → proceed to production deploy.
 **Fail**: fix the specific item → re-run the relevant curl check → commit.
+
+---
+
+## References
+
+### AI & Prompt Engineering
+- [Claude Prompting Best Practices](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices) — Anthropic's official reference for prompt engineering with Claude's latest models. Covers clarity, context, XML structuring, tool use, thinking/reasoning, agentic systems, and subagent orchestration. Consult this when authoring or refining AI instructions in any phase of this SOP.
+
+### Drupal
+- [Configuration Management Workflow (Drush)](https://www.drupal.org/docs/administering-a-drupal-site/configuration-management/workflow-using-drush) — Authoritative guide for `config:import` / `config:export` workflows used throughout this SOP.
+
+### DDEV
+- [DDEV Documentation](https://docs.ddev.com/en/stable/) — Reference for all `ddev` commands, addon installation, and local environment configuration.
