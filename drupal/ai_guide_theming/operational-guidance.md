@@ -326,6 +326,53 @@ Do not proceed further without a human decision on the path forward.
 
 ---
 
+## 19. Canvas version lock: always update `components_component_version` when writing to the component tree
+
+Every row in `canvas_page__components` has a `components_component_version` column that must
+match the Canvas config entity's `active_version`. Canvas enforces this at render time with a
+hard `OutOfRangeException` that crashes the entire page (HTTP 500).
+
+**The invariant:**
+
+```
+canvas_page__components.components_component_version
+  MUST equal
+canvas.component.<component_id>.active_version
+```
+
+**How to read the correct version before writing:**
+
+```php
+$raw = \Drupal::configFactory()
+  ->get('canvas.component.' . $component_id)
+  ->getRawData();
+$correct_version = $raw['active_version'];
+```
+
+Where `$component_id` is the exact string stored in `components_component_id`
+(e.g., `sdc.dripyard_base.canvas-image`).
+
+**Common failure modes:**
+
+| Mistake | Symptom |
+|---|---|
+| Changed `components_component_id` without updating `components_component_version` | HTTP 500, `OutOfRangeException: The requested version X is not available` |
+| Used a helper script that computed version as `unknown` | Same 500, version string `unknown` in watchdog |
+| Restored inputs but forgot to restore the component_id | Wrong component renders with wrong type's inputs |
+
+**Corrective audit query** (run after any direct DB write):
+
+```sql
+SELECT delta, components_component_id, components_component_version
+FROM canvas_page__components
+WHERE entity_id = <entity_id> AND deleted = 0
+ORDER BY delta;
+```
+
+Cross-check every version against the matching `canvas.component.*` config entity.
+
+---
+
 *Last updated: 2026-04-13 — items 1–10 from Phase 10–16 live run; items 11–15 extracted from*
 *`canvas-scripting-protocol.md`, `visual-regression-strategy.md`, `content-migration-cookbook.md`,*
-*and `session-2026-04-11.md` during document review; items 16–18 added from P2 investigation.*
+*and `session-2026-04-11.md` during document review; items 16–19 added from P2 investigation.*
