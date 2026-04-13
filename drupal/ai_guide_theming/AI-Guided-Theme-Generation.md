@@ -196,7 +196,60 @@ Ask the user to provide **all of the following** at once. Present it as a single
    @import url('https://fonts.googleapis.com/css2?family=[FontName]:wght@400;600;700&display=swap');
    :root { --font-heading: '[FontName]', sans-serif; }
    ```
-6. **Set social profile URLs**: Store these in the theme settings if the base theme provides social link fields, or note them for Twig injection in the footer template (Phase 9/11).
+6. **Generate and place the OG image**: The `og:image` is the 1200×630 image shown when the site URL is shared on LinkedIn, Slack, iMessage, Twitter/X, and Facebook. If the client does not supply the file, generate it using the AI `generate_image` tool — prompt it with the brand colors, wordmark, tagline, and domain:
+
+   > **Sample prompt**: "Professional Open Graph image 1200×630px for [Site Name]. Navy background (#[primary-hex]) with subtle geometric pattern. Bold white wordmark '[Site Name]' on the left. Amber accent line (#[secondary-hex]) below it. Smaller white text: '[tagline]'. Amber geometric motif on the right. Bottom-left: '[domain]' in muted gray. Flat design, no photography."
+
+   Place the file at:
+   ```
+   web/themes/custom/[theme_machine_name]/assets/og-image.png
+   ```
+
+   Then install and configure `metatag` to serve it:
+   ```bash
+   # Install metatag and required submodules:
+   [runtime_wrapper] composer require drupal/metatag
+   [runtime_wrapper] drush pm:enable metatag metatag_open_graph metatag_twitter_cards --yes
+   [runtime_wrapper] drush cr
+   ```
+
+   Configure global defaults via a temporary PHP script in the project root:
+   ```php
+   <?php
+   $og_image = '[site:url]themes/custom/[theme_machine_name]/assets/og-image.png';
+   $desc     = '[one-sentence site description]';
+   $global = \Drupal::configFactory()->getEditable('metatag.metatag_defaults.global');
+   $global->set('tags', [
+     'title'                     => '[current-page:title] | [site:name]',
+     'description'               => $desc,
+     'og_title'                  => '[current-page:title] | [site:name]',
+     'og_description'            => $desc,
+     'og_type'                   => 'website',
+     'og_site_name'              => '[site:name]',
+     'og_url'                    => '[current-page:url:absolute]',
+     'og_image'                  => $og_image,
+     'og_image_width'            => '1200',
+     'og_image_height'           => '630',
+     'twitter_cards_type'        => 'summary_large_image',
+     'twitter_cards_title'       => '[current-page:title] | [site:name]',
+     'twitter_cards_description' => $desc,
+     'twitter_cards_image'       => $og_image,
+   ])->save();
+   echo 'Done.' . PHP_EOL;
+   ```
+
+   > [!WARNING]
+   > Use `[site:url]themes/...` (no leading `/` after the token). The `[site:url]` token resolves **with** a trailing slash — if you write `/themes/...` you get a double-slash in the rendered URL (`https://example.com//themes/...`), which will fail the OG image validator.
+   >
+   > Enable `metatag_open_graph` and `metatag_twitter_cards` submodules explicitly. The base `metatag` module alone does **not** render `og:` or `twitter:` tags.
+
+   Export and commit:
+   ```bash
+   [runtime_wrapper] drush config:export --yes
+   git add config/sync/ web/themes/custom/[theme_machine_name]/assets/og-image.png
+   git commit -m "feat: OG image + metatag global defaults"
+   ```
+7. **Set social profile URLs**: Store these in the theme settings if the base theme provides social link fields, or note them for Twig injection in the footer template (Phase 9/11).
 
 ### 2.3 Verification
 
@@ -219,6 +272,15 @@ curl -sk https://[site-url]/themes/custom/[theme]/logo.svg | head -1
 curl -sk https://[site-url]/ | grep -i 'rel="icon"'
 # Expected: <link rel="icon" type="image/svg+xml" href="/themes/custom/[theme]/favicon.svg">
 # Empty output = favicon is NOT wired. Do not advance until this returns a match.
+
+# 5. MANDATORY: Confirm OG and Twitter tags in <head>:
+curl -sk https://[site-url]/ | grep -i 'og:title\|og:image\|twitter:card'
+# Expected: three matching lines — og:title, og:image, and twitter:card each present.
+# Empty output = metatag not configured or submodules not enabled. Do not advance.
+
+# 6. Confirm og:image URL resolves (no double-slash, no 404):
+curl -sk -o /dev/null -w '%{http_code}' https://[site-url]/themes/custom/[theme]/assets/og-image.png
+# Must return 200. 404 = file not placed in assets/. 301 = URL has double-slash — fix token.
 ```
 
 > [!CAUTION]
