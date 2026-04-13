@@ -37,10 +37,26 @@ function performant_labs_20260411_preprocess_page(array &$variables): void {
 /**
  * Implements hook_page_attachments_alter().
  *
- * Injects the PL favicon. Neonbyte sets features.favicon = false so the
- * system.theme.global favicon path is ignored; we inject it directly here.
+ * Two concerns handled here because Neonbyte's base configuration bypasses
+ * Drupal's standard mechanisms for each:
+ *
+ * 1. Favicon: Neonbyte sets features.favicon=false so system.theme.global is
+ *    ignored. We inject <link rel="icon"> directly.
+ *
+ * 2. Generator meta: Drupal adds <meta name="Generator" content="Drupal 11">
+ *    which is information disclosure. Removed for all page responses.
+ *
+ * Note — front-page canonical (/home vs /): EntityViewController::view()
+ * attaches html_head_link to the entity render array AFTER hook_entity_view
+ * runs and BEFORE HtmlRenderer merges pages — there is no theme-level hook
+ * that can intercept it without a custom EventSubscriber service. The /home
+ * canonical is acceptable: it resolves to a real URL, and search engines
+ * follow consistent canonical tags regardless of which path users arrive from.
+ * If strict / canonicalization is required, install the metatag module and
+ * override the canonical_url token on the canvas_page entity form.
  */
 function performant_labs_20260411_page_attachments_alter(array &$attachments): void {
+  // 1. FAVICON —————————————————————————————————————————————————————————————
   $theme_path = '/' . \Drupal::service('extension.list.theme')
     ->getPath('performant_labs_20260411');
   $attachments['#attached']['html_head'][] = [
@@ -55,4 +71,12 @@ function performant_labs_20260411_page_attachments_alter(array &$attachments): v
     ],
     'favicon_svg',
   ];
+
+  // 2. GENERATOR META — remove information disclosure ———————————————————————
+  foreach ($attachments['#attached']['html_head'] as $key => $tag) {
+    if (isset($tag[1]) && $tag[1] === 'system_meta_generator') {
+      unset($attachments['#attached']['html_head'][$key]);
+    }
+  }
 }
+

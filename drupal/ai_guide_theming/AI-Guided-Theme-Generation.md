@@ -677,3 +677,119 @@ that the complete site with real content still matches the design reference.
 **Expected outcome**: Fewer findings than Phase 10 because upstream gates caught structural issues. Any ⚠️ Minor Gap findings are scoped and scheduled; any ❌ Major Gap is fixed before go-live sign-off.
 
 **Failure path**: Report the specific discrepancy → fix the isolated CSS/Canvas change → re-run only the affected slice → commit.
+
+---
+
+## Phase 17: Infrastructure & Head Hygiene Verification
+
+Run this phase **before any production deployment**. Everything here is headless — pure `curl` and `drush`. No browser, no subagent, no screenshots.
+
+> [!IMPORTANT]
+> This phase is **not optional** before go-live. These checks are invisible to visual regression. A perfect Phase 16 VR pass does not confirm any of the items below.
+
+### 17.1 HTML `<head>` checks
+
+```bash
+SITE="https://[site-url]"
+
+# Title: must be "[Page] | [Site Name]" — not bare "Drupal" or empty
+curl -sk $SITE/ | grep '<title>'
+# Expected: <title>Home | Performant Labs</title>
+
+# Favicon wired (confirm Phase 2 fix survived)
+curl -sk $SITE/ | grep -i 'rel="icon"'
+# Expected: <link rel="icon" type="image/svg+xml" href="...favicon.svg">
+# EMPTY = broken. Fix via hook_page_attachments_alter in the custom theme.
+
+# Generator meta — MUST BE ABSENT on production
+curl -sk $SITE/ | grep 'name="Generator"'
+# Expected: no output.
+# If present: add Generator removal to hook_page_attachments_alter.
+# Note: Neonbyte-based themes — target tag key 'system_meta_generator'.
+
+# Canonical URL — note the path, confirm it is consistent and intentional
+curl -sk $SITE/ | grep 'rel="canonical"'
+# For Canvas front pages: canonical will be the path alias (e.g. /home), not /
+# This is acceptable IF /home is accessible and consistent. If strict /
+# canonicalization is required, install metatag and override canonical_url.
+```
+
+**Pass conditions:**
+
+| Check | Pass |
+|---|---|
+| `<title>` | `[Page] \| [Site Name]` format |
+| `rel="icon"` | Present |
+| `name="Generator"` | **Absent** |
+| `rel="canonical"` | Present and points to a real, accessible URL |
+
+### 17.2 HTTP response headers
+
+```bash
+SITE="https://[site-url]"
+
+# Page cache working — must be HIT on second request
+curl -sI $SITE/ | grep -i 'x-drupal-cache'
+# Expected: x-drupal-cache: HIT
+
+# Security headers — both must be present
+curl -sI $SITE/ | grep -iE 'x-frame-options|x-content-type-options'
+
+# x-generator header — MUST BE ABSENT on production (CMS version disclosure)
+curl -sI $SITE/ | grep -i 'x-generator'
+# If present: suppress in nginx/Apache config on production server.
+# Example nginx: more_clear_headers 'X-Generator';
+# (requires headers_more module — this is a server config concern, not Drupal)
+```
+
+### 17.3 SEO baseline
+
+```bash
+SITE="https://[site-url]"
+
+# robots.txt — must NOT block all crawlers
+curl -sk $SITE/robots.txt | head -10
+# Confirm "Disallow: /" is NOT the first/only rule.
+
+# sitemap.xml — MUST return 200 before production deploy
+curl -sk -o /dev/null -w '%{http_code}' $SITE/sitemap.xml
+# 404 = go-live blocker. Install simple_sitemap:
+#   ddev composer require drupal/simple_sitemap
+#   ddev drush pm:enable simple_sitemap -y
+#   ddev drush simple-sitemap:generate
+```
+
+### 17.4 Content & config hygiene
+
+```bash
+ddev drush php-eval "
+\$site = \Drupal::config('system.site');
+echo 'Site name: ' . \$site->get('name') . PHP_EOL;
+echo 'Admin email: ' . \$site->get('mail') . PHP_EOL;
+// Admin email must NOT be admin@example.com or any placeholder.
+"
+```
+
+### 17.5 Architecture notes for common gaps
+
+| Item | How to fix |
+|---|---|
+| Missing `<meta name="description">` | Install `metatag`; Canvas's `canvas_page` entity supports it natively once the module is present (field added automatically via `hook_entity_base_field_info`) |
+| Missing OG tags (`og:title`, `og:image`, …) | Same — metatag handles these on canvas_page entities |
+| Missing `apple-touch-icon` | Add to `hook_page_attachments_alter` alongside the favicon injection |
+| Missing `Referrer-Policy` header | Add to nginx/Apache production server config (not Drupal) |
+| Front-page canonical is `/home` not `/` | Acceptable if `/home` is a real, accessible URL. If strict canonicalization needed: metatag → `canonical_url` override on the canvas_page entity |
+| `x-generator` header present | Suppress at nginx/Varnish level on production — Drupal itself cannot remove response headers |
+
+### 17.6 Go-live blockers
+
+The following MUST be clean before deploying to production:
+
+- [ ] `/sitemap.xml` returns 200
+- [ ] `<link rel="icon">` present in `<head>`
+- [ ] `<title>` is not "Drupal" or empty
+- [ ] Admin email is not a placeholder (`@example.com`)
+- [ ] `name="Generator"` absent from HTML (information disclosure)
+
+**Pass**: all six confirmed → proceed to production deploy.
+**Fail**: fix the specific item → re-run the relevant curl check → commit.

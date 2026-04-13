@@ -3,7 +3,7 @@ _core:
 langcode: en
 uuid: 82afcd98-bd4f-4571-9565-a6f26c941f29
 name: 'Performant Labs'
-mail: admin@example.com
+mail: contact@performantlabs.com
 slogan: ''
 page:
   403: /user/login
