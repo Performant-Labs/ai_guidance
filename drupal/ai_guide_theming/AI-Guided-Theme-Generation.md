@@ -18,6 +18,71 @@ To ensure absolute safety and maintain a functional baseline for the host projec
 
 ---
 
+## AI Execution Directives
+
+The following machine-readable directives govern every phase. Claude parses XML tags as structured constraints distinct from prose instructions — grouping concern types in their own tags reduces misinterpretation when this document is loaded as context.
+
+<non_negotiable_rules>
+These rules apply to every phase without exception:
+1. Stage files by explicit path only — never use `git add .`
+2. Write temporary Drush scripts as `.php` files in the project root; execute with `drush scr`; delete immediately after execution. Never use heredoc-to-stdin.
+3. Set Canvas `component_version` to `NULL` in every assembly script. Never hard-code a version hash.
+4. Stop at every Approval Checkpoint and hold for explicit user confirmation. Do not infer consent from prior context.
+5. Read `component-cookbook.md` in full before writing any Phase 9 assembly script. No prop name may be written from memory.
+6. Read `operational-guidance.md` before starting any run.
+</non_negotiable_rules>
+
+<investigate_before_acting>
+Never write a `component_id`, prop name, slot name, schema value, entity ID, or Drush command from memory. Before writing any Canvas assembly script, open and read the relevant `.component.yml` file to confirm exact field names and allowed values. If uncertain whether a config key, module, or Drush command exists, run a verification command before assuming.
+</investigate_before_acting>
+
+<no_hardcoded_ids>
+Always resolve Drupal entity IDs dynamically — never hard-code node IDs, block IDs, user IDs, file IDs, or menu IDs in assembly scripts:
+- Nodes: `entityTypeManager()->getStorage('node')->loadByProperties(['title' => '...', 'type' => '...'])`
+- Blocks: `entityTypeManager()->getStorage('block')->loadByProperties(['theme' => '[theme_machine_name]'])`
+- Front page path: `\Drupal::config('system.site')->get('page.front')`
+Hard-coded IDs that work locally will silently fail in staging and production.
+</no_hardcoded_ids>
+
+<scope_constraint>
+Implement only what is visible in the approved design reference and explicitly confirmed in the component mapping plan. Do not add: components absent from the design reference; CSS utilities for hypothetical future use; error handling for out-of-scope scenarios; comments or docstrings in files not created or modified in this run. The minimum implementation that passes all phase gates is the correct implementation.
+</scope_constraint>
+
+<reversibility_guard>
+Before executing any of the following, state the operation and pause for explicit user confirmation:
+- TRUNCATE or DELETE on any database table (including `cache_render`, `canvas_page__components`)
+- Bulk deletion of menu items or block placements
+- Restoration from a SQL snapshot file
+Routine operations — `drush cr`, `config:export`, `git add`, `git commit` — do not require confirmation.
+</reversibility_guard>
+
+<parallelism_guidance>
+Run independent operations within a phase gate in parallel rather than sequentially:
+- Multiple curl verification checks within the same gate
+- Multiple `drush sql-query` introspection commands during Phase 4 audit
+- Multiple file reads when cross-referencing the component cookbook and schema files
+Never parallelize operations with dependencies — `drush cr` must complete before curl checks that rely on the cleared cache.
+</parallelism_guidance>
+
+<subagent_policy>
+Use a browser subagent only when verification requires visual rendering, pixel-level design comparison, or JavaScript-rendered content. Use curl for all other checks:
+- HTTP status: `curl -o /dev/null -w "%{http_code}"`
+- HTML head tag presence: `curl -sk [url] | grep`
+- Nav or copy text: `curl -sk [url] | grep`
+- Database state: `drush sql-query` or `drush php-eval`
+All Phase 17 infrastructure checks are curl-only and require no browser subagent.
+</subagent_policy>
+
+<decision_commitment>
+Once a user approves an Approval Checkpoint, those architectural decisions are final for this run. Do not re-evaluate or propose alternatives to approved decisions unless a subsequent phase gate explicitly fails and the failure is directly caused by the prior decision. Course-correct only when a gate is red.
+</decision_commitment>
+
+<session_continuity>
+At the start of each working session, run `git log --oneline -10` to identify where the previous session ended. Record current phase, active section, and any open failure paths at `drupal/ai_guide_theming/session_progress.md` (gitignored). Reconstruct state from the commit log and phase gates — never from memory alone.
+</session_continuity>
+
+---
+
 
 ## Phase 1: Pre-Execution Discovery
 Before cloning repositories or running commands, the AI must collect all foundational environment variables and display them to the user for explicit confirmation.
@@ -269,7 +334,7 @@ Before writing any component markup or CSS, define the page shells that those co
 
 ## Phase 6: Structure Verification
 
-Take one viewport screenshot of the live site (no design reference comparison required yet — CSS is not finished). Confirm:
+Run the curl-based structural checks from Phase 5 first (HTTP 200, DOM grep for regions). Then open the live site in a browser subagent for the single visual rendering confirmation — no design reference comparison yet, CSS is not finished. Confirm:
 
 | Check | Pass condition |
 |---|---|
@@ -286,8 +351,8 @@ Take one viewport screenshot of the live site (no design reference comparison re
 
 ## Phase 7: Implementation Execution
 1. **Component Markup (Twig)**: For each mapped component in the approved strategy, author its structural markup as a Twig template (`.twig`) inside the relevant SDC bundle. Apply the proper `theme--[name]` CSS scoping wrappers inside the Twig output so each component inherits the theme's color palette overrides from `css/base.css` without hardcoding color values.
-2. **Global CSS Overrides (Native Components)**: If the design dictates nuanced spacing or styling modifications for existing native components, append custom CSS explicitly targeting the Component Layer inside the new canvas theme's `css/base.css` file. DO NOT attempt to override semantic variables directly.
-3. **Integration Strategy (Bespoke SDCs Enforced)**: When generating custom layout elements that do not exist natively, you MUST exclusively output standard **Single Directory Components (SDCs)** formatted within the active theme's `components/` directory (e.g., creating the `.component.yml`, `.twig`, and `.css` bundle). The styling for these bespoke components must be encapsulated entirely inside their local `.css` file, NOT in `base.css`. Do NOT output raw disconnected HTML payloads, and do NOT architect the output using custom Drupal Blocks, Layout Builder, or root Twig templates.
+2. **Global CSS Overrides (Native Components)**: If the design dictates nuanced spacing or styling modifications for existing native components, append custom CSS explicitly targeting the Component Layer inside the new canvas theme's `css/base.css` file. Target component class selectors directly — apply overrides at the component class level, not at the CSS custom property declaration level.
+3. **Integration Strategy (Bespoke SDCs Enforced)**: When generating custom layout elements that do not exist natively, output exclusively standard **Single Directory Components (SDCs)** in the active theme's `components/` directory — each gets a `.component.yml`, `.twig`, and `.css` bundle. Encapsulate all component styling in the component's own `.css` file. Implement Canvas content layout using SDC composition; use Layout Builder, Drupal Blocks, and root Twig templates for page shell structures only, not for custom Canvas content elements.
 4. **AI Autonomous Content Population**: When structural components (like the "Product, Pricing, Blog" header navigation or dynamic card grids) require functional Drupal content to render, DO NOT manually construct UI configurations or write raw database queries.
 
    > [!WARNING]
@@ -378,6 +443,35 @@ Known schema gotchas from `dripyard_base`:
 
 > [!TIP]
 > If a `canvas-image` has no real image source yet, **replace it with `sdc.[theme].text`** as a placeholder. The `text` component has no required props that cause rendering failures.
+
+<examples>
+<example id="heading-inputs-correct">
+// CORRECT — 'text' key; margin_top is an enum string:
+'inputs' => json_encode(['text' => 'Our Services', 'margin_top' => 'none', 'heading_level' => 'h2'])
+</example>
+<example id="heading-inputs-wrong">
+// WRONG — 'heading' key and integer margin_top cause a silent component drop:
+'inputs' => json_encode(['heading' => 'Our Services', 'margin_top' => 0])
+</example>
+<example id="canvas-image-correct">
+// CORRECT — 'loading' is required; omitting it throws a RuntimeError:
+'inputs' => json_encode(['image' => [...], 'loading' => 'lazy'])
+</example>
+<example id="canvas-image-wrong">
+// WRONG — missing 'loading' causes RuntimeError from image-or-media:
+'inputs' => json_encode(['image' => [...]])
+</example>
+<example id="entity-id-correct">
+// CORRECT — resolve IDs dynamically; works in all environments:
+$nodes = \Drupal::entityTypeManager()->getStorage('node')
+  ->loadByProperties(['title' => 'Services', 'type' => 'page']);
+$node = reset($nodes); $nid = $node->id();
+</example>
+<example id="entity-id-wrong">
+// WRONG — hard-coded ID breaks in staging/production:
+$nid = 42;
+</example>
+</examples>
 
 ### 9.4 Diagnosing Canvas rendering errors
 
@@ -569,7 +663,7 @@ Then export: `[runtime_wrapper] drush config:export --yes`
 
 ## Phase 12: Navigation Verification
 
-Open the live site in a browser subagent and verify navigation rendering. One subagent call.
+Run text-presence checks first with `curl -sk [site-url]/ | grep -i "[nav-label]"` for each expected label. Then open the live site in a browser subagent to confirm visual rendering and link resolution. One subagent call.
 
 | Check | Pass condition |
 |---|---|
