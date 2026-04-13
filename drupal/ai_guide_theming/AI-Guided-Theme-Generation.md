@@ -231,6 +231,28 @@ curl -sk https://[site-url]/ | grep -i 'rel="icon"'
 
 Display the resolved asset list to the user (confirmed hex values, logo path, favicon path) and ask: *"Brand assets confirmed — shall I proceed to Phase 3?"* Do NOT advance until the user approves.
 
+### 2.5 Optional: AI Context Integration (`drupal/ai` ≥ 1.2.0)
+
+If `drupal/ai` is installed on this project, the brand identity collected in Phase 2 can be stored as machine-readable **AI Context** entities. These are injected automatically into Canvas AI agent prompts, ensuring AI-generated content stays on-brand without repeating the brand brief in every session.
+
+| Phase 2 Asset | AI Context field |
+|---|---|
+| Primary color + brightness | Design / color palette |
+| Secondary / accent color | Design / accent |
+| Brand fonts | Design / typography |
+| Site name + tagline | Voice / brand name, tagline |
+| Social profile URLs | Channels / social profiles |
+| OG image | Design / og_image |
+
+Create AI Context entities at `/admin/config/ai/ai-context` (UI) or via the AI Context config form after installing `drupal/ai`. Export with `drush config:export --yes` so they travel with `config/sync/` and are available to future agents without re-prompting.
+
+> [!NOTE]
+> The Drupal community's **Context Control Center** pattern makes AI Context the
+> single source of truth for brand governance — once defined here, no agent
+> session needs to re-brief the brand. If AI Context is not installed, the
+> Phase 2 brand checklist in this SOP serves the same role as a document-level
+> context source.
+
 ---
 
 ## Phase 3: Establish the Baseline Backup
@@ -888,6 +910,26 @@ The following MUST be clean before deploying to production:
 **Pass**: all six confirmed → proceed to production deploy.
 **Fail**: fix the specific item → re-run the relevant curl check → commit.
 
+### 17.7 Optional: Promote SOP Artifacts to Drupal Prompt Library (`drupal/ai` ≥ 1.2.0)
+
+The `<non_negotiable_rules>` in Phase 0 and the component cookbook serve the same functional role as Drupal's **Prompt Library** — reusable, project-specific instructions injected into AI agent sessions. If `drupal/ai ≥ 1.2.0` is installed, promote these to first-class Drupal config entities so they survive outside this SOP document and are automatically available to any AI agent working on the site:
+
+| SOP Artifact | Prompt Library entity (suggested ID) |
+|---|---|
+| Phase 0 `<non_negotiable_rules>` | `ai_prompt.general.site_build_rules` |
+| `component-cookbook.md` | `ai_prompt.canvas.component_reference` |
+| `canvas-scripting-protocol.md` | `ai_prompt.canvas.scripting_protocol` |
+| Phase 17 go-live checklist | `ai_prompt.general.production_checklist` |
+
+Manage Prompt Library entities at `/admin/config/ai/prompts`. Export after creation: `[runtime_wrapper] drush config:export --yes`.
+
+> [!TIP]
+> Shipping prompts as Drupal config is the community standard for AI-powered
+> Drupal distributions. Prompt entities travel with `config/sync/`, survive
+> theme rebuilds and environment rebuilds, and are available to Canvas AI
+> agents without loading this SOP file as context.
+
+
 ---
 
 ## References
@@ -895,8 +937,17 @@ The following MUST be clean before deploying to production:
 ### AI & Prompt Engineering
 - [Claude Prompting Best Practices](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices) — Anthropic's official reference for prompt engineering with Claude's latest models. Covers clarity, context, XML structuring, tool use, thinking/reasoning, agentic systems, and subagent orchestration. Consult this when authoring or refining AI instructions in any phase of this SOP.
 
-### Drupal
+### Drupal Core & Config
 - [Configuration Management Workflow (Drush)](https://www.drupal.org/docs/administering-a-drupal-site/configuration-management/workflow-using-drush) — Authoritative guide for `config:import` / `config:export` workflows used throughout this SOP.
+
+### Drupal AI Ecosystem
+- [drupal/ai](https://www.drupal.org/project/ai) — The vendor-agnostic AI abstraction layer for Drupal. Connects to OpenAI, Anthropic (Claude), Google Gemini, AWS Bedrock, and self-hosted models (Ollama). Prerequisite for AI Context entities, Prompt Library, and Canvas AI.
+- [drupal/canvas](https://www.drupal.org/project/canvas) — The Canvas page builder (stable 1.0, Nov 2025; default in Drupal CMS 2.0). The primary assembly surface targeted by Phases 9–10 of this SOP.
+- [drupal/key](https://www.drupal.org/project/key) — Secure credential storage for API keys. Community non-negotiable: never store AI provider keys in config exports or `.env` files committed to git. Required when integrating `drupal/ai`.
+- [drupal/eca](https://www.drupal.org/project/eca) — Event-Condition-Action module. The community's preferred no-code engine for AI-powered background workflows (auto alt text, content tagging, moderation triggers).
+- [Dries Buytaert's blog](https://dri.es) — Primary strategic commentary on Drupal's AI direction, Canvas, MCP integration, and the "AI-native" roadmap from Drupal's founder and project lead.
+- [Drupal AI Initiative](https://www.drupal.org/about/strategic-initiatives) — The official initiative coordinating AI module development, funding, and roadmap. Follow the `#ai` channel on Drupal Slack for real-time progress.
+- [DrupalForge AI Demo](https://drupalforge.org) — No-install live sandbox for testing Drupal CMS AI features (Canvas AI, agent swarms, Prompt Library) without a local environment setup.
 
 ### DDEV
 - [DDEV Documentation](https://docs.ddev.com/en/stable/) — Reference for all `ddev` commands, addon installation, and local environment configuration.
