@@ -18,7 +18,7 @@ To ensure absolute safety and maintain a functional baseline for the host projec
 
 ---
 
-## AI Execution Directives
+## Phase 0: AI Execution Directives
 
 The following machine-readable directives govern every phase. Claude parses XML tags as structured constraints distinct from prose instructions — grouping concern types in their own tags reduces misinterpretation when this document is loaded as context.
 
