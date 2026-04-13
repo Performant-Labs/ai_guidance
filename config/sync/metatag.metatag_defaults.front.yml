@@ -1,0 +1,18 @@
+uuid: 79d708f0-c277-4e19-89c5-3ccfc589c546
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: 1noCXlegCr5HFehQRF1ViXy1jhU1jZ_sNN99a8Sj5jo
+id: front
+label: 'Front page'
+tags:
+  canonical_url: '[site:url]'
+  shortlink: '[site:url]'
+  title: 'Performant Labs | Expert Drupal Development & AI Site Assembly'
+  description: 'Performant Labs specialises in Drupal development, the Automated Testing Kit (ATK), and AI-guided theme assembly. Build better Drupal sites, faster.'
+  og_title: 'Performant Labs | Expert Drupal Development & AI Site Assembly'
+  og_description: 'Performant Labs specialises in Drupal development, the Automated Testing Kit (ATK), and AI-guided theme assembly. Build better Drupal sites, faster.'
+  twitter_cards_title: 'Performant Labs | Expert Drupal Development & AI Site Assembly'
+  twitter_cards_description: 'Performant Labs specialises in Drupal development, the Automated Testing Kit (ATK), and AI-guided theme assembly. Build better Drupal sites, faster.'
+  twitter_cards_image: '[site:url]themes/custom/performant_labs_20260411/assets/og-image.png'

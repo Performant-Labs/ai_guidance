@@ -1,0 +1,23 @@
+uuid: ed91e22c-3ea0-49aa-a99b-592d28aafc8e
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: sL588ui1E_8-2c_UupwyYxcqX2OVyMFp3HTLbbFqvPc
+id: global
+label: Global
+tags:
+  title: '[current-page:title] | [site:name]'
+  description: 'Performant Labs delivers expert Drupal development, the Automated Testing Kit (ATK), and AI-guided site assembly for agencies and enterprise teams.'
+  og_title: '[current-page:title] | [site:name]'
+  og_description: 'Performant Labs delivers expert Drupal development, the Automated Testing Kit (ATK), and AI-guided site assembly for agencies and enterprise teams.'
+  og_type: website
+  og_site_name: '[site:name]'
+  og_url: '[current-page:url:absolute]'
+  og_image: '[site:url]themes/custom/performant_labs_20260411/assets/og-image.png'
+  og_image_width: '1200'
+  og_image_height: '630'
+  twitter_cards_type: summary_large_image
+  twitter_cards_title: '[current-page:title] | [site:name]'
+  twitter_cards_description: 'Performant Labs delivers expert Drupal development, the Automated Testing Kit (ATK), and AI-guided site assembly for agencies and enterprise teams.'
+  twitter_cards_image: '[site:url]themes/custom/performant_labs_20260411/assets/og-image.png'
