@@ -280,6 +280,52 @@ but the file persists.
 
 ---
 
-*Last updated: 2026-04-12 — items 1–10 from Phase 10–16 live run; items 11–15 extracted from*
+## 17. Canvas `image` props require Drupal file entities — raw `src` paths do not render
+
+Canvas SDC components that declare an `image` prop with `$ref: json-schema-definitions://canvas.module/image`
+store the image as a **Drupal file entity reference** (`target_id`, `alt`, `width`, `height`), not as
+a URL string. Canvas's internal prop hydration pipeline (`uncollapse → evaluate`) maps the prop
+through an image field type whose storage format is the file entity ID.
+
+**Consequences:**
+
+| Approach | Result |
+|---|---|
+| Canvas UI upload → links file entity via `target_id` | ✅ Image renders |
+| Direct DB injection `{"src":"https://...", "alt":"...", "width": N, "height": N}` | ❌ Renders empty wrapper div |
+| Direct DB injection `{"src":"/sites/default/files/...", ...}` | ❌ Renders empty wrapper div |
+| Direct DB injection contrib path `{"src":"/themes/contrib/…"}` | ❌ Empty div + AssertionErrors in watchdog |
+
+**The correct workaround for AI-driven assembly:** Use the Canvas UI for any component with
+an `image` prop typed as `json-schema-definitions://canvas.module/image`. The Canvas UI creates
+the underlying Drupal Media/File entity and stores the resolved `target_id`.
+
+**Acceptable fallback:** Store the canvas-image component with the correct `src` path anyway.
+The wrapper div will render with layout-correct CSS classes (`--aspect-wide`, `--radius-medium`),
+preserving the section's proportions. Add a note for the client to populate the image via the
+Canvas UI before go-live.
+
+**Also note:** `text` components with an `<img>` embedded in the `text` prop (even though
+`contentMediaType: text/html` is declared in the schema) do **not** render the `<img>` tag —
+Canvas's text field type filters it out. HTML images cannot be injected via the text prop.
+
+---
+
+## 18. Hard-stop and document when investigation depth exceeds three levels
+
+When a debugging trail requires reading more than three layers of framework internals
+(e.g., Canvas prop hydration → StorablePropShape → StaticPropSource evaluation), stop,
+write down what you have learned, record the open question, and surface it for human review.
+Continuing deeper rarely produces a faster resolution and frequently produces stale context,
+wasted turns, and a confused state.
+
+**Rule:** After three investigative tool calls on the same root-cause question
+with no actionable fix found, stop and write a summary. The summary goes in the operational
+notes field of the current task artifact or in a dedicated `FINDINGS.md` scratch file.
+Do not proceed further without a human decision on the path forward.
+
+---
+
+*Last updated: 2026-04-13 — items 1–10 from Phase 10–16 live run; items 11–15 extracted from*
 *`canvas-scripting-protocol.md`, `visual-regression-strategy.md`, `content-migration-cookbook.md`,*
-*and `session-2026-04-11.md` during document review; item 16 added during retrospective.*
+*and `session-2026-04-11.md` during document review; items 16–18 added from P2 investigation.*
