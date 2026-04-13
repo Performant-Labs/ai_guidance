@@ -113,7 +113,19 @@ Ask the user to provide **all of the following** at once. Present it as a single
    git add config/sync/ web/themes/custom/[primary_theme]_[timestamp]/logo.svg
    git commit -m "feat: brand assets — logo, palette, favicon"
    ```
-4. **Apply the favicon**: Place the file at `web/themes/custom/[primary_theme]_[timestamp]/favicon.ico` (or `.png`). Update `system.theme.global` → `favicon.path` to point to it.
+4. **Apply the favicon**: Create `favicon.svg` (or `.ico`) at `web/themes/custom/[primary_theme]_[timestamp]/favicon.svg`. Then wire it via `hook_page_attachments_alter()` in the theme's `.theme` file:
+   ```php
+   function [theme]_page_attachments_alter(array &$attachments): void {
+     $path = '/' . \Drupal::service('extension.list.theme')->getPath('[theme]');
+     $attachments['#attached']['html_head'][] = [[
+       '#type' => 'html_tag', '#tag' => 'link',
+       '#attributes' => ['rel' => 'icon', 'type' => 'image/svg+xml',
+                         'href' => $path . '/favicon.svg'],
+     ], 'favicon_svg'];
+   }
+   ```
+   > [!WARNING]
+   > **Do NOT rely on `system.theme.global` favicon path alone.** The Neonbyte base theme (and potentially other themes) sets `features.favicon: false` in its config, which prevents Drupal's system module from rendering the `<link rel="shortcut icon">` tag. Setting `favicon.path` in `system.theme.global` has **no effect** when this feature is disabled. The `hook_page_attachments_alter()` approach bypasses this and works regardless of base theme settings.
 5. **Register brand fonts**: If custom Google Fonts are specified, add them to the theme's `.libraries.yml` and reference in `css/base.css`:
    ```css
    @import url('https://fonts.googleapis.com/css2?family=[FontName]:wght@400;600;700&display=swap');
@@ -137,6 +149,11 @@ curl -sk https://[site-url]/ | grep -o 'src="[^"]*logo[^"]*"'
 # 3. Confirm logo file on disk is correct:
 curl -sk https://[site-url]/themes/custom/[theme]/logo.svg | head -1
 # Must start with <svg … aria-label="[Site Name]"
+
+# 4. MANDATORY: Confirm favicon <link> tag is in the HTML <head>:
+curl -sk https://[site-url]/ | grep -i 'rel="icon"'
+# Expected: <link rel="icon" type="image/svg+xml" href="/themes/custom/[theme]/favicon.svg">
+# Empty output = favicon is NOT wired. Do not advance until this returns a match.
 ```
 
 > [!CAUTION]
@@ -300,9 +317,11 @@ First comparison against the design reference. Run one browser subagent per slic
 | Fonts loading | Custom fonts rendering, not browser system fallbacks |
 | Gross proportions | Section heights/widths roughly match design reference |
 | No unstyled elements | No raw browser-default HTML visible |
+| **Favicon in HTML head** | `curl -sk [site-url]/ \| grep -i 'rel="icon"'` returns a match |
+| **Page title set** | `curl -sk [site-url]/ \| grep '<title>'` shows site name, not "Drupal" |
 
-**Pass**: all five confirmed → proceed to Phase 9.
-**Fail**: fix CSS token or font loading → `drush cr` → re-run this check before Phase 9.
+**Pass**: all seven confirmed → proceed to Phase 9.
+**Fail**: fix CSS token, font loading, or missing head metadata → `drush cr` → re-run this check before Phase 9.
 
 ---
 
