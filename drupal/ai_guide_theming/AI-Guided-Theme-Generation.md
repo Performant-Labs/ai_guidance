@@ -1,17 +1,36 @@
 # AI-Guided Theme Generation
 
-This runbook outlines the standard operating procedure for AI developer agents tasked with safely creating a new testbed theme and translating UI screenshots into functional Drupal pages. 
+This runbook outlines the standard operating procedure for AI developer agents tasked with safely creating a new testbed theme and translating UI screenshots into functional Drupal pages.
 
 > [!IMPORTANT]
 > **Theme-Specific Run-Time Instruction**: At run-time, you MUST ask the user to provide the documentation folder path for their underlying base theme framework (e.g., `drupal/dripyard_themes`). You must thoroughly review all theme-specific instructions (such as component inventories and color management rules) stored in that folder before making architectural layout assumptions.
 
+---
+
+## Companion Documents
+
+All files below live alongside this SOP in `drupal/ai_guide_theming/`. Read each one at the phase where it is first referenced — the index below maps each document to its mandatory read phase.
+
+| Document | Purpose | Mandatory read |
+|---|---|---|
+| [`canvas-scripting-protocol.md`](canvas-scripting-protocol.md) | Pre-flight checklist, schema verification, script-writing rules, and verification cadence for all Canvas component work | Phase 0 / before any Drush script |
+| [`component-cookbook.md`](component-cookbook.md) | Authoritative prop/slot names for every dripyard_base component — never write `inputs` JSON from memory | Phase 4 (build) + Phase 9 (pre-script) |
+| [`content-migration-cookbook.md`](content-migration-cookbook.md) | Step-by-step migration patterns, inventory commands, dependency ordering, form framework assessment | Phase 13 |
+| [`operational-guidance.md`](operational-guidance.md) | Efficiency rules, known config traps, verification shortcuts, screenshot timing, failure patterns from live runs | Phase 0 / start of every run |
+| [`visual-regression-strategy.md`](visual-regression-strategy.md) | Panel-by-panel visual regression protocol — one subagent call per design slice | Phase 8, 10, 16 |
+
+> [!NOTE]
+> `canvas_snapshot*.sql` files are local rollback tools only — they are gitignored and must never be committed. See Phase 3 for the snapshot procedure.
+
+---
+
 ## Operating Principles
-The primary objective is to ingest a UI screenshot, map its visual elements to the components provided by the user's specified base theme framework, and implement the resulting layout within Drupal. 
+The primary objective is to ingest a UI screenshot, map its visual elements to the components provided by the user's specified base theme framework, and implement the resulting layout within Drupal.
 
 To ensure absolute safety and maintain a functional baseline for the host project, **AIs must first duplicate the existing stable theme into a new working directory before making any experimental layout or styling changes.**
 
 > [!IMPORTANT]
-> **Visual Remediation Phase**: When fixing structural or CSS gaps against a design reference (i.e., any work after the initial assembly), you MUST follow the `canvas-scripting-protocol.md` in this directory before writing any Drush script or Twig override. That document defines mandatory pre-flight checks, schema verification steps, script writing rules, and verification requirements that apply to all Canvas component work — initial build, additions, and updates alike.
+> **Visual Remediation Phase**: When fixing structural or CSS gaps against a design reference (i.e., any work after the initial assembly), you MUST follow the [`canvas-scripting-protocol.md`](canvas-scripting-protocol.md) in this directory before writing any Drush script or Twig override. That document defines mandatory pre-flight checks, schema verification steps, script writing rules, and verification requirements that apply to all Canvas component work — initial build, additions, and updates alike.
 
 > [!NOTE]
 > **Before starting any run**, read [`operational-guidance.md`](operational-guidance.md) in this directory. It documents efficiency rules and failure patterns distilled from live execution — covering verification shortcuts, known config traps, Canvas content persistence, and screenshot timing. Applying it avoids the most common time-consuming errors.
@@ -848,7 +867,7 @@ that the complete site with real content still matches the design reference.
 > Key rules:
 > - One subagent call = one design slice vs. one live viewport.
 > - Use pre-sliced assets in `designs/` (`00_menu.webp` … `08_footer.webp`).
-> - Each call appends findings to `drupal/ai_guide_theming/visual-regression-report.md`.
+> - Log findings in a session-local `visual-regression-report.md` file (ephemeral — do not commit; delete after the acceptance pass is complete).
 > - Evaluate layout, color, spacing, and typography **only** — content correctness was Phase 15.
 > - For efficiency rules (curl-first, animation timing, batched screenshots), see [`operational-guidance.md`](operational-guidance.md).
 
