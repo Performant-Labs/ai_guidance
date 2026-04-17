@@ -843,11 +843,11 @@ REPOS=( ~/Sites/project-a ~/Sites/project-b ~/Projects/project-c )
 for repo in "${REPOS[@]}"; do
   cd "$repo"
   # Safely wipe uncommitted staged ghosts
-  git rm -rf --cached docs/ai_guidance/ || true
-  rm -rf docs/ai_guidance/
+  git rm -rf --cached docs/ || true
+  rm -rf docs/
   # Refresh from upstream
   git fetch git@github.com:Performant-Labs/ai_guidance.git main
-  git read-tree --prefix=docs/ai_guidance/ -u FETCH_HEAD
+  git read-tree --prefix=docs/ -u FETCH_HEAD
 done
 ```
 

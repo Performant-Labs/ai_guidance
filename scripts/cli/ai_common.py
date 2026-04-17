@@ -6,7 +6,7 @@ from rich.panel import Panel
 
 console = Console()
 
-PREFIX = "docs/ai_guidance"
+PREFIX = "docs"
 REMOTE = "git@github.com:Performant-Labs/ai_guidance.git"
 BRANCH = "main"
 

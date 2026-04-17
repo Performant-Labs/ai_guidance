@@ -6,7 +6,7 @@ When `ai_guidance` is consumed as a **git subtree** inside another project, thes
 
 | Command | What it does |
 |---------|-------------|
-| `ai:pull` | Pulls the latest from `Performant-Labs/ai_guidance` into `docs/ai_guidance/` (squash merge) |
+| `ai:pull` | Pulls the latest from `Performant-Labs/ai_guidance` into `docs/` (squash merge) |
 | `ai:push` | Pushes local changes back upstream |
 | `ai:pull --model opus` | Uses a specific Claude model for the change summary |
 
@@ -103,7 +103,7 @@ setup/
 The subtree prefix, remote URL, and branch are defined in `scripts/ai_common.py`:
 
 ```python
-PREFIX = "docs/ai_guidance"
+PREFIX = "docs"
 REMOTE = "git@github.com:Performant-Labs/ai_guidance.git"
 BRANCH = "main"
 ```
