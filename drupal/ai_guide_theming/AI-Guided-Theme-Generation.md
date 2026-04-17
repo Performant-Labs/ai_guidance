@@ -17,6 +17,7 @@ All files below live alongside this SOP in `drupal/ai_guide_theming/`. Read each
 | [`component-cookbook.md`](component-cookbook.md) | Authoritative prop/slot names for every dripyard_base component — never write `inputs` JSON from memory | Phase 4 (build) + Phase 9 (pre-script) |
 | [`content-migration-cookbook.md`](content-migration-cookbook.md) | Step-by-step migration patterns, inventory commands, dependency ordering, form framework assessment | Phase 13 |
 | [`operational-guidance.md`](operational-guidance.md) | Efficiency rules, known config traps, verification shortcuts, screenshot timing, failure patterns from live runs | Phase 0 / start of every run |
+| [`verification-cookbook.md`](verification-cookbook.md) | Authoritative reference for the **Three-Tier Hierarchy** and **"Skeleton-First"** (ARIA) testing strategy | Phase 0 / before any verification |
 | [`visual-regression-strategy.md`](visual-regression-strategy.md) | Panel-by-panel visual regression protocol — one subagent call per design slice | Phase 8, 10, 16 |
 
 > [!NOTE]
@@ -84,19 +85,16 @@ Never parallelize operations with dependencies — `drush cr` must complete befo
 </parallelism_guidance>
 
 <subagent_policy>
-To maximize developer velocity, follow the **Three-Tier Verification Hierarchy**. Always use the fastest tool that provides sufficient structural confirmation before escalating to slower, more resource-intensive tools.
+To maximize developer velocity, follow the **Three-Tier Verification Hierarchy** as defined in the [**Verification Cookbook**](verification-cookbook.md). Always use the fastest tool that provides sufficient structural confirmation before escalating to slower, more resource-intensive tools.
 
 1. **Tier 1: Headless (Instant)**
    - Use `curl` for HTTP status, HTML tag presence, CSS variables, and server-side text content.
-   - Command: `curl -sk [url] | grep`
 2. **Tier 2: Structural Skeleton (Fast)**
-   - Use `read_browser_page` (ARIA / Accessibility mode) for all JS-rendered content and component assembly verification.
-   - **MANDATORY**: Verify the presence, roles, and functional labels of components in the A11y tree *before* taking screenshots. This is 20x faster and captures 90% of construction errors.
+   - Use `read_browser_page` (ARIA / Accessibility mode) for all structural and component assembly verification.
 3. **Tier 3: Visual Fidelity (Slow)**
-   - Use `browser_subagent` (Screenshots) exclusively for final visual regression (Phase 10/16), color-matching, or layout spacing checks.
-   - **Rule**: Do NOT use a browser subagent if Tier 1 or Tier 2 can confirm the structural requirement.
+   - Use `browser_subagent` (Screenshots) exclusively for final visual regression.
 
-All Phase 17 infrastructure checks are Tier 1 only.
+**Mandatory Workflow**: Verify the "Structural Skeleton" (Tier 2) before taking screenshots. This is 20x faster than a screenshot pass and catches most construction errors.
 </subagent_policy>
 
 <decision_commitment>

@@ -31,26 +31,13 @@ it looks wrong), hover states, mobile menu appearance, and animation behaviour.
 
 ---
 
-## 1.1 The High-Speed Structural Lens (Tier 2)
+## 1.1 The Verification Hierarchy (Tiered Methodology)
 
-For all structural and JavaScript-rendered content verification, use the **Accessibility (ARIA) Tree** via the `read_browser_page` tool. This is the **"High-Speed Structural Lens"** that prioritizes developer velocity over visual polish.
+To maximize developer velocity, follow the **Three-Tier Verification Hierarchy**. For specialized technical patterns (Headless, ARIA-Structural, and Visual), refer to the authoritative [**Verification Cookbook**](verification-cookbook.md).
 
-**The Skeleton-First Workflow:**
-1. **Verify via Tier 2 first**: Confirm that the component exists, its heading levels are correct, its buttons have the right labels, and its roles are semantically sound.
-2. **Move to Tier 3 last**: Only launch a browser subagent for screenshots *after* the structural skeleton is confirmed.
-
-**Why use ARIA for testing?**
-- **Speed**: Processing a text-based semantic snapshot is **20x faster** than launching a subagent, taking a screenshot, and analyzing pixels.
-- **Token Efficiency**: An A11y snapshot is 10–15x smaller than raw HTML and 100x smaller than a vision context. Smaller contexts prevent AI "lost in the middle" errors and hallucinations.
-- **Focus**: The A11y tree removes layout noise (divs, spans, CSS classes) and exposes only what the component *is* and *does*.
-
-| Goal | Best Tool | Verification Tier |
-|---|---|---|
-| Find a missing button | `read_browser_page` (ARIA) | Tier 2 |
-| Check a link's destination | `read_browser_page` (ARIA) | Tier 2 |
-| Check heading hierarchy | `read_browser_page` (ARIA) | Tier 2 |
-| "Does this look like the design?" | `browser_subagent` (Screenshot) | Tier 3 |
-| "Is the overlap fixed?" | `browser_subagent` (Screenshot) | Tier 3 |
+**Key Principles:**
+- **Tier 2 (ARIA) First**: Audit the "Structural Skeleton" of a page (roles, headings, buttons) before taking any screenshots. This is 20x faster and more token-efficient.
+- **Tier 3 (Visual) Last**: Reserve screenshots for visual regression, color-matching, and layout spacing.
 
 ---
 

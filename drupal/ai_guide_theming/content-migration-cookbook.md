@@ -916,7 +916,37 @@ One category at a time — do not present all categories simultaneously.
 
 ## Verification Gate
 
-Run after all categories are complete, before Phase 10:
+Perform these checks after all categories are complete to confirm data integrity. For construction and visual verification (Tier 2 & 3), follow the [**Verification Cookbook**](verification-cookbook.md).
+
+### Data Parity (Tier 1)
+```bash
+# Node counts by type:
+ddev drush php-eval "
+foreach(['page','article','book'] as \$type) {
+  \$c = \Drupal::entityQuery('node')->condition('type',\$type)
+    ->condition('status',1)->accessCheck(FALSE)->count()->execute();
+  echo \$type.': '.\$c.PHP_EOL;
+}"
+
+# Taxonomy term count:
+ddev drush php-eval "
+\$c = \Drupal::entityQuery('taxonomy_term')
+  ->accessCheck(FALSE)->count()->execute();
+echo 'Taxonomy terms: '.\$c.PHP_EOL;"
+
+# Media count:
+ddev drush php-eval "
+\$c = \Drupal::entityQuery('media')
+  ->accessCheck(FALSE)->count()->execute();
+echo 'Media entities: '.\$c.PHP_EOL;"
+
+# Spot check path aliases:
+ddev exec "curl -sk -o /dev/null -w '%{http_code}' https://[site-url]/services"
+# Must return 200.
+```
+
+**Pass**: Counts match approved selections and aliases resolve.
+**Fail**: Fix the specific missing item and re-verify.
 
 ```bash
 cd [target-path]
