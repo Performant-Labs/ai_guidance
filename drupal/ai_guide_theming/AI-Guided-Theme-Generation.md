@@ -84,12 +84,19 @@ Never parallelize operations with dependencies — `drush cr` must complete befo
 </parallelism_guidance>
 
 <subagent_policy>
-Use a browser subagent only when verification requires visual rendering, pixel-level design comparison, or JavaScript-rendered content. Use curl for all other checks:
-- HTTP status: `curl -o /dev/null -w "%{http_code}"`
-- HTML head tag presence: `curl -sk [url] | grep`
-- Nav or copy text: `curl -sk [url] | grep`
-- Database state: `drush sql-query` or `drush php-eval`
-All Phase 17 infrastructure checks are curl-only and require no browser subagent.
+To maximize developer velocity, follow the **Three-Tier Verification Hierarchy**. Always use the fastest tool that provides sufficient structural confirmation before escalating to slower, more resource-intensive tools.
+
+1. **Tier 1: Headless (Instant)**
+   - Use `curl` for HTTP status, HTML tag presence, CSS variables, and server-side text content.
+   - Command: `curl -sk [url] | grep`
+2. **Tier 2: Structural Skeleton (Fast)**
+   - Use `read_browser_page` (ARIA / Accessibility mode) for all JS-rendered content and component assembly verification.
+   - **MANDATORY**: Verify the presence, roles, and functional labels of components in the A11y tree *before* taking screenshots. This is 20x faster and captures 90% of construction errors.
+3. **Tier 3: Visual Fidelity (Slow)**
+   - Use `browser_subagent` (Screenshots) exclusively for final visual regression (Phase 10/16), color-matching, or layout spacing checks.
+   - **Rule**: Do NOT use a browser subagent if Tier 1 or Tier 2 can confirm the structural requirement.
+
+All Phase 17 infrastructure checks are Tier 1 only.
 </subagent_policy>
 
 <decision_commitment>

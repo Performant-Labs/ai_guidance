@@ -268,6 +268,16 @@ Term::create([
 
 ## §2 — Media
 
+> [!IMPORTANT]
+> **All migrated media must land in the Drupal Media Library.**
+> Do not drop image files into `public://` and reference them only as raw
+> managed `File` entities. Every image, document, or video brought across
+> from the source site must be registered as a `Media` entity (bundle:
+> `image`, `document`, etc.) so it appears under **Content → Media** in
+> the admin UI and can be reused across the site. Raw `File::create()`
+> calls without a corresponding `Media::create()` are incomplete and will
+> produce orphaned files that are invisible to editors.
+
 ### Inventory (source site)
 
 ```bash
@@ -293,7 +303,7 @@ use Drupal\media\Entity\Media;
   \Drupal\Core\File\FileSystemInterface::EXISTS_REPLACE
 );
 
-// 2. Create the media entity:
+// 2. Create the Media Library entity (REQUIRED — do not skip):
 \$media = Media::create([
   'bundle'            => 'image',
   'name'              => 'Descriptive label (used as alt text fallback)',
@@ -305,7 +315,9 @@ use Drupal\media\Entity\Media;
   'status' => 1,
 ]);
 \$media->save();
-echo 'Media ID: '.\$media->id().PHP_EOL;
+echo 'Media ID: '.\$media->id().' | File UUID: '.\$file->uuid().PHP_EOL;
+// Record both IDs — the Media entity ID for field references,
+// the File UUID for inline HTML data-entity-uuid attributes.
 ```
 
 > [!CAUTION]
@@ -342,6 +354,23 @@ foreach(\$nodes as \$n) {
 > `content_format` instead of `basic_html`/`full_html`. Check what
 > fields the target page type has before running:
 > `drush php-eval "foreach(\Drupal::service('entity_field.manager')->getFieldDefinitions('node','page') as \$n=>\$d) if(str_starts_with(\$n,'field_')||\$n==='body') echo \$n.' ('.$d->getType().')\n';"`
+
+> [!IMPORTANT]
+> **Inline images embedded in `field_content` HTML must also go through §2.**
+> Pages on the source site often contain `<img>` tags pointing to
+> `/sites/default/files/inline-images/filename.png`. When migrating these
+> pages, do **not** register the image only as a raw `File` entity. Follow
+> the full §2 pattern (download → `file.repository->writeData()` →
+> `Media::create()`) so the image is visible in the Media Library.
+> Then embed it in the body HTML using the file's UUID in the
+> `data-entity-uuid` attribute so the CKEditor media embed filter resolves
+> it correctly:
+> ```html
+> <img src="/sites/default/files/inline-images/filename.png"
+>      data-entity-uuid="[file-uuid-from-step-2]"
+>      data-entity-type="file"
+>      alt="Description" width="300" height="225" loading="lazy">
+> ```
 
 ```php
 <?php
@@ -577,7 +606,179 @@ unset(\$comp);
 
 ---
 
+## §6b — Building a New Canvas Page From Scratch (Migration)
+
+Use this procedure when a source page must become a **new Canvas page** (not just copy-pasting text into an existing one). This was established during the Services page migration.
+
+> [!IMPORTANT]
+> Before writing any build script, read **`canvas-scripting-protocol.md` Rules A–E** in full. This procedure assumes those rules are understood.
+
+### Step 1 — Register all assets in the Media Library first
+
+Every image used in the page must exist as a Media entity **before** writing the build script. Do not pass raw `src` paths — use `target_id`.
+
+```bash
+# Download and register each asset
+ddev drush ev "
+\$media = \Drupal::entityTypeManager()->getStorage('media')->create([
+    'bundle' => 'image',
+    'name' => 'My Image',
+    'field_media_image' => [
+        'target_id' => \$file->id(),
+        'alt' => 'Alt text',
+    ],
+]);
+\$media->save();
+print 'MID: ' . \$media->id() . PHP_EOL;
+"
+
+# Then list all MIDs to reference in the build script
+ddev drush ev "
+\$entities = \Drupal::entityTypeManager()->getStorage('media')->loadMultiple();
+foreach (\$entities as \$mid => \$m) {
+    print \$mid . ' | ' . \$m->bundle() . ' | ' . \$m->label() . PHP_EOL;
+}
+"
+```
+
+### Step 2 — Get the correct `active_version` hash for each component
+
+Do not hardcode hashes. Always read them from the live config before building:
+
+```bash
+ddev drush ev "
+\$components = [
+    'section', 'flex-wrapper', 'grid-wrapper', 'canvas-image',
+    'heading', 'card-canvas', 'text', 'title-cta',
+    'logo-grid', 'logo-item-canvas',
+];
+foreach (\$components as \$name) {
+    \$v = \Drupal::config('canvas.component.sdc.dripyard_base.' . \$name)->get('active_version');
+    print \"'\$name' => '\$v',\" . PHP_EOL;
+}
+"
+```
+
+### Step 3 — Get the correct internal path for the page alias
+
+```bash
+ddev drush ev "
+\$page = \Drupal::entityTypeManager()->getStorage('canvas_page')->load(ID);
+print \$page->toUrl('canonical')->getInternalPath() . PHP_EOL;  // e.g. page/3
+"
+```
+
+### Step 4 — Build script template
+
+```php
+<?php
+// Standard helper function — pass \$v as argument, not global, to avoid
+// PHP redeclaration errors across multiple drush ev invocations.
+function addC(&\$comps, \$id, \$inputs, \$v, \$parent = null, \$slot = null) {
+    \$map = [
+        'section'    => 'sdc.dripyard_base.section',
+        'flex'       => 'sdc.dripyard_base.flex-wrapper',
+        'grid'       => 'sdc.dripyard_base.grid-wrapper',
+        'image'      => 'sdc.dripyard_base.canvas-image',
+        'heading'    => 'sdc.dripyard_base.heading',
+        'card'       => 'sdc.dripyard_base.card-canvas',
+        'text'       => 'sdc.dripyard_base.text',
+        'cta'        => 'sdc.dripyard_base.title-cta',
+        'logo-grid'  => 'sdc.dripyard_base.logo-grid',
+        'logo-item'  => 'sdc.dripyard_base.logo-item-canvas',
+    ];
+    \$actual_id = \$map[\$id] ?? \$id;
+    \$base_id   = str_replace('sdc.dripyard_base.', '', \$actual_id);
+    \$version   = \$v[\$base_id] ?? 'unknown';
+    \$uuid = \Drupal::service('uuid')->generate();
+    \$comps[] = [
+        'uuid'             => \$uuid,
+        'component_id'     => \$actual_id,
+        'component_version'=> \$version,
+        'inputs'           => json_encode(\$inputs),
+        'parent_uuid'      => \$parent,
+        'slot'             => \$slot,
+    ];
+    return \$uuid;
+}
+
+\$storage = \Drupal::entityTypeManager()->getStorage('canvas_page');
+\$page = \$storage->create(['title' => 'Page Title', 'status' => 1]);
+// OR load existing: \$page = \$storage->load(ID);
+
+\$comps = [];
+\$v = [/* active_version values from Step 2 */];
+
+// Build component tree here...
+// Each addC() call returns the UUID for use as a parent:
+\$s1 = addC(\$comps, 'section', [
+    'section_width' => 'max-width', 'content_width' => 'max-width',
+    'margin_top' => 'zero', 'margin_bottom' => 'zero',
+    'padding_top' => 'large', 'padding_bottom' => 'large',
+    'theme' => 'white',
+], \$v);
+
+// Image using Media entity reference (Rule A):
+addC(\$comps, 'image', ['image' => ['target_id' => 21], 'width' => 600, 'loading' => 'lazy'], \$v, \$s1, 'content');
+
+\$page->set('components', \$comps)->save();
+print 'Page ID: ' . \$page->id() . PHP_EOL;
+```
+
+### Step 5 — Create the path alias
+
+```php
+use Drupal\path_alias\Entity\PathAlias;
+
+// Get the correct internal path first (Step 3):
+\$internal = '/' . \$page->toUrl('canonical')->getInternalPath();  // e.g. /page/3
+
+// Delete any existing alias at this slug:
+\$alias_storage = \Drupal::entityTypeManager()->getStorage('path_alias');
+foreach (\$alias_storage->loadByProperties(['alias' => '/target-slug']) as \$a) {
+    \$a->delete();
+}
+
+// Create the new alias:
+PathAlias::create([
+    'path'     => \$internal,
+    'alias'    => '/target-slug',
+    'langcode' => 'en',
+])->save();
+```
+
+### Step 6 — Unpublish the legacy node
+
+```bash
+ddev drush ev "
+\$nodes = \Drupal::entityTypeManager()->getStorage('node')
+    ->loadByProperties(['title' => 'Legacy Page Title']);
+foreach (\$nodes as \$node) {
+    \$node->setUnpublished()->save();
+    print 'Unpublished node: ' . \$node->id() . PHP_EOL;
+}
+"
+```
+
+### Step 7 — Verify
+
+```bash
+# Check the page title in HTML:
+curl -sk https://[site-url]/[slug] | grep -o '<title>[^<]*</title>'
+
+# Check content matches:
+curl -sk https://[site-url]/[slug] | grep -c 'Section heading 1\|Section heading 2'
+
+# Confirm no Twig errors:
+ddev drush watchdog:show --count=5 --severity=3
+```
+
+Cross-reference: **`canvas-scripting-protocol.md` Rules A–E** (Media refs, enum ceilings, internal path, config props, title field).
+
+---
+
 ## §7 — Custom Block Content
+
 
 ### Inventory (source site)
 

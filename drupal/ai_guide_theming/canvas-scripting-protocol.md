@@ -2,6 +2,9 @@
 
 This document defines the mandatory pre-flight checklist that must pass before any Drush script or Twig override is written that touches Canvas page components. It applies equally to initial assembly, additions, and corrections. It was created after a session where multiple fix scripts were required because these checks were skipped.
 
+> [!IMPORTANT]
+> Updated 2026-04-17 with lessons from the Services page migration. See new sections: **Media Image References**, **Enum Value Ceilings**, **Canvas Page Internal Path**, **Adding Props to Canvas Config Entities**, and **Canvas Page Title Field**.
+
 ---
 
 ## The Core Problem
@@ -100,6 +103,120 @@ Base themes ship demo copy in Canvas components. Before any visual regression sc
 ```
 
 If any matches appear, update them via the entity API (see **Keyed replacement pattern** in Script Writing Rules below).
+
+---
+
+## Lessons From the Services Page Migration
+
+The following rules were added after building the Services Canvas page programmatically. Each one caused a blocking failure that required debugging.
+
+### Rule A — Images must use `target_id` (Media entity reference), never raw `src`
+
+Canvas component props typed as `entity_reference` (e.g., `image` on `canvas-image`, `card-canvas`, `logo-item-canvas`) must receive a Media entity reference object, **not** a raw `{src, alt, width}` shape.
+
+```php
+// WRONG — passes a raw src string; Canvas resolves nothing, loading becomes null
+'image' => ['src' => '/sites/default/files/my-image.png', 'alt' => 'Alt text']
+
+// CORRECT — passes a Media entity ID; Canvas resolves it to the full image shape at render time
+'image' => ['target_id' => 21]  // MID from the Media library
+```
+
+**Why it matters:** The Twig `image-or-media` sub-component requires `loading` to be `"eager"` or `"lazy"`. When a raw `src` is passed, `loading` resolves to `null`, which triggers a Twig schema validation error at render time even though `->save()` succeeds.
+
+**Pre-flight:** Before building any page, list all Media entity IDs with:
+```bash
+ddev drush ev "
+\$entities = \Drupal::entityTypeManager()->getStorage('media')->loadMultiple();
+foreach (\$entities as \$mid => \$m) {
+    print \$mid . ' | ' . \$m->bundle() . ' | ' . \$m->label() . PHP_EOL;
+}
+"
+```
+
+### Rule B — Enum values for padding/margin have a ceiling of `large`
+
+The allowed values for `padding_top`, `padding_bottom`, `margin_top`, `margin_bottom` on `section` and `flex-wrapper` are:
+
+```
+zero | small | medium | large
+```
+
+`x-large` is **not** a valid enum value and will cause `ComponentTreeItem::preSave()` to throw, preventing `->save()` from committing any component on the page — not just the offending one.
+
+**Additional enum differences between components (learned from OSP migration):**
+
+| Component | `color` enum values |
+|---|---|
+| `heading` | `default \| soft \| medium \| loud \| primary` |
+| `text` | `inherit \| soft \| medium \| loud \| primary` |
+
+Note that `heading` uses `default` but NOT `inherit`; `text` uses `inherit` but NOT `default`. Using the wrong value in either causes a `preSave()` LogicException. When in doubt, run: `grep -A8 'enum:' web/themes/contrib/dripyard_base/components/<name>/<name>.component.yml`
+
+**`title-cta` requires a non-empty `title` string.** Passing `''` (empty string) fails validation. Use `' '` (single space) if you want a button-only CTA with no visible heading.
+
+**Rule:** When in doubt, copy the exact values from a working page's component inputs:
+```bash
+ddev drush ev "
+\$page = \Drupal::entityTypeManager()->getStorage('canvas_page')->load(1);
+\$comps = \$page->get('components')->getValue();
+foreach (\$comps as \$c) {
+    if (\$c['component_id'] === 'sdc.dripyard_base.section') {
+        print json_encode(json_decode(\$c['inputs'], true), JSON_PRETTY_PRINT) . PHP_EOL;
+        break;
+    }
+}
+"
+```
+
+### Rule C — Canvas page internal path is `/page/{id}`, not `/canvas-page/{id}`
+
+When creating a path alias for a Canvas page, the internal system path is `/page/{id}`:
+
+```php
+// WRONG — 404:
+$alias->set('path', '/canvas-page/3');
+
+// CORRECT:
+$alias->set('path', '/page/3');
+```
+
+Verify the correct internal path before creating any alias:
+```bash
+ddev drush ev "
+\$page = \Drupal::entityTypeManager()->getStorage('canvas_page')->load(3);
+print \$page->toUrl('canonical')->getInternalPath() . PHP_EOL;  // outputs: page/3
+"
+```
+
+### Rule D — Adding props to Canvas config entities does NOT change `active_version`
+
+Canvas stores a content-hash of `versioned_properties` as `active_version`. Editing a Canvas component config YAML (`config/sync/canvas.component.sdc.dripyard_base.*.yml`) to add a new allowed prop and running `config:import` **does not** regenerate the hash.
+
+This is safe by design: the new prop is accepted in `inputs` immediately after import (the validator reads the live config, not the hash), but `active_version` stays the same. You do **not** need to re-resave all pages after adding a prop.
+
+**Workflow for adding an undeclared prop to a Canvas component:**
+1. Add the prop definition block under `versioned_properties.active.settings.prop_field_definitions` in the YAML
+2. Run `ddev drush config:import --yes`
+3. Verify the update was applied: `ddev drush config:get canvas.component.sdc.dripyard_base.<component> active_version`
+4. Re-run the page build script — the new prop will now be accepted
+
+> [!CAUTION]
+> Do not edit Canvas component config YAMLs to add props that are not in the SDC `.component.yml` schema. The validator checks both. Adding a prop to the Canvas config but not the SDC schema will still cause a Twig error at render time.
+
+### Rule E — `canvas_page` title field is `title`, not `label`
+
+The `canvas_page` entity has a `title` field (type `string`). Calling `->set('label', ...)` throws `Field label is unknown`.
+
+```php
+// WRONG:
+$page->set('label', 'Services');
+
+// CORRECT:
+$page->set('title', 'Services');
+```
+
+The page label shown in the admin UI comes from the `title` field. This also populates the `<title>` tag in the HTML via Drupal's entity label system.
 
 ---
 
