@@ -9,7 +9,7 @@ This runbook outlines the standard operating procedure for AI developer agents t
 
 ## Companion Documents
 
-All files below live alongside this SOP in `drupal/ai_guide_theming/`. Read each one at the phase where it is first referenced — the index below maps each document to its mandatory read phase.
+All files below live alongside this SOP in `docs/frameworks/drupal/theming/`. Read each one at the phase where it is first referenced — the index below maps each document to its mandatory read phase.
 
 | Document | Purpose | Mandatory read |
 |---|---|---|
@@ -105,7 +105,7 @@ Once a user approves an Approval Checkpoint, those architectural decisions are f
 At the start of each working session:
 1. Run `git log --oneline -10` to identify where the previous session ended.
 2. **Read [`verification-cookbook.md`](verification-cookbook.md)** — this is mandatory at the start of every session. It defines the Three-Tier Hierarchy that governs all page verification. Do not begin any verification task without reviewing it.
-3. Record current phase, active section, and any open failure paths at `drupal/ai_guide_theming/session_progress.md` (gitignored).
+3. Record current phase, active section, and any open failure paths at `docs/frameworks/drupal/theming/session_progress.md` (gitignored).
 4. Reconstruct state from the commit log and phase gates — never from memory alone.
 </session_continuity>
 
@@ -361,9 +361,9 @@ Before altering any structural CSS or Layout builder templates, preserve the cur
 5. **Version Control Snapshot**: Add and commit only the cloned theme directory using its explicit path (e.g. `git add web/themes/custom/[primary_theme]_[timestamp] && git commit -m "chore: Branch new component testbed theme"`). Do NOT use `git add .` here — only stage the new theme directory to avoid accidentally committing unrelated working files.
 6. **Canvas DB Snapshot**: Immediately after activating the new theme, take a snapshot of the Canvas component table. This is the rollback point if any assembly script puts the DB into a bad state:
    ```bash
-   [runtime_wrapper] drush sql-dump --tables-list=canvas_page__components > drupal/ai_guide_theming/canvas_snapshot_pre_assembly.sql
+   [runtime_wrapper] drush sql-dump --tables-list=canvas_page__components > docs/frameworks/drupal/theming/canvas_snapshot_pre_assembly.sql
    ```
-   To restore: `[runtime_wrapper] drush sql-query --file=drupal/ai_guide_theming/canvas_snapshot_pre_assembly.sql`
+   To restore: `[runtime_wrapper] drush sql-query --file=docs/frameworks/drupal/theming/canvas_snapshot_pre_assembly.sql`
 
    > [!IMPORTANT]
    > This snapshot file must NOT be committed to git — add it to `.gitignore`. It exists only as a local recovery tool.
@@ -395,12 +395,12 @@ Once the user provides the target design:
    - Every **required** prop name with its valid enum values, copied verbatim from the schema
    - Every **slot** name, copied verbatim from the schema
 
-   Save this table to `drupal/ai_guide_theming/component-cookbook.md`. It becomes the authoritative prop reference for every Phase 9 assembly script — no prop name may be written from memory during assembly.
+   Save this table to `docs/frameworks/drupal/theming/component-cookbook.md`. It becomes the authoritative prop reference for every Phase 9 assembly script — no prop name may be written from memory during assembly.
 
    > [!CAUTION]
    > Do not guess prop names. A wrong prop name causes a silent drop or a `RuntimeError` on save. The cookbook prevents the "fix the fix" cycle.
    >
-   > **Reference document**: [`drupal/ai_guide_theming/component-cookbook.md`](component-cookbook.md) — read this file in full at the start of Phase 9 before writing a single assembly script. It contains verbatim prop/slot names and a "Common Mistakes" table of props that have caused silent failures in past sessions.
+   > **Reference document**: [`docs/frameworks/drupal/theming/component-cookbook.md`](component-cookbook.md) — read this file in full at the start of Phase 9 before writing a single assembly script. It contains verbatim prop/slot names and a "Common Mistakes" table of props that have caused silent failures in past sessions.
 
 9. **Approval Checkpoint**: With the plan and cookbook safely tracked in version control, you must explicitly STOP execution. Display your mapped strategy to the user and wait for their explicit manual approval before advancing into Phase 5 layout executions.
 
@@ -506,8 +506,8 @@ First comparison against the design reference. Run one browser subagent per slic
 
 > [!IMPORTANT]
 > **Mandatory pre-reading before writing any script in this phase:**
-> 1. [`drupal/ai_guide_theming/component-cookbook.md`](component-cookbook.md) — authoritative prop/slot names for every component. Never write an `inputs` JSON from memory.
-> 2. [`drupal/ai_guide_theming/canvas-scripting-protocol.md`](canvas-scripting-protocol.md) — mandatory pre-flight checklist (schema check, template read, module availability, asset reachability, DB state, logo path, placeholder content scrub), script writing rules, and verification cadence.
+> 1. [`docs/frameworks/drupal/theming/component-cookbook.md`](component-cookbook.md) — authoritative prop/slot names for every component. Never write an `inputs` JSON from memory.
+> 2. [`docs/frameworks/drupal/theming/canvas-scripting-protocol.md`](canvas-scripting-protocol.md) — mandatory pre-flight checklist (schema check, template read, module availability, asset reachability, DB state, logo path, placeholder content scrub), script writing rules, and verification cadence.
 >
 > Both documents must be read **in full** before the first `drush scr` is written. Skipping either document is the single most common cause of multi-session fix loops.
 
@@ -793,7 +793,7 @@ Run text-presence checks first with `curl -sk [site-url]/ | grep -i "[nav-label]
 ## Phase 13: Content Migration
 
 > [!IMPORTANT]
-> **Mandatory pre-reading**: Read [`drupal/ai_guide_theming/content-migration-cookbook.md`](content-migration-cookbook.md) in full before writing any script or running any Drush command in this phase. It contains all inventory commands, migration patterns, dependency ordering, the form framework assessment, and the verification gate.
+> **Mandatory pre-reading**: Read [`docs/frameworks/drupal/theming/content-migration-cookbook.md`](content-migration-cookbook.md) in full before writing any script or running any Drush command in this phase. It contains all inventory commands, migration patterns, dependency ordering, the form framework assessment, and the verification gate.
 
 1. **DDEV multi-project**: Start the source site alongside the target — `cd [source-path] && ddev start`. Both run simultaneously; the shared `ddev-router` handles both by subdomain. No conflict expected.
 2. **§-1 Module Audit first** (cookbook §-1): Compare enabled modules between source and target. Install any modules the migrated content depends on **before** touching config or content. Webform, Redirect, and GA4 are common gaps between legacy sites and fresh DCMS installs.
@@ -871,7 +871,7 @@ that the complete site with real content still matches the design reference.
 > [!IMPORTANT]
 > **Do not attempt visual regression in a single subagent call.** Follow the
 > panel-by-panel protocol in:
-> **[`drupal/ai_guide_theming/visual-regression-strategy.md`](visual-regression-strategy.md)**
+> **[`docs/frameworks/drupal/theming/visual-regression-strategy.md`](visual-regression-strategy.md)**
 >
 > Key rules:
 > - One subagent call = one design slice vs. one live viewport.

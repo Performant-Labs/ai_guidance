@@ -166,7 +166,7 @@ Run **nine sequential subagent calls**, one per slice. Each call must:
 4. Load **only the matching `designs/NN_name.webp` slice** as the MediaPath
    reference — never the full composite.
 5. Compare the two images and write findings **immediately** to
-   `drupal/ai_guide_theming/visual-regression-report.md` before returning.
+   `docs/frameworks/drupal/theming/visual-regression-report.md` before returning.
 6. Return a summary of gaps found in that panel.
 
 The outer agent (not the subagent) is responsible for issuing all nine calls
@@ -199,7 +199,7 @@ Use these approximate scroll targets to align with each design slice:
 All findings must be written incrementally to:
 
 ```
-drupal/ai_guide_theming/visual-regression-report.md
+docs/frameworks/drupal/theming/visual-regression-report.md
 ```
 
 Each subagent call must **append** its panel findings to this file before
@@ -245,7 +245,7 @@ survive a crash.
 This strategy is referenced from the master SOP at:
 
 ```
-drupal/ai_guide_theming/AI-Guided-Theme-Generation.md
+docs/frameworks/drupal/theming/ai-guided-theme-generation.md
 ```
 
 under **Phase 10.2: Visual Regression**.

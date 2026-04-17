@@ -65,7 +65,7 @@ They exist only in the database until you explicitly dump them.
 
 **Protocol:**
 - At the **start** of any Canvas content phase: `drush sql-dump --tables-list=canvas_page__components > canvas_snapshot_pre_phase15.sql`
-- At the **end**: take a post-edit snapshot and commit it to `drupal/ai_guide_theming/`
+- At the **end**: take a post-edit snapshot and commit it to `docs/frameworks/drupal/theming/`
 - Restore with: `ddev drush sql-query --file=canvas_snapshot_phase15.sql`
 
 Never assume Canvas content is safe in git just because `git status` is clean.
@@ -254,7 +254,7 @@ stage scratch `.php` files if you forgot to delete them.
 Always specify explicit paths:
 
 ```bash
-git add config/sync/ web/themes/custom/[theme]/ drupal/ai_guide_theming/
+git add config/sync/ web/themes/custom/[theme]/ docs/frameworks/drupal/theming/
 # Never: git add .
 ```
 

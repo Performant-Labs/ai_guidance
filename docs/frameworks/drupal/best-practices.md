@@ -198,7 +198,7 @@ ddev exec bash -c "cd /var/www/html && vendor/bin/phpunit web/modules/custom/my_
 3. **Check for zombie processes** — run `kill-zombies.sh`
 
 > [!IMPORTANT]
-> `ddev drush cr` clears Drupal's cache but does **not** flush PHP's opcache. After creating or moving `.php` files, always run `ddev restart`. See TROUBLESHOOTING.md §10.
+> `ddev drush cr` clears Drupal's cache but does **not** flush PHP's opcache. After creating or moving `.php` files, always run `ddev restart`. See docs/agent/troubleshooting.md §10.
 
 > [!CAUTION]
 > These are **code-only** architectural changes. Each module should be independently committable and testable. If a regression test fails, roll back that module before proceeding to the next.
