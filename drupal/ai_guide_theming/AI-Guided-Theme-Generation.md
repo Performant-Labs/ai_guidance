@@ -94,7 +94,7 @@ To maximize developer velocity, follow the **Three-Tier Verification Hierarchy**
 3. **Tier 3: Visual Fidelity (Slow)**
    - Use `browser_subagent` (Screenshots) exclusively for final visual regression.
 
-**Mandatory Workflow**: Verify the "Structural Skeleton" (Tier 2) before taking screenshots. This is 20x faster than a screenshot pass and catches most construction errors.
+**HARD RULE — DO NOT BYPASS**: You MUST NOT call `browser_subagent` (screenshots) for any construction or assembly verification until `read_browser_page` (ARIA mode) has returned a passing structural audit confirming the component skeleton is correct. Calling a browser subagent before a Tier 2 ARIA audit is a protocol violation. There are no exceptions.
 </subagent_policy>
 
 <decision_commitment>
@@ -102,7 +102,11 @@ Once a user approves an Approval Checkpoint, those architectural decisions are f
 </decision_commitment>
 
 <session_continuity>
-At the start of each working session, run `git log --oneline -10` to identify where the previous session ended. Record current phase, active section, and any open failure paths at `drupal/ai_guide_theming/session_progress.md` (gitignored). Reconstruct state from the commit log and phase gates — never from memory alone.
+At the start of each working session:
+1. Run `git log --oneline -10` to identify where the previous session ended.
+2. **Read [`verification-cookbook.md`](verification-cookbook.md)** — this is mandatory at the start of every session. It defines the Three-Tier Hierarchy that governs all page verification. Do not begin any verification task without reviewing it.
+3. Record current phase, active section, and any open failure paths at `drupal/ai_guide_theming/session_progress.md` (gitignored).
+4. Reconstruct state from the commit log and phase gates — never from memory alone.
 </session_continuity>
 
 ---

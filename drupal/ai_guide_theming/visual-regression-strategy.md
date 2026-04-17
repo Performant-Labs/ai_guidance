@@ -6,6 +6,9 @@ end-of-project step — it is a mandatory gate at the end of every structural ph
 **You cannot build upon problems you haven't caught.**
 
 > [!IMPORTANT]
+> **This document covers Tier 3 (Visual) verification only.** Before beginning any VR gate in this document, a **Tier 2 ARIA structural audit** must have already passed for the relevant page. Read [`verification-cookbook.md`](verification-cookbook.md) for the full Three-Tier Hierarchy. Do NOT open a browser subagent (screenshots) until the structural skeleton is confirmed.
+
+> [!IMPORTANT]
 > VR gates are **blocking**. A phase must not begin until the previous phase's VR
 > gate passes. A Phase 7 ❌ must be resolved before Phase 8 starts — not patched
 > after Phase 9 content migration is already layered on top.

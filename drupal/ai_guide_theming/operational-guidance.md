@@ -7,6 +7,9 @@ cost time.
 
 Read this before starting any new run. Add to it when something unexpected happens.
 
+> [!IMPORTANT]
+> **Before verifying any page or component**: Read [`verification-cookbook.md`](verification-cookbook.md). It defines the Three-Tier Hierarchy (Headless → ARIA → Visual) that must govern all verification. Do NOT call `browser_subagent` (screenshots) until a Tier 2 ARIA audit passes.
+
 ---
 
 ## 1. Verification: curl first, browser last
