@@ -18,6 +18,18 @@ title: 'Contact Us'
 description: 'Basic email contact webform.'
 categories: {  }
 elements: |-
+  contact_intro_graphic:
+    '#type': processed_text
+    '#text': '<p><img src="/sites/default/files/inline-images/contact-us-siderbar.png" data-entity-uuid="c8a4cc62-82d2-4e10-bc35-202e1358f736" data-entity-type="file" alt="Contact Us" width="300" height="225" loading="lazy"></p>'
+    '#format': content_format
+  contact_intro_heading:
+    '#type': processed_text
+    '#text': '<div class="highlighted-blue-text">Let''s talk about your quality<br>and testing goals.<br>&nbsp;</div>'
+    '#format': content_format
+  contact_intro_text:
+    '#type': processed_text
+    '#text': '<p><strong>Leave a message</strong> and we''ll get back to you.</p><p><strong>Or </strong><a href="https://savvycal.com/AndreAngelantoni/meet-with-andre"><strong>set up an appointment</strong></a>.</p>'
+    '#format': content_format
   name:
     '#type': textfield
     '#title': 'Your Name'

@@ -92,6 +92,17 @@ versioned_properties:
           field_widget: boolean_checkbox
           default_value: null
           expression: ℹ︎boolean␟value
+        loading:
+          required: false
+          field_type: list_string
+          field_storage_settings:
+            allowed_values_function: canvas_load_allowed_values_for_component_prop
+          field_instance_settings: {  }
+          field_widget: options_select
+          default_value:
+            -
+              value: lazy
+          expression: ℹ︎list_string␟value
     fallback_metadata:
       slot_definitions: {  }
 label: Card
