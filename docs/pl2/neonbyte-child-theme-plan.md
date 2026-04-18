@@ -26,7 +26,7 @@ Before creating any files, these must be resolved:
 | Font family | ⬜ Pending | Brand guide |
 | `license_uuid` + `dripyard_uid` | ⬜ Pending | Copy from `neonbyte_subtheme.settings.yml` |
 
-> See `ai-guided-theme-generation.md` Phase 2 for the full asset collection checklist and exact `drush php-eval` commands.
+> See `ai-guided-theme-generation.md` Phase 2 for the full asset collection checklist and exact `ddev drush php-eval` commands.
 
 ---
 
@@ -104,11 +104,25 @@ Single global stylesheet. Contains only brand token overrides — no component-s
 Thin PHP file. Includes the Dripyard class-loader. Hosts `hook_preprocess_*` overrides if needed in future phases.
 
 > Template: `neonbyte_subtheme/neonbyte_subtheme.theme`
+>
+> ⚠️ **Path fix required:** The scaffold uses `__DIR__ . '/../dripyard-classloader.php'` which resolves correctly for the scaffold's location at `themes/neonbyte_subtheme/` but is **wrong** for `themes/custom/pl_neonbyte/`. Change the path to:
+> ```php
+> if (file_exists(__DIR__ . '/dripyard-classloader.php')) {
+>   require_once __DIR__ . '/dripyard-classloader.php';
+> }
+> ```
 
 ---
 
 ### `dripyard-classloader.php`
-PSR-4 autoloader for `src/` classes. Adapted from `neonbyte_subtheme/dripyard-classloader.php` — update namespace to `Drupal\\PlNeonbyte\\` and `$base_dir` to `__DIR__ . '/src/'`.
+PSR-4 autoloader for `src/` classes. Adapted from `neonbyte_subtheme/dripyard-classloader.php`.
+
+Two substitutions required (beyond the namespace):
+
+| Find | Replace |
+|---|---|
+| `Drupal\\NeonbyteSubtheme\\` | `Drupal\\PlNeonbyte\\` |
+| `NEONBYTE_SUBTHEME_AUTOLOADER_LOADED` | `PL_NEONBYTE_AUTOLOADER_LOADED` |
 
 > Template: `neonbyte_subtheme/dripyard-classloader.php`
 
@@ -175,7 +189,7 @@ dripyard_uid: 42                                        # ← copy verbatim from
 ```
 
 > `license_uuid` and `dripyard_uid` are on the final two lines of `neonbyte_subtheme/config/install/neonbyte_subtheme.settings.yml`. Copy them verbatim — they are licence identifiers tied to the Dripyard installation and must not be changed.
-> Config is written at install time. For live updates during development, use `drush php-eval` — see `ai-guided-theme-generation.md` Phase 2.
+> Config is written at install time. For live updates during development, use `ddev drush php-eval` — see `ai-guided-theme-generation.md` Phase 2.
 
 ---
 
@@ -233,14 +247,28 @@ Performant Labs SVG logo. Must use `<text>` elements — not hand-crafted `<path
 ### Phase 4 — Enable and Verify
 - [ ] Enable the theme: `ddev drush theme:enable pl_neonbyte`
 - [ ] Set as default: `ddev drush config:set system.theme default pl_neonbyte`
-- [ ] Import config: `ddev drush config:import` *(applies `pl_neonbyte.settings.yml`)*
+- [ ] Apply theme settings via `ddev drush php-eval` (see below) — **do not use `config:import`** *(site has config drift that would affect unrelated config)*
 - [ ] Rebuild caches: `ddev drush cr`
 - [ ] Run T1 → T2 verification — **do not proceed until both pass**
 - [ ] Run T3 visual sign-off
 
+> **Why not `config:import`?** `config:import` reconciles the entire sync directory against the DB. If the site has config drift (items only in DB, or only in sync dir), it will apply or delete those too — unrelated to the theme. Use `ddev drush php-eval` to set only the theme settings:
+> ```bash
+> # Set brand colours
+> ddev drush php-eval "
+>   \$config = \Drupal::configFactory()->getEditable('pl_neonbyte.settings');
+>   \$config->set('theme_colors.colors.base_primary_color', '#BRAND_HEX');
+>   \$config->set('theme_colors.colors.base_primary_color_brightness', 'dark');
+>   \$config->set('theme_colors.colors.base_secondary_color', '#BRAND_HEX');
+>   \$config->set('theme_colors.colors.base_secondary_color_brightness', 'dark');
+>   \$config->save();
+> "
+> ```
+> See `ai-guided-theme-generation.md` Phase 2 for the full set of `ddev drush php-eval` commands including logo and favicon wiring.
+
 > **Commit point:** Theme is active and structurally verified. Safe baseline before any CSS work.
 > ```bash
-> git add config/sync/   # export active config after drush config:import
+> git add themes/custom/pl_neonbyte/
 > git commit -m "feat(theme): activate pl_neonbyte as default theme"
 > ```
 > *Rollback: reverts theme activation — site returns to previous default theme.*
