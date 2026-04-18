@@ -1,0 +1,5 @@
+name: 'PL Theme Preview'
+type: module
+description: 'Allows admins to preview any enabled theme via ?theme= URL parameter.'
+core_version_requirement: ^11
+package: Custom

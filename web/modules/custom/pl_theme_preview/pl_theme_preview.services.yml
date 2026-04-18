@@ -1,0 +1,6 @@
+services:
+  pl_theme_preview.negotiator:
+    class: Drupal\pl_theme_preview\ThemePreviewNegotiator
+    arguments: ['@current_user', '@theme_handler']
+    tags:
+      - { name: theme_negotiator, priority: 1000 }
