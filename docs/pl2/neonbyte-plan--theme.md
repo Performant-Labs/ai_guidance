@@ -1,14 +1,7 @@
-# `pl_neonbyte` Child Theme — Implementation Plan
+# `pl_neonbyte` — Stage 1: Theme Scaffolding
 
-## Overview
-
-Create a production-grade, Performant Labs-branded child theme (`pl_neonbyte`) on top of the NeonByte theme stack. The child theme must not modify `neonbyte` or `dripyard_base` directly — all customisation lives in `themes/custom/pl_neonbyte/`.
-
-**Inheritance chain:**
-```
-dripyard_base  →  neonbyte  →  pl_neonbyte
-(foundation)      (design)     (brand)
-```
+> **Parent:** [`neonbyte-plan.md`](neonbyte-plan.md)
+> **Next:** [`neonbyte-plan--components.md`](neonbyte-plan--components.md)
 
 ---
 
@@ -215,8 +208,8 @@ Performant Labs SVG logo. Must use `<text>` elements — not hand-crafted `<path
 - [ ] Create `themes/custom/pl_neonbyte/` directory structure
 - [ ] Create `pl_neonbyte.info.yml` from template
 - [ ] Create `pl_neonbyte.libraries.yml` from template
-- [ ] Create `pl_neonbyte.theme` from template
-- [ ] Create `dripyard-classloader.php` from template (update namespace)
+- [ ] Create `pl_neonbyte.theme` from template (apply path fix — see §File Inventory)
+- [ ] Create `dripyard-classloader.php` from template (apply two substitutions — see §File Inventory)
 - [ ] Create `css/base.css` (empty, with file comment block only)
 - [ ] Create `config/install/pl_neonbyte.settings.yml` from template
 
@@ -285,61 +278,6 @@ Performant Labs SVG logo. Must use `<text>` elements — not hand-crafted `<path
 
 ---
 
-### Phase 6 — SDC Component Overrides (future)
-- [ ] Identify components requiring Twig or structural overrides
-- [ ] Follow SDC override pattern (see §SDC Pattern below)
-- [ ] Each CSS-only component tweak uses `libraries-extend`, not full bundle copy
-
-> **Commit point:** One commit per component override.
-> ```bash
-> git add themes/custom/pl_neonbyte/components/[component-name]/
-> git commit -m "feat(theme): override [component-name] component"
-> ```
-> *Rollback: `git revert <commit>` removes one component override — all others unaffected.*
-
-
-
----
-
-## SDC Override Pattern
-
-When a component requires a Twig, CSS, or structural override:
-
-```
-themes/custom/pl_neonbyte/
-  components/
-    [component-name]/
-      [component-name].component.yml   ← always copy — omitting breaks schema validation
-      [component-name].twig            ← only if markup changes are needed
-      css/[component-name].css         ← only if CSS changes are needed
-```
-
-For **CSS-only** tweaks, prefer `libraries-extend` over a full component bundle copy:
-
-```yaml
-# pl_neonbyte.info.yml
-libraries-extend:
-  core/components.neonbyte--hero:
-    - pl_neonbyte/hero-override
-```
-
-> See `component-cookbook.md` for authoritative prop/slot names before writing any component override.
-
----
-
-## Open Questions
-
-| # | Question | Blocks |
-|---|---|---|
-| 1 | Exact hex values for primary and secondary brand colours | Phase 2 |
-| 2 | Logo — supply file or AI-generate? | Phase 2 |
-| 3 | Favicon — supply file or AI-generate? | Phase 2 |
-| 4 | Font family — confirm or use system sans-serif initially? | Phase 4 |
-| 5 | `neonbyte_subtheme` disposition — leave untouched or archive? | Phase 0 |
-| 6 | Any additional `libraries-override` needed beyond what NeonByte inherits? | Phase 1 |
-
----
-
 ## Verification Plan
 
 All verification follows the Three-Tier Hierarchy. Never escalate to a higher tier before the lower tier passes.
@@ -357,43 +295,8 @@ All verification follows the Three-Tier Hierarchy. Never escalate to a higher ti
 
 ---
 
-## References
+## Stage Complete → Proceed to Stage 2
 
-### Must-read before execution
+When Phase 5 is done (or confirmed not needed), the theme is verified and branded. Proceed to:
 
-| Document | When | Purpose |
-|---|---|---|
-| [`ai-guided-theme-generation.md`](../ai_guidance/frameworks/drupal/theming/ai-guided-theme-generation.md) | Phase 0–2 | Master SOP — environment preflight, asset collection, drush commands |
-| [`operational-guidance.md`](../ai_guidance/frameworks/drupal/theming/operational-guidance.md) | Every session | Known failure patterns — logo dual-location, drush hangs, SVG rules |
-| [`agent/naming.md`](../ai_guidance/agent/naming.md) | Phase 0 | Contextual naming policy — confirms `pl_neonbyte` is compliant |
-
-### CSS decisions (all CSS work defers to these)
-
-| Document | Role |
-|---|---|
-| [`theme-change.md`](theme-change.md) | Master — rules, layer hierarchy, override options |
-| [`theme-change--audit.md`](theme-change--audit.md) | Verification that the rules are grounded in actual Dripyard source |
-| [`theme-change--workflow.md`](theme-change--workflow.md) | Operating procedure — how every CSS change is made |
-
-### Component work
-
-| Document | When |
-|---|---|
-| [`component-cookbook.md`](../ai_guidance/frameworks/drupal/theming/component-cookbook.md) | Before any SDC override |
-| [`theme-component-mapping-plan.md`](../ai_guidance/frameworks/drupal/theme-planning/theme-component-mapping-plan.md) | When deciding which components need overrides |
-| [`themes/dripyard_base/components/`](../../themes/dripyard_base/components/) | Reading `.component.yml` schema before writing any override |
-
-### Verification
-
-| Document | When |
-|---|---|
-| [`verification-cookbook.md`](../ai_guidance/frameworks/drupal/theming/verification-cookbook.md) | Before any verification step |
-| [`visual-regression-strategy.md`](../ai_guidance/frameworks/drupal/theming/visual-regression-strategy.md) | T3 visual sign-off |
-
-### Source templates (read, do not modify)
-
-| Path | Used for |
-|---|---|
-| `themes/neonbyte/README.md` | Confirming region list and component inventory |
-| `themes/neonbyte_subtheme/` | All file templates |
-| `themes/dripyard_base/README.md` | Full component library and CSS variable reference |
+**[`neonbyte-plan--components.md`](neonbyte-plan--components.md)** — SDC component work
