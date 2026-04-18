@@ -1,7 +1,0 @@
-name: Dripyard Node Fields
-type: Dripyard
-description: 'Provides common field storage definitions for Dripyard node content types.'
-install:
-  - node
-config:
-  strict: false

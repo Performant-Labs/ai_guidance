@@ -1,8 +1,0 @@
-uuid: 725a3110-bcdf-49c7-84f1-9f3d174e6bd3
-langcode: en
-status: true
-dependencies: {  }
-id: pl_general_date
-label: 'PL General Date'
-locked: false
-pattern: 'F j, Y'
