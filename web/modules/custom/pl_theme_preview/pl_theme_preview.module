@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @file
+ * Ensures responses vary by ?theme= query argument so the cache
+ * does not serve a stale theme when the parameter changes.
+ */
+
+use Drupal\Core\Cache\CacheableMetadata;
+
+/**
+ * Implements hook_page_attachments().
+ */
+function pl_theme_preview_page_attachments(array &$attachments): void {
+  $theme = \Drupal::request()->query->get('theme');
+  if ($theme) {
+    $cache = CacheableMetadata::createFromRenderArray($attachments);
+    $cache->addCacheContexts(['url.query_args:theme']);
+    $cache->applyTo($attachments);
+  }
+}
