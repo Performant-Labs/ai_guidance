@@ -1,4 +1,4 @@
-# `pl_neonbyte` — Stage 1: Theme Scaffolding
+# `performant_labs_20260418` — Stage 1: Theme Scaffolding
 
 > **Parent:** [`neonbyte-plan.md`](neonbyte-plan.md)
 > **Next:** [`neonbyte-plan--components.md`](neonbyte-plan--components.md)
@@ -26,10 +26,10 @@ Before creating any files, these must be resolved:
 ## Directory Structure
 
 ```
-themes/custom/pl_neonbyte/
-├── pl_neonbyte.info.yml
-├── pl_neonbyte.libraries.yml
-├── pl_neonbyte.theme
+themes/custom/performant_labs_20260418/
+├── performant_labs_20260418.info.yml
+├── performant_labs_20260418.libraries.yml
+├── performant_labs_20260418.theme
 ├── dripyard-classloader.php
 ├── logo.svg
 ├── screenshot.png              (optional)
@@ -37,7 +37,7 @@ themes/custom/pl_neonbyte/
 │   └── base.css
 ├── config/
 │   └── install/
-│       └── pl_neonbyte.settings.yml
+│       └── performant_labs_20260418.settings.yml
 └── src/                        (empty initially — for future PHP classes)
 ```
 
@@ -45,17 +45,17 @@ themes/custom/pl_neonbyte/
 
 ## File Inventory
 
-### `pl_neonbyte.info.yml`
-Declares the theme. Sets `base theme: neonbyte`. Lists all 11 NeonByte regions verbatim. Registers the `pl_neonbyte/base` library.
+### `performant_labs_20260418.info.yml`
+Declares the theme. Sets `base theme: neonbyte`. Lists all 11 NeonByte regions verbatim. Registers the `performant_labs_20260418/base` library.
 
 ```yaml
-name: 'PL NeonByte'
+name: 'Performant Labs'
 type: theme
 base theme: neonbyte
 description: 'Performant Labs child theme of NeonByte.'
 core_version_requirement: ^11.2
 libraries:
-  - pl_neonbyte/base
+  - performant_labs_20260418/base
 regions:
   header_first: 'Header first (logo)'
   header_second: 'Header second (center)'
@@ -75,7 +75,7 @@ dripyard_theme_level: subtheme
 
 ---
 
-### `pl_neonbyte.libraries.yml`
+### `performant_labs_20260418.libraries.yml`
 Defines the `base` library (loaded globally via `info.yml`). Scaffolds commented-out component library entries for future `libraries-extend` overrides.
 
 > Template: `neonbyte_subtheme/neonbyte_subtheme.libraries.yml`
@@ -93,12 +93,12 @@ Single global stylesheet. Contains only brand token overrides — no component-s
 
 ---
 
-### `pl_neonbyte.theme`
+### `performant_labs_20260418.theme`
 Thin PHP file. Includes the Dripyard class-loader. Hosts `hook_preprocess_*` overrides if needed in future phases.
 
 > Template: `neonbyte_subtheme/neonbyte_subtheme.theme`
 >
-> ⚠️ **Path fix required:** The scaffold uses `__DIR__ . '/../dripyard-classloader.php'` which resolves correctly for the scaffold's location at `themes/neonbyte_subtheme/` but is **wrong** for `themes/custom/pl_neonbyte/`. Change the path to:
+> ⚠️ **Path fix required:** The scaffold uses `__DIR__ . '/../dripyard-classloader.php'` which resolves correctly for the scaffold's location at `themes/neonbyte_subtheme/` but is **wrong** for `themes/custom/performant_labs_20260418/`. Change the path to:
 > ```php
 > if (file_exists(__DIR__ . '/dripyard-classloader.php')) {
 >   require_once __DIR__ . '/dripyard-classloader.php';
@@ -114,14 +114,14 @@ Two substitutions required (beyond the namespace):
 
 | Find | Replace |
 |---|---|
-| `Drupal\\NeonbyteSubtheme\\` | `Drupal\\PlNeonbyte\\` |
-| `NEONBYTE_SUBTHEME_AUTOLOADER_LOADED` | `PL_NEONBYTE_AUTOLOADER_LOADED` |
+| `Drupal\\NeonbyteSubtheme\\` | `Drupal\\PerformantLabs20260418\\` |
+| `NEONBYTE_SUBTHEME_AUTOLOADER_LOADED` | `PERFORMANT_LABS_20260418_AUTOLOADER_LOADED` |
 
 > Template: `neonbyte_subtheme/dripyard-classloader.php`
 
 ---
 
-### `config/install/pl_neonbyte.settings.yml`
+### `config/install/performant_labs_20260418.settings.yml`
 Pre-seeds all theme settings so installation produces correct brand output without manual UI steps. This is the **primary mechanism for setting brand colours** — not `css/base.css`.
 
 Adapt from `neonbyte_subtheme/config/install/neonbyte_subtheme.settings.yml`. The complete structure with required changes marked:
@@ -205,41 +205,41 @@ Performant Labs SVG logo. Must use `<text>` elements — not hand-crafted `<path
 ---
 
 ### Phase 2 — Scaffold
-- [ ] Create `themes/custom/pl_neonbyte/` directory structure
-- [ ] Create `pl_neonbyte.info.yml` from template
-- [ ] Create `pl_neonbyte.libraries.yml` from template
-- [ ] Create `pl_neonbyte.theme` from template (apply path fix — see §File Inventory)
+- [ ] Create `themes/custom/performant_labs_20260418/` directory structure
+- [ ] Create `performant_labs_20260418.info.yml` from template
+- [ ] Create `performant_labs_20260418.libraries.yml` from template
+- [ ] Create `performant_labs_20260418.theme` from template (apply path fix — see §File Inventory)
 - [ ] Create `dripyard-classloader.php` from template (apply two substitutions — see §File Inventory)
 - [ ] Create `css/base.css` (empty, with file comment block only)
-- [ ] Create `config/install/pl_neonbyte.settings.yml` from template
+- [ ] Create `config/install/performant_labs_20260418.settings.yml` from template
 
 > **Commit point:** All scaffold files exist. Theme can be enabled even if unstyled.
 > ```bash
-> git add themes/custom/pl_neonbyte/
-> git commit -m "feat(theme): scaffold pl_neonbyte child theme"
+> git add themes/custom/performant_labs_20260418/
+> git commit -m "feat(theme): scaffold performant_labs_20260418 child theme"
 > ```
 > *Rollback: `git revert` removes all theme files, returning to a clean slate.*
 
 ---
 
 ### Phase 3 — Brand Asset Wiring
-- [ ] Set brand colours in `pl_neonbyte.settings.yml`
-- [ ] Wire logo: update both `system.theme.global` and `pl_neonbyte.settings` config locations
+- [ ] Set brand colours in `performant_labs_20260418.settings.yml`
+- [ ] Wire logo: update both `system.theme.global` and `performant_labs_20260418.settings` config locations
 - [ ] Wire favicon
 
 > **Commit point:** Brand assets configured in settings before theme activation.
 > ```bash
-> git add themes/custom/pl_neonbyte/config/install/pl_neonbyte.settings.yml
-> git add themes/custom/pl_neonbyte/logo.svg
-> git commit -m "feat(theme): wire pl_neonbyte brand colours, logo and favicon"
+> git add themes/custom/performant_labs_20260418/config/install/performant_labs_20260418.settings.yml
+> git add themes/custom/performant_labs_20260418/logo.svg
+> git commit -m "feat(theme): wire performant_labs_20260418 brand colours, logo and favicon"
 > ```
 > *Rollback: reverts to placeholder colours and default logo — theme still scaffolded.*
 
 ---
 
 ### Phase 4 — Enable and Verify
-- [ ] Enable the theme: `ddev drush theme:enable pl_neonbyte`
-- [ ] Set as default: `ddev drush config:set system.theme default pl_neonbyte`
+- [ ] Enable the theme: `ddev drush theme:enable performant_labs_20260418`
+- [ ] Set as default: `ddev drush config:set system.theme default performant_labs_20260418`
 - [ ] Apply theme settings via `ddev drush php-eval` (see below) — **do not use `config:import`** *(site has config drift that would affect unrelated config)*
 - [ ] Rebuild caches: `ddev drush cr`
 - [ ] Run T1 → T2 verification — **do not proceed until both pass**
@@ -249,7 +249,7 @@ Performant Labs SVG logo. Must use `<text>` elements — not hand-crafted `<path
 > ```bash
 > # Set brand colours
 > ddev drush php-eval "
->   \$config = \Drupal::configFactory()->getEditable('pl_neonbyte.settings');
+>   \$config = \Drupal::configFactory()->getEditable('performant_labs_20260418.settings');
 >   \$config->set('theme_colors.colors.base_primary_color', '#BRAND_HEX');
 >   \$config->set('theme_colors.colors.base_primary_color_brightness', 'dark');
 >   \$config->set('theme_colors.colors.base_secondary_color', '#BRAND_HEX');
@@ -261,8 +261,8 @@ Performant Labs SVG logo. Must use `<text>` elements — not hand-crafted `<path
 
 > **Commit point:** Theme is active and structurally verified. Safe baseline before any CSS work.
 > ```bash
-> git add themes/custom/pl_neonbyte/
-> git commit -m "feat(theme): activate pl_neonbyte as default theme"
+> git add themes/custom/performant_labs_20260418/
+> git commit -m "feat(theme): activate performant_labs_20260418 as default theme"
 > ```
 > *Rollback: reverts theme activation — site returns to previous default theme.*
 
@@ -285,8 +285,8 @@ All verification follows the Three-Tier Hierarchy. Never escalate to a higher ti
 | Tier | Method | Pass condition |
 |---|---|---|
 | T1 — Headless | `curl -s -o /dev/null -w "%{http_code}" http://pl-performantlabs.com.2.ddev.site/` | HTTP `200` |
-| T1 — CSS served | `curl -s http://pl-performantlabs.com.2.ddev.site/ \| grep pl_neonbyte` | Theme CSS link present |
-| T1 — Colour config | `ddev drush config:get pl_neonbyte.settings` | Brand hex values present |
+| T1 — CSS served | `curl -s http://pl-performantlabs.com.2.ddev.site/ \| grep performant_labs_20260418` | Theme CSS link present |
+| T1 — Colour config | `ddev drush config:get performant_labs_20260418.settings` | Brand hex values present |
 | T2 — Structural | `read_browser_page` on home | `<html>` carries `theme--white` class and `--theme-setting-base-primary-color` inline style |
 | T3 — Visual | Screenshot | PL brand colours visible; logo renders correctly |
 

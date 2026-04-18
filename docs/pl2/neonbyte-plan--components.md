@@ -1,4 +1,4 @@
-# `pl_neonbyte` — Stage 2: Component Work
+# `performant_labs_20260418` — Stage 2: Component Work
 
 > **Parent:** [`neonbyte-plan.md`](neonbyte-plan.md)
 > **Previous:** [`neonbyte-plan--theme.md`](neonbyte-plan--theme.md)
@@ -9,7 +9,7 @@
 ## Entry Condition
 
 Before starting this stage:
-- [ ] Stage 1 complete — `pl_neonbyte` is active and passes T1 + T2 verification
+- [ ] Stage 1 complete — `performant_labs_20260418` is active and passes T1 + T2 verification
 - [ ] SDC Styleguide module is installed and enabled (`ddev drush pm:list --type=module | grep sdc_styleguide`)
 - [ ] Explorer is accessible at `https://pl-performantlabs.com.2.ddev.site:8493/styleguide/explorer` (requires admin login)
 
@@ -54,14 +54,14 @@ Repeat for each component identified in Phase 1. The loop is:
 2. **Check** `component-cookbook.md` for known prop/slot names
 3. **Determine override type** — CSS-only, Twig, or structural (see §Override Patterns below)
 4. **Follow** [`theme-change--workflow.md`](theme-change--workflow.md) — mandatory trace before any edit
-5. **Apply** the override to `themes/custom/pl_neonbyte/`
+5. **Apply** the override to `themes/custom/performant_labs_20260418/`
 6. **Verify** in the SDC explorer — T1 structure check, then visual pass in explorer
 7. **Commit**
 
 > **Commit point:** One commit per component.
 > ```bash
-> git add themes/custom/pl_neonbyte/components/[component-name]/
-> git commit -m "feat(components): override [component-name] for pl_neonbyte brand"
+> git add themes/custom/performant_labs_20260418/components/[component-name]/
+> git commit -m "feat(components): override [component-name] for performant_labs_20260418 brand"
 > ```
 > *Rollback: `git revert <commit>` removes one component override — all others unaffected.*
 
@@ -74,7 +74,7 @@ Repeat for each component identified in Phase 1. The loop is:
 
 > **Commit point:** Only if a cross-component adjustment was needed.
 > ```bash
-> git add themes/custom/pl_neonbyte/css/base.css
+> git add themes/custom/performant_labs_20260418/css/base.css
 > git commit -m "fix(components): correct cross-component consistency issue"
 > ```
 
@@ -86,7 +86,7 @@ Repeat for each component identified in Phase 1. The loop is:
 Adds a supplementary CSS file to the component's existing library without duplicating the bundle:
 
 ```yaml
-# pl_neonbyte.libraries.yml — add the override library definition
+# performant_labs_20260418.libraries.yml — add the override library definition
 hero-override:
   css:
     component:
@@ -94,17 +94,17 @@ hero-override:
 ```
 
 ```yaml
-# pl_neonbyte.info.yml — extend the component library
+# performant_labs_20260418.info.yml — extend the component library
 libraries-extend:
   core/components.neonbyte--hero:
-    - pl_neonbyte/hero-override
+    - performant_labs_20260418/hero-override
 ```
 
 ### Twig or structural override — copy the component bundle
 Required when markup, slots, or schema must change:
 
 ```
-themes/custom/pl_neonbyte/
+themes/custom/performant_labs_20260418/
   components/
     [component-name]/
       [component-name].component.yml   ← always copy — omitting breaks schema validation

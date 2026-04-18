@@ -1,16 +1,16 @@
-# `pl_neonbyte` — Master Plan
+# `performant_labs_20260418` — Master Plan
 
 ## Purpose
 
-This document is the entry point for all work on the `pl_neonbyte` child theme. It defines the inheritance chain, the document family structure, and the sequence of execution across three stages.
+This document is the entry point for all work on the `performant_labs_20260418` child theme. It defines the inheritance chain, the document family structure, and the sequence of execution across three stages.
 
 **Inheritance chain:**
 ```
-dripyard_base  →  neonbyte  →  pl_neonbyte
+dripyard_base  →  neonbyte  →  performant_labs_20260418
 (foundation)      (design)     (brand)
 ```
 
-All customisation lives in `themes/custom/pl_neonbyte/`. Neither `neonbyte` nor `dripyard_base` are ever modified directly.
+All customisation lives in `themes/custom/performant_labs_20260418/`. Neither `neonbyte` nor `dripyard_base` are ever modified directly.
 
 ---
 
@@ -28,10 +28,10 @@ This plan is split into three stage documents. Execute them in order. Each stage
 
 ## Branch
 
-All work happens on `aa/pl-neonbyte-theme`. Confirm before starting any session:
+All work happens on `aa/performant-labs-20260418-theme`. Confirm before starting any session:
 
 ```bash
-git branch  # must show * aa/pl-neonbyte-theme
+git branch  # must show * aa/performant-labs-20260418-theme
 ```
 
 ---

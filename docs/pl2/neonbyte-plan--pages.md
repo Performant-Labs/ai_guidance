@@ -1,4 +1,4 @@
-# `pl_neonbyte` — Stage 3: Page Composition
+# `performant_labs_20260418` — Stage 3: Page Composition
 
 > **Parent:** [`neonbyte-plan.md`](neonbyte-plan.md)
 > **Previous:** [`neonbyte-plan--components.md`](neonbyte-plan--components.md)
@@ -10,7 +10,7 @@
 Before starting this stage:
 - [ ] Stage 2 complete — all priority components pass T2 + T3 in the SDC explorer
 - [ ] No open component override commits outstanding
-- [ ] `pl_neonbyte` is the active default theme
+- [ ] `performant_labs_20260418` is the active default theme
 
 ---
 
@@ -36,7 +36,7 @@ Define which pages need to be assembled or verified before declaring Stage 3 com
 ## Execution Phases
 
 ### Phase 1 — Page Audit
-- [ ] List all pages that need visual verification under `pl_neonbyte`
+- [ ] List all pages that need visual verification under `performant_labs_20260418`
 - [ ] For each page, confirm it loads (T1) and renders structurally (T2)
 - [ ] Note any component appearing broken that was not caught in Stage 2
 
@@ -56,7 +56,7 @@ For pages that do not yet exist or need to be rebuilt as Canvas pages:
 > **Commit point:** One commit per page assembled.
 > ```bash
 > git add config/sync/
-> git commit -m "feat(pages): assemble [page-name] Canvas page under pl_neonbyte"
+> git commit -m "feat(pages): assemble [page-name] Canvas page under performant_labs_20260418"
 > ```
 
 ---
@@ -73,7 +73,7 @@ For pages that do not yet exist or need to be rebuilt as Canvas pages:
 ### Phase 4 — Sign-off
 - [ ] All pages in inventory pass T3
 - [ ] No regressions flagged from Phase 3
-- [ ] Final commit: `git tag v1.0-pl-neonbyte`
+- [ ] Final commit: `git tag v1.0-performant-labs-20260418`
 
 ---
 

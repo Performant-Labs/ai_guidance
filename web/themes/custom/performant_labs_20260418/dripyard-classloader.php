@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Optimized autoloader for the NEONBYTE_SUBTHEME.
+ * Optimized autoloader for the PERFORMANT_LABS_20260418.
  *
  * This file implements PSR-4 autoloading for theme classes.
  * It follows the same optimization patterns as the base theme.
@@ -12,13 +12,13 @@
 
 namespace {
   // Check if this autoloader has already been registered to avoid duplicates.
-  if (!defined('NEONBYTE_SUBTHEME_AUTOLOADER_LOADED')) {
-    define('NEONBYTE_SUBTHEME_AUTOLOADER_LOADED', TRUE);
+  if (!defined('PERFORMANT_LABS_20260418_AUTOLOADER_LOADED')) {
+    define('PERFORMANT_LABS_20260418_AUTOLOADER_LOADED', TRUE);
 
 
-    // Register the NEONBYTE_SUBTHEME autoloader.
+    // Register the PERFORMANT_LABS_20260418 autoloader.
     spl_autoload_register(function ($class) {
-      $prefix = 'Drupal\\NeonbyteSubtheme\\';
+      $prefix = 'Drupal\\PerformantLabs20260418\\';
       $base_dir = __DIR__ . '/src/';
       $len = strlen($prefix);
 
