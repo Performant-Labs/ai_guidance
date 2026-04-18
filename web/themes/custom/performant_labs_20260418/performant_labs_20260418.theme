@@ -1,0 +1,82 @@
+<?php
+
+/**
+ * @file
+ * Functions to support theming in performant_labs_20260418.
+ */
+
+// Support autoloading of classes when composer is not used.
+if (file_exists(__DIR__ . '/dripyard-classloader.php')) {
+  require_once __DIR__ . '/dripyard-classloader.php';
+}
+
+/**
+ * Implements hook_theme_suggestions_page_alter().
+ *
+ * Adds `page--documentation` suggestion for nodes of type `book`, so those
+ * pages use the two-column sidebar layout template.
+ */
+function performant_labs_20260418_theme_suggestions_page_alter(array &$suggestions, array $variables): void {
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if ($node instanceof \Drupal\node\NodeInterface && $node->getType() === 'book') {
+    $suggestions[] = 'page__documentation';
+  }
+}
+
+/**
+ * Implements hook_preprocess_page().
+ *
+ * Adds a `canvas-page` body class on the front page for CSS scoping.
+ */
+function performant_labs_20260418_preprocess_page(array &$variables): void {
+  if (\Drupal::service('path.matcher')->isFrontPage()) {
+    $variables['attributes']['class'][] = 'canvas-page';
+  }
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ *
+ * Two concerns handled here because Neonbyte's base configuration bypasses
+ * Drupal's standard mechanisms for each:
+ *
+ * 1. Favicon: Neonbyte sets features.favicon=false so system.theme.global is
+ *    ignored. We inject <link rel="icon"> directly.
+ *
+ * 2. Generator meta: Drupal adds <meta name="Generator" content="Drupal 11">
+ *    which is information disclosure. Removed for all page responses.
+ *
+ * Note — front-page canonical (/home vs /): EntityViewController::view()
+ * attaches html_head_link to the entity render array AFTER hook_entity_view
+ * runs and BEFORE HtmlRenderer merges pages — there is no theme-level hook
+ * that can intercept it without a custom EventSubscriber service. The /home
+ * canonical is acceptable: it resolves to a real URL, and search engines
+ * follow consistent canonical tags regardless of which path users arrive from.
+ * If strict / canonicalization is required, install the metatag module and
+ * override the canonical_url token on the canvas_page entity form.
+ */
+function performant_labs_20260418_page_attachments_alter(array &$attachments): void {
+  // 1. FAVICON —————————————————————————————————————————————————————————————
+  $theme_path = '/' . \Drupal::service('extension.list.theme')
+    ->getPath('performant_labs_20260418');
+  $attachments['#attached']['html_head'][] = [
+    [
+      '#type'       => 'html_tag',
+      '#tag'        => 'link',
+      '#attributes' => [
+        'rel'  => 'icon',
+        'type' => 'image/svg+xml',
+        'href' => $theme_path . '/favicon.svg',
+      ],
+    ],
+    'favicon_svg',
+  ];
+
+  // 2. GENERATOR META — remove information disclosure ———————————————————————
+  foreach ($attachments['#attached']['html_head'] as $key => $tag) {
+    if (isset($tag[1]) && $tag[1] === 'system_meta_generator') {
+      unset($attachments['#attached']['html_head'][$key]);
+    }
+  }
+}
+
