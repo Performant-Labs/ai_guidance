@@ -1,0 +1,371 @@
+# `pl_neonbyte` Child Theme — Implementation Plan
+
+## Overview
+
+Create a production-grade, Performant Labs-branded child theme (`pl_neonbyte`) on top of the NeonByte theme stack. The child theme must not modify `neonbyte` or `dripyard_base` directly — all customisation lives in `themes/custom/pl_neonbyte/`.
+
+**Inheritance chain:**
+```
+dripyard_base  →  neonbyte  →  pl_neonbyte
+(foundation)      (design)     (brand)
+```
+
+---
+
+## Pre-Execution Requirements
+
+Before creating any files, these must be resolved:
+
+| Item | Status | Source |
+|---|---|---|
+| Primary brand hex | ⬜ Pending | Performant Labs brand guide |
+| Secondary brand hex | ⬜ Pending | Performant Labs brand guide |
+| Primary colour brightness (`light`/`dark`) | ⬜ Pending | Confirm via `ThemeColors::isLightColor()` |
+| Logo SVG | ⬜ Pending | Brand guide or AI-generated |
+| Favicon | ⬜ Pending | Brand guide |
+| Font family | ⬜ Pending | Brand guide |
+| `license_uuid` + `dripyard_uid` | ⬜ Pending | Copy from `neonbyte_subtheme.settings.yml` |
+
+> See `ai-guided-theme-generation.md` Phase 2 for the full asset collection checklist and exact `drush php-eval` commands.
+
+---
+
+## Directory Structure
+
+```
+themes/custom/pl_neonbyte/
+├── pl_neonbyte.info.yml
+├── pl_neonbyte.libraries.yml
+├── pl_neonbyte.theme
+├── dripyard-classloader.php
+├── logo.svg
+├── screenshot.png              (optional)
+├── css/
+│   └── base.css
+├── config/
+│   └── install/
+│       └── pl_neonbyte.settings.yml
+└── src/                        (empty initially — for future PHP classes)
+```
+
+---
+
+## File Inventory
+
+### `pl_neonbyte.info.yml`
+Declares the theme. Sets `base theme: neonbyte`. Lists all 11 NeonByte regions verbatim. Registers the `pl_neonbyte/base` library.
+
+```yaml
+name: 'PL NeonByte'
+type: theme
+base theme: neonbyte
+description: 'Performant Labs child theme of NeonByte.'
+core_version_requirement: ^11.2
+libraries:
+  - pl_neonbyte/base
+regions:
+  header_first: 'Header first (logo)'
+  header_second: 'Header second (center)'
+  header_third: 'Header third (right)'
+  highlighted: Highlighted
+  content: Content
+  fixed_middle_right: 'Fixed middle right (local actions tabs)'
+  fixed_bottom_right: 'Fixed bottom right (messages)'
+  footer_top: 'Footer top'
+  footer_left: 'Footer left'
+  footer_right: 'Footer right'
+  footer_bottom: 'Footer bottom'
+dripyard_theme_level: subtheme
+```
+
+> Template: `neonbyte_subtheme/neonbyte_subtheme.info.yml` — regions sourced directly from `neonbyte/neonbyte.info.yml`
+
+---
+
+### `pl_neonbyte.libraries.yml`
+Defines the `base` library (loaded globally via `info.yml`). Scaffolds commented-out component library entries for future `libraries-extend` overrides.
+
+> Template: `neonbyte_subtheme/neonbyte_subtheme.libraries.yml`
+> CSS decisions: → [`theme-change.md`](theme-change.md)
+
+---
+
+### `css/base.css`
+Single global stylesheet. Contains only brand token overrides — no component-specific rules, no `!important`. Initially minimal; grows only when the OKLCH-derived palette is insufficient for brand requirements.
+
+> All decisions about what goes in this file, at what selector, and at what layer are governed by:
+> - [`theme-change.md`](theme-change.md) — the rules
+> - [`theme-change--audit.md`](theme-change--audit.md) — the source verification
+> - [`theme-change--workflow.md`](theme-change--workflow.md) — the process for making each change
+
+---
+
+### `pl_neonbyte.theme`
+Thin PHP file. Includes the Dripyard class-loader. Hosts `hook_preprocess_*` overrides if needed in future phases.
+
+> Template: `neonbyte_subtheme/neonbyte_subtheme.theme`
+
+---
+
+### `dripyard-classloader.php`
+PSR-4 autoloader for `src/` classes. Adapted from `neonbyte_subtheme/dripyard-classloader.php` — update namespace to `Drupal\\PlNeonbyte\\` and `$base_dir` to `__DIR__ . '/src/'`.
+
+> Template: `neonbyte_subtheme/dripyard-classloader.php`
+
+---
+
+### `config/install/pl_neonbyte.settings.yml`
+Pre-seeds all theme settings so installation produces correct brand output without manual UI steps. This is the **primary mechanism for setting brand colours** — not `css/base.css`.
+
+Adapt from `neonbyte_subtheme/config/install/neonbyte_subtheme.settings.yml`. The complete structure with required changes marked:
+
+```yaml
+social_media_links:
+  bluesky: ''
+  facebook: ''
+  instagram: ''
+  linkedin: ''
+  twitter: ''
+  youtube: ''              # add/remove channels as needed
+
+theme_colors:
+  color_scheme: default
+  colors:
+    base_primary_color: '#REPLACE_WITH_BRAND_HEX'        # ← REQUIRED
+    base_primary_color_brightness: 'dark'                # ← 'light' or 'dark'
+    base_secondary_color: '#REPLACE_WITH_BRAND_HEX'      # ← REQUIRED
+    base_secondary_color_brightness: 'dark'              # ← 'light' or 'dark'
+  site_theme: 'white'      # default page zone — white|light|primary|dark|black|secondary
+
+footer:
+  theme: primary           # zone applied to footer region
+
+favicon:
+  use_default: false
+  path: ''                 # ← set after favicon is wired
+
+features:
+  comment_user_picture: false
+  comment_user_verification: true
+  favicon: false
+  node_user_picture: false
+
+logo:
+  use_default: true        # ← set to false once logo.svg is wired
+
+third_party_settings:
+  shortcut:
+    module_link: true
+
+layout_settings:
+  container_max_width: '1440'
+  border_radius_sm: '4'
+  border_radius_md: '8'
+  border_radius_lg: '16'
+  border_radius_button: '40'
+
+header_settings:
+  full_width: 0
+  remove_sticky: 0
+  remove_transparency: 0
+  theme: 'light'           # zone applied to header region
+
+license_uuid: 'c14f4bdc-9260-401a-922e-a55523c688c9'   # ← copy verbatim from scaffold
+dripyard_uid: 42                                        # ← copy verbatim from scaffold
+```
+
+> `license_uuid` and `dripyard_uid` are on the final two lines of `neonbyte_subtheme/config/install/neonbyte_subtheme.settings.yml`. Copy them verbatim — they are licence identifiers tied to the Dripyard installation and must not be changed.
+> Config is written at install time. For live updates during development, use `drush php-eval` — see `ai-guided-theme-generation.md` Phase 2.
+
+---
+
+### `logo.svg`
+Performant Labs SVG logo. Must use `<text>` elements — not hand-crafted `<path>` data.
+
+> See `operational-guidance.md` §5 (SVG logo rules) and §6 (two config locations that must both be set).
+
+---
+
+## Execution Phases
+
+### Phase 1 — Pre-flight
+- [ ] Confirm DDEV is running: `ddev describe`
+- [ ] Confirm git status is clean: `git status` — no uncommitted changes
+- [ ] Resolve all Pre-Execution Requirements above
+
+> **Commit point:** Git is clean. This is the implicit rollback baseline — no commit needed.
+
+---
+
+### Phase 2 — Scaffold
+- [ ] Create `themes/custom/pl_neonbyte/` directory structure
+- [ ] Create `pl_neonbyte.info.yml` from template
+- [ ] Create `pl_neonbyte.libraries.yml` from template
+- [ ] Create `pl_neonbyte.theme` from template
+- [ ] Create `dripyard-classloader.php` from template (update namespace)
+- [ ] Create `css/base.css` (empty, with file comment block only)
+- [ ] Create `config/install/pl_neonbyte.settings.yml` from template
+
+> **Commit point:** All scaffold files exist. Theme can be enabled even if unstyled.
+> ```bash
+> git add themes/custom/pl_neonbyte/
+> git commit -m "feat(theme): scaffold pl_neonbyte child theme"
+> ```
+> *Rollback: `git revert` removes all theme files, returning to a clean slate.*
+
+---
+
+### Phase 3 — Brand Asset Wiring
+- [ ] Set brand colours in `pl_neonbyte.settings.yml`
+- [ ] Wire logo: update both `system.theme.global` and `pl_neonbyte.settings` config locations
+- [ ] Wire favicon
+
+> **Commit point:** Brand assets configured in settings before theme activation.
+> ```bash
+> git add themes/custom/pl_neonbyte/config/install/pl_neonbyte.settings.yml
+> git add themes/custom/pl_neonbyte/logo.svg
+> git commit -m "feat(theme): wire pl_neonbyte brand colours, logo and favicon"
+> ```
+> *Rollback: reverts to placeholder colours and default logo — theme still scaffolded.*
+
+---
+
+### Phase 4 — Enable and Verify
+- [ ] Enable the theme: `ddev drush theme:enable pl_neonbyte`
+- [ ] Set as default: `ddev drush config:set system.theme default pl_neonbyte`
+- [ ] Import config: `ddev drush config:import` *(applies `pl_neonbyte.settings.yml`)*
+- [ ] Rebuild caches: `ddev drush cr`
+- [ ] Run T1 → T2 verification — **do not proceed until both pass**
+- [ ] Run T3 visual sign-off
+
+> **Commit point:** Theme is active and structurally verified. Safe baseline before any CSS work.
+> ```bash
+> git add config/sync/   # export active config after drush config:import
+> git commit -m "feat(theme): activate pl_neonbyte as default theme"
+> ```
+> *Rollback: reverts theme activation — site returns to previous default theme.*
+
+---
+
+### Phase 5 — CSS Brand Tuning (if needed)
+- [ ] If OKLCH-derived palette is insufficient, follow the CSS change workflow
+- [ ] Each change must go through [`theme-change--workflow.md`](theme-change--workflow.md) — no direct CSS edits
+
+> **Commit point:** One commit per CSS change, as directed by `theme-change--workflow.md` Step 7.
+> The workflow's change log entry and commit message travel together.
+> *Rollback: `git revert <commit>` removes exactly one CSS change without touching others.*
+
+---
+
+### Phase 6 — SDC Component Overrides (future)
+- [ ] Identify components requiring Twig or structural overrides
+- [ ] Follow SDC override pattern (see §SDC Pattern below)
+- [ ] Each CSS-only component tweak uses `libraries-extend`, not full bundle copy
+
+> **Commit point:** One commit per component override.
+> ```bash
+> git add themes/custom/pl_neonbyte/components/[component-name]/
+> git commit -m "feat(theme): override [component-name] component"
+> ```
+> *Rollback: `git revert <commit>` removes one component override — all others unaffected.*
+
+
+
+---
+
+## SDC Override Pattern
+
+When a component requires a Twig, CSS, or structural override:
+
+```
+themes/custom/pl_neonbyte/
+  components/
+    [component-name]/
+      [component-name].component.yml   ← always copy — omitting breaks schema validation
+      [component-name].twig            ← only if markup changes are needed
+      css/[component-name].css         ← only if CSS changes are needed
+```
+
+For **CSS-only** tweaks, prefer `libraries-extend` over a full component bundle copy:
+
+```yaml
+# pl_neonbyte.info.yml
+libraries-extend:
+  core/components.neonbyte--hero:
+    - pl_neonbyte/hero-override
+```
+
+> See `component-cookbook.md` for authoritative prop/slot names before writing any component override.
+
+---
+
+## Open Questions
+
+| # | Question | Blocks |
+|---|---|---|
+| 1 | Exact hex values for primary and secondary brand colours | Phase 2 |
+| 2 | Logo — supply file or AI-generate? | Phase 2 |
+| 3 | Favicon — supply file or AI-generate? | Phase 2 |
+| 4 | Font family — confirm or use system sans-serif initially? | Phase 4 |
+| 5 | `neonbyte_subtheme` disposition — leave untouched or archive? | Phase 0 |
+| 6 | Any additional `libraries-override` needed beyond what NeonByte inherits? | Phase 1 |
+
+---
+
+## Verification Plan
+
+All verification follows the Three-Tier Hierarchy. Never escalate to a higher tier before the lower tier passes.
+
+| Tier | Method | Pass condition |
+|---|---|---|
+| T1 — Headless | `curl -s -o /dev/null -w "%{http_code}" http://pl-performantlabs.com.2.ddev.site/` | HTTP `200` |
+| T1 — CSS served | `curl -s http://pl-performantlabs.com.2.ddev.site/ \| grep pl_neonbyte` | Theme CSS link present |
+| T1 — Colour config | `ddev drush config:get pl_neonbyte.settings` | Brand hex values present |
+| T2 — Structural | `read_browser_page` on home | `<html>` carries `theme--white` class and `--theme-setting-base-primary-color` inline style |
+| T3 — Visual | Screenshot | PL brand colours visible; logo renders correctly |
+
+> Full protocol: `verification-cookbook.md`
+> T3 visual sign-off process: `visual-regression-strategy.md`
+
+---
+
+## References
+
+### Must-read before execution
+
+| Document | When | Purpose |
+|---|---|---|
+| [`ai-guided-theme-generation.md`](../ai_guidance/frameworks/drupal/theming/ai-guided-theme-generation.md) | Phase 0–2 | Master SOP — environment preflight, asset collection, drush commands |
+| [`operational-guidance.md`](../ai_guidance/frameworks/drupal/theming/operational-guidance.md) | Every session | Known failure patterns — logo dual-location, drush hangs, SVG rules |
+| [`agent/naming.md`](../ai_guidance/agent/naming.md) | Phase 0 | Contextual naming policy — confirms `pl_neonbyte` is compliant |
+
+### CSS decisions (all CSS work defers to these)
+
+| Document | Role |
+|---|---|
+| [`theme-change.md`](theme-change.md) | Master — rules, layer hierarchy, override options |
+| [`theme-change--audit.md`](theme-change--audit.md) | Verification that the rules are grounded in actual Dripyard source |
+| [`theme-change--workflow.md`](theme-change--workflow.md) | Operating procedure — how every CSS change is made |
+
+### Component work
+
+| Document | When |
+|---|---|
+| [`component-cookbook.md`](../ai_guidance/frameworks/drupal/theming/component-cookbook.md) | Before any SDC override |
+| [`theme-component-mapping-plan.md`](../ai_guidance/frameworks/drupal/theme-planning/theme-component-mapping-plan.md) | When deciding which components need overrides |
+| [`themes/dripyard_base/components/`](../../themes/dripyard_base/components/) | Reading `.component.yml` schema before writing any override |
+
+### Verification
+
+| Document | When |
+|---|---|
+| [`verification-cookbook.md`](../ai_guidance/frameworks/drupal/theming/verification-cookbook.md) | Before any verification step |
+| [`visual-regression-strategy.md`](../ai_guidance/frameworks/drupal/theming/visual-regression-strategy.md) | T3 visual sign-off |
+
+### Source templates (read, do not modify)
+
+| Path | Used for |
+|---|---|
+| `themes/neonbyte/README.md` | Confirming region list and component inventory |
+| `themes/neonbyte_subtheme/` | All file templates |
+| `themes/dripyard_base/README.md` | Full component library and CSS variable reference |
