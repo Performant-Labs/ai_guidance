@@ -238,7 +238,7 @@ Performant Labs SVG logo. Must use `<text>` elements — not hand-crafted `<path
 ---
 
 ### Phase 4 — Enable and Verify
-- [ ] Enable the theme: `ddev drush theme:enable performant_labs_20260418`
+- [ ] Enable the theme: `ddev drush theme:enable performant_labs_20260418 -y`
 - [ ] Set as default: `ddev drush config:set system.theme default performant_labs_20260418`
 - [ ] Apply theme settings via `ddev drush php-eval` (see below) — **do not use `config:import`** *(site has config drift that would affect unrelated config)*
 - [ ] Rebuild caches: `ddev drush cr`
