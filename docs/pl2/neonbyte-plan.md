@@ -26,13 +26,15 @@ This plan is split into three stage documents. Execute them in order. Each stage
 
 ---
 
-## Branch
+## Session Initialization
 
-All work happens on `aa/performant-labs-20260418-theme`. Confirm before starting any session:
+Before starting any working session on this theme, you must complete the following two steps in order:
 
-```bash
-git branch  # must show * aa/performant-labs-20260418-theme
-```
+1. **Verify Branch:** Ensure you are on the correct active theme branch:
+   ```bash
+   git branch  # must show * aa/performant-labs-20260418-theme
+   ```
+2. **Execute Pre-Flights:** Read and execute the checklist in [`pre-flight-checks.md`](pre-flight-checks.md) before making any code or config changes. This prevents environment failures from masquerading as codebase regressions.
 
 ---
 

@@ -89,7 +89,9 @@ This is the only judgment call requiring a human.
 
 ### Step 4 — AntiGravity: Makes the change
 
-AntiGravity writes the CSS (or config change) at the approved layer, in the correct file, with a comment that records the layer and the ruling from Pass 2:
+**Rapid Iteration Protocol**: To avoid slow file-system cache clears (`drush cr`) during visual development, AntiGravity first writes the CSS into an **Asset Injector** entity. This allows for immediate visual verification.
+
+AntiGravity drafts the CSS (or config change) at the approved layer, with a comment that records the layer and the ruling from Pass 2:
 
 ```css
 /* [Layer 3] --theme-link-color: brand override (L1+L2 ruled out — intentional deviation
@@ -136,9 +138,11 @@ AntiGravity can take a screenshot, but cannot judge whether the result matches b
 
 ---
 
-### Step 7 — Human: Commits
+### Step 7 — Human/AntiGravity: Finalize and Commit
 
-The change log entry written in Step 4 travels with the commit. Git history plus the log gives a complete record of what was changed, at what layer, and when.
+**Finalize CSS**: If the change was staged via Asset Injector during Step 4, AntiGravity must now migrate the approved CSS from the Asset Injector entity into the permanent local file (e.g., `css/base.css` or component `.css`), delete the temporary Asset Injector entity, and clear the cache before the commit.
+
+The change log entry written during the process travels with the commit. Git history plus the log gives a complete record of what was changed, at what layer, and when.
 
 ---
 
