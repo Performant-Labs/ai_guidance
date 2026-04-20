@@ -1,6 +1,83 @@
 /**
  * @file
- * Global styles.
+ * performant_labs_20260418 — brand token overrides for NeonByte.
+ *
+ * Strategy: Combined Option A + B from docs/pl2/theme-change.md
+ *
+ * Rules:
+ * - No !important.
+ * - No --theme-setting-* overrides (those belong in config / drush php-eval).
+ * - html .theme--* selectors for all color token overrides — specificity
+ *   (0,1,1) beats Dripyard's :where(:root) at (0,0,0) without !important.
+ * - :root is only used for variables Dripyard does NOT inject inline (fonts).
+ * - No component-class rules (.hero__*, .accordion-*, etc.) — those go in
+ *   per-component files loaded via libraries-extend.
+ * - Every color value: token first, hex fallback.
  */
 
-/* Add custom styles here */
+/* ─── Typography ─────────────────────────────────────────────────────────── */
+/* Safe to set at :root — Dripyard does NOT inject font vars inline.         */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-sans: 'Inter', sans-serif;
+}
+
+/* ─── Light / white zones ─────────────────────────────────────────────────  */
+/* Overrides Dripyard's :where(:root) — specificity (0,1,1) > (0,0,0).      */
+/* Scope: every component rendered inside a white or light theme zone,       */
+/* on every page. Intentional — not per-page, not per-component.             */
+html :where(:root),
+html .theme--white,
+html .theme--light {
+  /* Page surface — brand off-white */
+  --theme-surface:           var(--pl-color-surface-page,       #F0F1F0);
+
+  /* Headings / loud text — dark steel navy */
+  --theme-text-color-loud:   var(--pl-color-text-loud,          #2D3E48);
+
+  /* Body / medium emphasis — same navy, readable on off-white */
+  --theme-text-color-medium: var(--pl-color-text-medium,        #2D3E48);
+
+  /* Muted text: captions, metadata, helper text */
+  --theme-text-color-soft:   var(--pl-color-text-soft,          #555F68);
+
+  /* Links — amber */
+  --theme-link-color:        var(--pl-color-action-primary,     #F59E0B);
+  --theme-link-color-hover:  var(--pl-color-action-primary-alt, #92600A);
+
+  /* Focus ring */
+  --theme-focus-ring-color:  var(--pl-color-action-primary,     #F59E0B);
+
+  /* Borders */
+  --theme-border-color:      var(--pl-color-border,             #555F68);
+}
+
+/* ─── Dark / primary zones ────────────────────────────────────────────────  */
+/* Scope: hero, footer, any section using theme--primary, theme--dark, or    */
+/* theme--black. Same intentional breadth as the light zone above.           */
+html .theme--primary,
+html .theme--dark,
+html .theme--black {
+  /* Page surface — brand navy */
+  --theme-surface:           var(--pl-color-surface-dark,       #1B2638);
+
+  /* Alt surface — slightly lighter navy for cards within dark zones */
+  --theme-surface-alt:       var(--pl-color-surface-dark-alt,   #2D3E48);
+
+  /* Headings */
+  --theme-text-color-loud:   var(--pl-color-text-on-dark-loud,  #FFFFFF);
+
+  /* Body text on dark */
+  --theme-text-color-medium: var(--pl-color-text-on-dark,       #F0F1F0);
+
+  /* Muted text on dark */
+  --theme-text-color-soft:   var(--pl-color-text-on-dark-soft,  #AABBC8);
+
+  /* Links on dark — amber */
+  --theme-link-color:        var(--pl-color-action-amber,       #F59E0B);
+  --theme-link-color-hover:  var(--pl-color-action-amber-alt,   #E8973A);
+
+  /* Focus ring on dark */
+  --theme-focus-ring-color:  var(--pl-color-action-amber,       #F59E0B);
+}
