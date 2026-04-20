@@ -1,0 +1,80 @@
+/**
+ * @file
+ * performant_labs_20260418 — header component brand overrides.
+ *
+ * Layer: 5 (component local token overrides + custom element styles)
+ * Mechanism: libraries-extend on core/components.neonbyte--header
+ *
+ * Two-pass trace ruling (2026-04-19):
+ *   Property: --header-background-color-percent (drives background-color on
+ *   .site-header__container via color-mix in header.theme.css)
+ *
+ *   L1: Config cannot express transparency. Ruled out.
+ *   L3: html .theme--light { --header-background-color-percent } — RULED OUT.
+ *       header.theme.css re-declares token directly on .site-header (0,1,0),
+ *       overriding any inherited ancestor value. Same pattern as hero.
+ *   L5: .path-frontpage/.canvas-page .site-header (0,2,0) beats .site-header (0,1,0). ✅
+ *
+ * Neonbyte header architecture (read before editing):
+ *   - position: fixed (not sticky) — neonbyte handles vertical offset via
+ *     --site-header-fixed-offset (default 20px for the floating pill style)
+ *   - backdrop-filter: blur(10px) is ALREADY applied to .site-header__container
+ *     in header.theme.css. Do not add it again.
+ *   - .is-scrolled class is added/removed by neonbyte's header.js via JS scroll event
+ *   - Background is on .site-header__container (not .site-header itself)
+ *
+ * See: docs/pl2/css-change-log.md
+ * See: docs/pl2/keytail-design/design-map.md § Header
+ */
+
+/* ── 1. Transparent header on canvas/front pages ───────────────────────────── */
+/* Sets --header-background-color-percent to 0%, making color-mix fully         */
+/* transparent. backdrop-filter: blur(10px) still renders (frosted, no bg).     */
+/* Specificity (0,2,0) beats header.theme.css .site-header (0,1,0). ✅          */
+.path-frontpage .site-header,
+.canvas-page .site-header {
+  --header-background-color-percent: 0%;
+}
+
+/* ── 2. Opaque on scroll (.is-scrolled added by neonbyte header.js) ─────────  */
+/* Restores full-opacity surface. backdrop-filter blur still active.            */
+/* Specificity (0,3,0) beats rule above (0,2,0). ✅                              */
+.path-frontpage .site-header.is-scrolled,
+.canvas-page .site-header.is-scrolled {
+  --header-background-color-percent: 100%;
+}
+
+/* ── 3. Smooth background-color transition ─────────────────────────────────── */
+/* Neonbyte's header.theme.css has no transition for background-color on        */
+/* .site-header__container. Add it here so transparent→opaque animates.        */
+/* prefers-reduced-motion: guard mirrors neonbyte's own motion conventions.     */
+@media (prefers-reduced-motion: no-preference) {
+  .site-header__container {
+    transition: background-color 0.3s ease;
+  }
+}
+
+/* ── 4. Amber header CTA button ────────────────────────────────────────────── */
+/* .header-cta is a custom class added to the button in the header nav block.   */
+/* No Dripyard token chain — custom class, Layer 5 direct style. ✅             */
+/* Applied as inline-flex pill with amber fill / navy text.                     */
+.header-cta {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  background-color: #F59E0B;
+  color: #1B2638;
+  border-radius: 999px;
+  padding-block: 0.5rem;
+  padding-inline: 1.25rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.header-cta:hover,
+.header-cta:focus-visible {
+  background-color: #92600A;
+  color: #F0F1F0;
+}

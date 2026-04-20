@@ -20,6 +20,11 @@ libraries-extend:
   # Trace: L1+L3 ruled out (see css/components/hero.css file header).
   core/components.neonbyte--hero:
     - performant_labs_20260418/hero-override
+  # Header — transparent on canvas/front, opaque on scroll, amber CTA.
+  # Layer 5: --header-background-color-percent token + .header-cta direct style.
+  # Trace: L1+L3 ruled out (see css/components/header.css file header).
+  core/components.neonbyte--header:
+    - performant_labs_20260418/header-override
 
 regions:
   header_first: Header first (logo)

@@ -86,3 +86,33 @@ Format: `[Layer N] property/token  in  selector  →  value  file:line  YYYY-MM-
 [Layer 5] z-index in .hero.theme--primary .hero__container, .hero__media → z-index: 1  css/components/hero.css:L53  2026-04-19
   Ruling: Belt-and-suspenders lift above ::before. .hero__content already has z-index:1 in hero.css.
 ```
+
+---
+
+## Session 2026-04-19 — Stage 2, Component 2: Transparent Sticky Header
+
+```
+[Layer 5] --header-background-color-percent in .path-frontpage .site-header, .canvas-page .site-header → 0%  css/components/header.css:L34  2026-04-19
+  Mechanism: libraries-extend on core/components.neonbyte--header
+  Ruling: L1 config has no transparency setting. L3 (html .theme--light) RULED OUT —
+  header.theme.css re-declares --header-background-color-percent on .site-header (0,1,0),
+  overriding inherited ancestor values. L5 (.canvas-page .site-header, 0,2,0) beats (0,1,0). ✅
+  Note: backdrop-filter: blur(10px) already present in header.theme.css — not duplicated.
+
+[Layer 5] --header-background-color-percent in .path-frontpage .site-header.is-scrolled, .canvas-page .site-header.is-scrolled → 100%  css/components/header.css:L41  2026-04-19
+  Ruling: L5 state rule. Specificity (0,3,0) beats transparent rule (0,2,0). ✅
+  Note: .is-scrolled fired by js/header-scroll.js Drupal behavior (scroll threshold: 80px).
+
+[JS] plHeaderScroll Drupal.behavior — adds/removes .is-scrolled on .site-header  js/header-scroll.js  2026-04-19
+  Mechanism: header-override library (libraries-extend on core/components.neonbyte--header)
+  Dependencies: core/drupal, core/once
+  Note: neonbyte header.js has NO scroll behavior — .is-scrolled was never implemented.
+  This is the first and only implementation of scroll-to-opaque in this theme chain.
+
+[Layer 5] transition on .site-header__container → background-color 0.3s ease  css/components/header.css:L50  2026-04-19
+  Ruling: No transition for background-color in header.theme.css. New rule at L5. ✅
+  guard: @media (prefers-reduced-motion: no-preference)
+
+[Layer 5] .header-cta → amber pill (#F59E0B fill, #1B2638 text, border-radius 999px)  css/components/header.css:L57  2026-04-19
+  Ruling: Custom class, no Dripyard token chain. Direct L5 style.
+```

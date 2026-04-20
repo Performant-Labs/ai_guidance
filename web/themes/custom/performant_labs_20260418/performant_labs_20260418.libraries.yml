@@ -12,6 +12,19 @@ hero-override:
     component:
       css/components/hero.css: {}
 
+# Transparent sticky header + amber CTA — canvas/front pages.
+# Layer 5: component local token override via libraries-extend.
+# Extends: core/components.neonbyte--header (declared in .info.yml).
+header-override:
+  css:
+    component:
+      css/components/header.css: {}
+  js:
+    js/header-scroll.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+
 # Example library definition (used in testtheme.info.yml). Note the CSS file
 # will need to be created.
 # @see https://www.drupal.org/docs/develop/theming-drupal/adding-assets-css-js-to-a-drupal-theme-via-librariesyml
