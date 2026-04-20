@@ -39,3 +39,4 @@ $RECYCLE.BIN/
 /auth.json
 .vscode/
 canvas_snapshot*.sql
+.claude/

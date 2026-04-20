@@ -1,10 +1,13 @@
 {
-    "folders": [
-        {
-            "path": "../pl-performantlabs.com"
-        },
-        {
-            "path": "."
-        }
-    ]
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../pl-performantlabs.com"
+		}
+	],
+	"settings": {
+		"git.ignoreLimitWarning": true
+	}
 }
