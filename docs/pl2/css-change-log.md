@@ -171,4 +171,78 @@ Decision: No libraries-extend, no CSS file, no libraries.yml or info.yml changes
           This is the intended outcome of the trace-first protocol — Layer 1 handles
           the visual goal; Layer 5 is not the correct layer.
 ```
+
+---
+
+## Session 2026-04-20 — Stage 2, Component 5: Tabs pill indicator
+
+```
+[Layer 5] --tab-active-background-color → var(--pl-color-amber)  css/components/tabs.css  2026-04-20
+  Mechanism: libraries-extend on core/components.neonbyte--tabs
+  Ruling: Token not wired to OKLCH engine. L3 ruled out (too broad). L5 scoped to
+  .tabs__tab[aria-selected="true"] (0,2,0). ✅
+
+[Layer 5] --tab-active-text-color, --tab-active-icon-color → var(--pl-color-navy)  css/components/tabs.css  2026-04-20
+  Ruling: Contrast pair for amber pill. L5 direct. ✅
+
+[Layer 5] --tab-active-border-radius → var(--radius-lg)  css/components/tabs.css  2026-04-20
+  Ruling: Pill shape. No upstream token. L5 correct. ✅
+```
+
+---
+
+## Session 2026-04-20 — Stage 2, Component 6: Accordion amber chevron
+
+```
+[Layer 5] color on .accordion-item__summary svg → var(--pl-color-amber, #F59E0B)  css/components/accordion.css  2026-04-20
+  Mechanism: libraries-extend on core/components.dripyard_base--accordion
+  Ruling: --accordion-item-icon-color exists but setting at L3 affects all theme contexts.
+  L5 scoped selector (0,2,0) preferred. ✅
+
+[Layer 5] border-top on .accordion-item → 1px solid var(--theme-border-color-soft)  css/components/accordion.css  2026-04-20
+  Ruling: Separator using semantic token. No hardcoded value. ✅
+```
+
+---
+
+## Session 2026-04-20 — Stage 2, Component 7: Footer
+
+```
+[Layer 5] .site-footer watermark — font-size: clamp(16rem, 40vw, 32rem); opacity: 0.04  css/components/footer.css  2026-04-20
+  Mechanism: libraries-extend on core/components.neonbyte--footer
+  Ruling: Decorative element. No token. clamp() is fluid — no mobile breakpoint needed. ✅
+
+[Layer 5] .footer-social-icons — display:flex, gap, icon button sizing  css/components/footer.css  2026-04-20
+  Ruling: New element injected via page--front.html.twig. No token chain. L5 correct. ✅
+
+[Layer 5] .site-footer .footer-cta__link → color + hover via var(--pl-color-amber)  css/components/footer.css  2026-04-20
+  Ruling: .site-footer scope raises specificity (0,2,1) to beat neonbyte link reset without
+  !important. Tokens used throughout. ✅
+```
+
+---
+
+## Session 2026-04-20 — Stage 2, Layouts
+
+```
+[Layout] canvas.css — .canvas-page .layout-container { max-width:none; padding-inline:0 }  2026-04-20
+  Mechanism: global library (performant_labs_20260418/canvas-layout) in .info.yml
+  Ruling: Nullifies dripyard_base layout constraint for canvas pages. Layout file correct per
+  strategy Rule 2. ✅
+
+[Layout] docs.css — .docs-layout { display:grid; grid-template-columns:260px 1fr }  2026-04-20
+  Mobile breakpoint at 900px: single-column stack. Rule 8 met. ✅
+  sidebar_first region added to info.yml; book_navigation block moved from header_first. ✅
+```
+
+---
+
+## Session 2026-04-20 — Bug Fixes
+
+```
+[Fix] page.html.twig — removed button--primary from header CTA anchor class  2026-04-20
+  Problem: button--primary overriding .header-cta amber pill on interior pages with neonbyte's
+  dark-navy button style.
+  Fix: class="header-cta" only — matches page--front.html.twig. Amber pill now consistent. ✅
+  Note: Twig template change only — no CSS layer implications.
 ```
