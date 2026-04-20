@@ -1,0 +1,17 @@
+{
+    "_hash": "7d477e638f38ffbf04608202f5bde617f2c6d9e69234719b6b21bb5450ae2d04",
+    "patches": {
+        "drupal/canvas": [
+            {
+                "package": "drupal/canvas",
+                "description": "Fix getClientSideInfo() prop shape key mismatch and null guard (Canvas 1.3.2 bug)",
+                "url": "patches/canvas-fix-getclientsideinfo-null-propshape.patch",
+                "sha256": "0eec02d26444d51cc985b7b1f11586c5c12759816f574d4c6abeb270a5b60aea",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ]
+    }
+}
