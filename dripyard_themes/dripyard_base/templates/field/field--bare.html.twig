@@ -1,7 +1,0 @@
-{% for item in items %}
-  {% if item.content['#theme'] %}
-    {{ item.content|add_suggestion('bare') }}
-  {% else %}
-    {{ item.content }}
-  {% endif %}
-{% endfor %}

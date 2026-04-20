@@ -1,8 +1,0 @@
-name: Dripyard Accordion Item
-type: Dripyard
-description: 'Provides an accordion item block type'
-config:
-  strict: false
-recipes:
-  - 'dripyard_fields_block'
-  - 'dripyard_text_format_superbasic'

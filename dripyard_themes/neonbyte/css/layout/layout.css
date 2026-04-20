@@ -1,8 +1,0 @@
-/*
- * @file
- * Various layout utility classes essential to the layout of the site.
- */
-
-.layout-container {
-  padding-top: var(--space-for-fixed-header);
-}
