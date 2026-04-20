@@ -1,0 +1,28 @@
+uuid: e8168471-ba52-4823-95d7-13d77dbff203
+langcode: en
+status: true
+dependencies:
+  theme:
+    - performant_labs_20260418
+active_version: f4e31cf84ccb3a8e
+versioned_properties:
+  active:
+    settings:
+      prop_field_definitions:
+        text:
+          required: false
+          field_type: string
+          field_storage_settings: {  }
+          field_instance_settings: {  }
+          field_widget: string_textfield
+          default_value: null
+          expression: ℹ︎string␟value
+    fallback_metadata:
+      slot_definitions:
+        content:
+          title: Content
+label: 'Dry Run Test'
+id: sdc.performant_labs_20260418.dry_run_test
+provider: performant_labs_20260418
+source: sdc
+source_local_id: 'performant_labs_20260418:dry_run_test'

@@ -1,0 +1,27 @@
+uuid: 6411867d-b0c0-44df-849a-8b5477f6bd38
+langcode: en
+status: true
+dependencies:
+  config:
+    - system.menu.main
+  module:
+    - system
+  theme:
+    - performant_labs_20260418
+_core:
+  default_config_hash: vDY6uZPad0e30p59RsEqC95YtxxiBt20GNGVsa8c1d0
+id: performant_labs_20260418_main_menu
+theme: performant_labs_20260418
+region: header_second
+weight: -5
+provider: null
+plugin: 'system_menu_block:main'
+settings:
+  id: 'system_menu_block:main'
+  label: 'Main navigation'
+  label_display: '0'
+  provider: system
+  level: 1
+  depth: 3
+  expand_all_items: true
+visibility: {  }

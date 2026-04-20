@@ -8,3 +8,4 @@ weight: 0
 items:
   - sdc.dripyard_base.theme-test
   - sdc.navigation.title
+  - sdc.performant_labs_20260418.dry_run_test

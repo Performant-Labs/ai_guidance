@@ -3,8 +3,11 @@
  * @file
  * Theme override for performant_labs_20260418.
  *
- * Inherits all behaviour from neonbyte/page.html.twig and adds a fixed
- * theme-indicator badge visible only to logged-in users.
+ * Inherits all behaviour from neonbyte/page.html.twig and adds:
+ * - A fixed theme-indicator badge visible only to admins.
+ * - A fallback amber "Call today" CTA for the header_third region on all pages.
+ *   If a block is placed in header_third (e.g. logged-in CTA, search, etc.),
+ *   the block takes precedence. If the region is empty the Twig CTA renders.
  */
 #}
 
@@ -24,12 +27,16 @@
   box-shadow: 0 1px 4px rgba(0,0,0,.35);
 ">⚙ 20260418</div>
 
+{% set header_cta %}
+  <a href="/contact" class="header-cta button button--primary">Call today</a>
+{% endset %}
+
 <div class="layout-container">
 
   {{ include('neonbyte:header', {
       header_first: page.header_first,
       header_second: page.header_second,
-      header_third: page.header_third,
+      header_third: page.header_third is not empty ? page.header_third : header_cta,
       attributes: header_attributes,
     }, with_context = false) }}
 

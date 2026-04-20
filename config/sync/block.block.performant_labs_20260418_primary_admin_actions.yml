@@ -1,0 +1,20 @@
+uuid: c45e217c-7938-43c5-8210-88f5c0490460
+langcode: en
+status: true
+dependencies:
+  theme:
+    - performant_labs_20260418
+_core:
+  default_config_hash: YtLOauWzQ9JXiV7JQDEUO3LBm8tV1_yStR4boSwG0AY
+id: performant_labs_20260418_primary_admin_actions
+theme: performant_labs_20260418
+region: highlighted
+weight: -5
+provider: null
+plugin: local_actions_block
+settings:
+  id: local_actions_block
+  label: 'Primary admin actions'
+  label_display: '0'
+  provider: core
+visibility: {  }

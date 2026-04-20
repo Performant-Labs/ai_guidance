@@ -52,6 +52,7 @@ regions:
   header_second: Header second (center)
   header_third: Header third (right)
   highlighted: Highlighted
+  sidebar_first: Documentation sidebar (left)
   content: Content
   fixed_middle_right: Fixed middle right (local actions tabs)
   fixed_bottom_right: Fixed bottom right (messages)
