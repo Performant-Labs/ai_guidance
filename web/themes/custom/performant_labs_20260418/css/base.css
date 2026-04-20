@@ -19,6 +19,67 @@
 /* Safe to set at :root — Dripyard does NOT inject font vars inline.         */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* ─── @property registrations ──────────────────────────────────────────── */
+/* Registered custom properties are:                                           */
+/*   - TYPE-SAFE: the browser validates assignments against syntax: '<color>'  */
+/*   - INSPECTABLE: DevTools shows color swatches and allows click-to-edit     */
+/*   - TRANSITION-CAPABLE: transitions work on registered <color> props        */
+/* Rules:                                                                       */
+/*   - @property must be at top-level (not inside a rule block)                */
+/*   - initial-value must be a STATIC value (no var() references allowed)      */
+/*     It serves as the in-browser fallback if the :root declaration fails.    */
+/*   - inherits: true so theme-zone descendants receive cascaded values        */
+/* Browser support: Chrome 85+, Firefox 128+, Safari 16.4+                    */
+
+@property --pl-color-amber {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #F59E0B;
+}
+
+@property --pl-color-amber-dark {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #92600A;   /* static fallback; :root uses color-mix() below */
+}
+
+@property --pl-color-navy {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #1B2638;
+}
+
+@property --pl-color-navy-text {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #2D3E48;
+}
+
+@property --pl-color-surface-page {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #F0F1F0;
+}
+
+@property --pl-color-white {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #FFFFFF;
+}
+
+@property --pl-color-text-muted {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #555F68;
+}
+
+@property --pl-color-text-on-dark {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #AABBC8;
+}
+
+
 /* ─── Brand primitive tokens ──────────────────────────────────────────────── */
 /* SINGLE SOURCE OF TRUTH for all PL color values. Declared at :root so       */
 /* component override files can reference them without hex fallbacks.          */
@@ -31,7 +92,12 @@
 
   /* Amber — primary action / CTA accent */
   --pl-color-amber:          #F59E0B;
-  --pl-color-amber-dark:     #92600A;   /* hover / darken state */
+
+  /* Computed from amber: 65% amber + 35% black in oklch space.                */
+  /* If --pl-color-amber changes, this automatically adjusts to match.         */
+  /* ~resolves to a dark amber-brown for hover/active states.                  */
+  /* @property initial-value: #92600A is the browser fallback if var() fails.  */
+  --pl-color-amber-dark:     color-mix(in oklch, var(--pl-color-amber) 65%, black);
 
   /* Navy — dark surface / strong text */
   --pl-color-navy:           #1B2638;   /* deep brand navy */
