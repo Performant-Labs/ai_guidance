@@ -1,0 +1,45 @@
+/**
+ * @file
+ * performant_labs_20260418 — accordion-item component brand overrides.
+ *
+ * Layer: 5 (new direct property on SVG element — no existing color rule to conflict)
+ * Mechanism: libraries-extend on core/components.dripyard_base--accordion-item
+ *
+ * Two-pass trace ruling (2026-04-19):
+ *
+ *   Property: color on .accordion-item__summary svg (the chevron/+ icon)
+ *   Current:  currentColor — inherits from .accordion-item__summary's
+ *             --accordion-item-title-text-color: var(--theme-text-color-loud)
+ *
+ *   L3: html .theme--* { --accordion-item-title-text-color: #F59E0B } — would make
+ *       the question text amber too. Far too broad. Ruled out.
+ *   L5: .accordion-item__summary svg { color: #F59E0B } — no existing color rule
+ *       on the SVG element in accordion-item.css; new property at (0,2,0). ✅
+ *
+ * What the dripyard accordion-group--variation-borders variant ALREADY provides
+ * (no override needed for these — do NOT duplicate):
+ *   - --accordion-item-border-radius: 0  → no rounded corners ✅
+ *   - --accordion-item-background-color: transparent → no card fill ✅
+ *   - border-inline: 0; border-top: 0 → only bottom 1px rule remains ✅
+ *   - --theme-border-color-soft → resolves to a semi-transparent neutral ≈ #e5e7eb ✅
+ *
+ * See: docs/pl2/css-change-log.md
+ * See: docs/pl2/keytail-design/design-map.md § accordion
+ */
+
+/* ── 1. Amber chevron icon ─────────────────────────────────────────────────── */
+/* The SVG has no explicit color rule in accordion-item.css — it uses           */
+/* currentColor inherited from the summary. Setting color directly on the svg   */
+/* overrides the inherited value, making ONLY the icon amber while the title    */
+/* text (.accordion-item__title — sibling in the flex row) stays dark. ✅       */
+.accordion-item__summary svg {
+  color: #F59E0B;
+}
+
+/* ── 2. Hover — darken icon on hover for feedback ──────────────────────────── */
+/* .accordion-item__summary:hover sets color: var(--theme-text-color-loud) (dark) */
+/* on the whole summary — we re-assert amber with a slight darken for feedback.  */
+/* Specificity (0,3,0) beats (0,2,0) hover on the summary. ✅                   */
+.accordion-item__summary:hover svg {
+  color: #92600A;
+}

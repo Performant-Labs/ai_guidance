@@ -30,6 +30,11 @@ libraries-extend:
   # Trace: L3 ruled out (too broad); L5 .content-card.content-card--has-background (0,2,0).
   core/components.dripyard_base--content-card:
     - performant_labs_20260418/content-card-override
+  # accordion — amber chevron icon. variation-borders variant already handles minimal style.
+  # Layer 5: new color property on SVG element (.accordion-item__summary svg, 0,2,0).
+  # Trace: L3 ruled out (would amber-ify question text too).
+  core/components.dripyard_base--accordion-item:
+    - performant_labs_20260418/accordion-override
 
 regions:
   header_first: Header first (logo)

@@ -139,3 +139,36 @@ Format: `[Layer N] property/token  in  selector  →  value  file:line  YYYY-MM-
 [Layer 5] transform + box-shadow on .content-card:hover → translateY(-3px) + deeper shadow  css/components/content-card.css:L55  2026-04-19
   Ruling: New rule, L5. Transition guarded by prefers-reduced-motion. ✅
 ```
+
+---
+
+## Session 2026-04-19 — Stage 2, Component 4: button--cta / button--pill-dark
+
+```
+[NO ACTION — Layer 1 handles all button properties]
+
+Two-pass trace (2026-04-19):
+  .button--secondary (hero "Call today"):
+    --button-background-color: var(--secondary)
+    --secondary ← OKLCH engine ← base_secondary_color: #F59E0B config anchor.
+    L1 already produces the amber fill and dark text via OKLCH-generated
+    --color-secondary-text-color. No CSS override needed or permitted.
+
+  border-radius:
+    --button-border-radius: var(--radius-button)
+    --radius-button ← --theme-setting-radius-button: 40px (inline <html> from config).
+    L1 already produces the fully-rounded pill at 40px. No CSS override needed.
+
+  button--cta / button--pill-dark custom classes (from 20260411):
+    NOT present in any DOM element on 20260418 site. Those classes were manual
+    workarounds that pre-dated the OKLCH config engine. Adding them would be dead CSS.
+
+  button--light (hero "Book a call"):
+    Uses --neutral-100 / --neutral-900. Legible ghost style. Design map = port as-is.
+    No brand requirement to change it.
+
+Decision: No libraries-extend, no CSS file, no libraries.yml or info.yml changes.
+          This is the intended outcome of the trace-first protocol — Layer 1 handles
+          the visual goal; Layer 5 is not the correct layer.
+```
+```

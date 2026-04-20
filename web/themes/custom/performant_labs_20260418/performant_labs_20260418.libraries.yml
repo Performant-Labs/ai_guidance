@@ -33,6 +33,14 @@ content-card-override:
     component:
       css/components/content-card.css: {}
 
+# Accordion — amber chevron icon on .accordion-item__summary svg.
+# Layer 5: no existing color rule on SVG; new direct property at (0,2,0).
+# Extends: core/components.dripyard_base--accordion-item (declared in .info.yml).
+accordion-override:
+  css:
+    component:
+      css/components/accordion.css: {}
+
 # Example library definition (used in testtheme.info.yml). Note the CSS file
 # will need to be created.
 # @see https://www.drupal.org/docs/develop/theming-drupal/adding-assets-css-js-to-a-drupal-theme-via-librariesyml
