@@ -56,8 +56,14 @@
 
 /* ── 4. Amber header CTA button ────────────────────────────────────────────── */
 /* .header-cta is a custom class added to the button in the header nav block.   */
-/* No Dripyard token chain — custom class, Layer 5 direct style. ✅             */
-/* Applied as inline-flex pill with amber fill / navy text.                     */
+/* ARCHITECTURAL FIX (2026-04-19): instead of hardcoding #F59E0B / #1B2638,    */
+/* we use the SAME token chain that dripyard's button--secondary uses. This     */
+/* means the header CTA is always in sync with the button system. If the amber  */
+/* brand color changes in Drupal config (L1 OKLCH), this updates automatically. */
+/*   --secondary               = amber (#F59E0B) from L1 OKLCH                 */
+/*   --color-secondary-text-color = dark navy (auto-contrast by OKLCH)          */
+/*   --color-secondary-surface-alt = amber-hover from L1 OKLCH                 */
+/*   --button-border-radius    = var(--radius-button) = 40px from config        */
 .header-cta {
   display: inline-flex;
   align-items: center;
@@ -65,9 +71,9 @@
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
-  background-color: #F59E0B;
-  color: #1B2638;
-  border-radius: 999px;
+  background-color: var(--secondary);                 /* = amber via L1 OKLCH */
+  color: var(--color-secondary-text-color);           /* = navy via L1 OKLCH  */
+  border-radius: var(--button-border-radius, 999px);  /* = 40px from config   */
   padding-block: 0.5rem;
   padding-inline: 1.25rem;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -75,6 +81,6 @@
 
 .header-cta:hover,
 .header-cta:focus-visible {
-  background-color: #92600A;
-  color: #F0F1F0;
+  background-color: var(--color-secondary-surface-alt);  /* darken via OKLCH   */
+  color: var(--color-secondary-text-color);
 }

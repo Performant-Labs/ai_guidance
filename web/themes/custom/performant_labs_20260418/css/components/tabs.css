@@ -49,18 +49,18 @@
 .tabs {
   --tab-active-border-color: transparent;
   --tab-track-color: transparent;
-  --tab-active-icon-color: #1B2638;   /* navy icon on amber pill */
+  --tab-active-icon-color: var(--pl-color-navy);   /* navy icon on amber pill */
 }
 
 /* ── 2. Active tab: amber pill background ──────────────────────────────────── */
 /* No existing background-color rule on [active]::part(base). New at L5. ✅    */
 .sl-tab[active]::part(base) {
-  background-color: #F59E0B;
+  background-color: var(--pl-color-amber);
   border-radius: 999px;
 }
 
 /* ── 3. Hover on inactive tabs — subtle amber tint hint ─────────────────────  */
 .sl-tab:not([active]):hover::part(base) {
-  background-color: color-mix(in oklch, #F59E0B 15%, transparent);
+  background-color: color-mix(in oklch, var(--pl-color-amber) 15%, transparent);
   border-radius: 999px;
 }

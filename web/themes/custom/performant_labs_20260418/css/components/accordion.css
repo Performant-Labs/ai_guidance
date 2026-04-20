@@ -33,7 +33,7 @@
 /* overrides the inherited value, making ONLY the icon amber while the title    */
 /* text (.accordion-item__title — sibling in the flex row) stays dark. ✅       */
 .accordion-item__summary svg {
-  color: #F59E0B;
+  color: var(--pl-color-amber);
 }
 
 /* ── 2. Hover — darken icon on hover for feedback ──────────────────────────── */
@@ -41,5 +41,5 @@
 /* on the whole summary — we re-assert amber with a slight darken for feedback.  */
 /* Specificity (0,3,0) beats (0,2,0) hover on the summary. ✅                   */
 .accordion-item__summary:hover svg {
-  color: #92600A;
+  color: var(--pl-color-amber-dark);
 }

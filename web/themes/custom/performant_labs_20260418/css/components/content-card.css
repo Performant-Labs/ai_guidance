@@ -32,10 +32,11 @@
   --content-card-border-radius: var(--radius-lg);
 
   /* ── 2. Elevation shadow — white card on off-white section bg ──────────── */
-  /* New property not in content-card.css. Using brand navy for shadow hue.   */
+  /* New property not in content-card.css. Uses color-mix() with brand navy    */
+  /* for shadow hue — traceable to --pl-color-navy vs opaque rgba().           */
   box-shadow:
-    0 2px 8px rgba(27, 38, 56, 0.08),
-    0 1px 2px rgba(27, 38, 56, 0.04);
+    0 2px 8px color-mix(in oklch, var(--pl-color-navy) 8%, transparent),
+    0 1px 2px color-mix(in oklch, var(--pl-color-navy) 4%, transparent);
 
   /* ── 3. Smooth hover transition ─────────────────────────────────────────── */
   @media (prefers-reduced-motion: no-preference) {
@@ -47,7 +48,7 @@
 /* Specificity (0,2,0) = same as component rule; later load wins. ✅            */
 /* Scoped to the variant — dark-zone cards retain their --theme-surface-alt.   */
 .content-card.content-card--has-background {
-  --content-card-background: #FFFFFF;
+  --content-card-background: var(--pl-color-white);  /* → #FFFFFF */
 }
 
 /* ── 5. Hover lift ────────────────────────────────────────────────────────── */
@@ -56,6 +57,6 @@
 .content-card:hover {
   transform: translateY(-3px);
   box-shadow:
-    0 8px 24px rgba(27, 38, 56, 0.12),
-    0 3px 8px rgba(27, 38, 56, 0.06);
+    0 8px 24px color-mix(in oklch, var(--pl-color-navy) 12%, transparent),
+    0 3px 8px  color-mix(in oklch, var(--pl-color-navy) 6%, transparent);
 }

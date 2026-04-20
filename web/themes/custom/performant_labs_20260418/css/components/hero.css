@@ -25,7 +25,7 @@
 /* ── 1. Navy background via component local token ──────────────────────────── */
 /* Specificity (0,2,0) beats hero.css .hero (0,1,0) on the same element.        */
 .hero.theme--primary {
-  --hero-background: #1B2638;
+  --hero-background: var(--pl-color-navy);  /* → #1B2638 deep navy */
 }
 
 /* ── 2. Radial gradient overlay via ::before ───────────────────────────────── */
@@ -37,10 +37,10 @@
   inset: 0;
   background: radial-gradient(
     ellipse at 30% 40%,
-    #1e4a6b 0%,
-    #1B2638 45%,
-    #3d1f00 80%,
-    #F59E0B 130%
+    #1e4a6b 0%,    /* artistic deep teal — no brand token; deliberately chosen */
+    var(--pl-color-navy) 45%,
+    #3d1f00 80%,   /* artistic dark amber-brown — no brand token; deliberately chosen */
+    var(--pl-color-amber) 130%
   );
   z-index: 0;
   pointer-events: none;

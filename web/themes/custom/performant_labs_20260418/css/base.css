@@ -19,38 +19,66 @@
 /* Safe to set at :root — Dripyard does NOT inject font vars inline.         */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* ─── Brand primitive tokens ──────────────────────────────────────────────── */
+/* SINGLE SOURCE OF TRUTH for all PL color values. Declared at :root so       */
+/* component override files can reference them without hex fallbacks.          */
+/* These are CONSTANTS — never overridden by theme zones. If the brand palette */
+/* changes, update only this block. The hex fallbacks in zone rules below are  */
+/* belt-and-suspenders in case this :root block is accidentally removed.       */
 :root {
+  /* Typography */
   --font-sans: 'Inter', sans-serif;
+
+  /* Amber — primary action / CTA accent */
+  --pl-color-amber:          #F59E0B;
+  --pl-color-amber-dark:     #92600A;   /* hover / darken state */
+
+  /* Navy — dark surface / strong text */
+  --pl-color-navy:           #1B2638;   /* deep brand navy */
+  --pl-color-navy-text:      #2D3E48;   /* steel navy for headings / loud text */
+
+  /* Surfaces */
+  --pl-color-surface-page:   #F0F1F0;   /* off-white page background */
+  --pl-color-white:          #FFFFFF;   /* card surface */
+
+  /* Text utilities */
+  --pl-color-text-muted:     #555F68;   /* captions / helper text */
+  --pl-color-text-on-dark:   #AABBC8;   /* soft text in dark zones */
 }
 
 /* ─── Light / white zones ─────────────────────────────────────────────────  */
 /* Overrides Dripyard's :where(:root) — specificity (0,1,1) > (0,0,0).      */
 /* Scope: every component rendered inside a white or light theme zone,       */
 /* on every page. Intentional — not per-page, not per-component.             */
+/*                                                                            */
+/* html :where(:root) — global default. Applies brand tokens to any context  */
+/* that has NOT yet received a theme--* class (e.g. page shell, form dialogs,*/
+/* utility blocks outside Canvas sections). The specificity of :where() is 0  */
+/* so a later .theme--* rule on any ancestor correctly overrides it.          */
 html :where(:root),
 html .theme--white,
 html .theme--light {
   /* Page surface — brand off-white */
-  --theme-surface:           var(--pl-color-surface-page,       #F0F1F0);
+  --theme-surface:           var(--pl-color-surface-page,   #F0F1F0);
 
   /* Headings / loud text — dark steel navy */
-  --theme-text-color-loud:   var(--pl-color-text-loud,          #2D3E48);
+  --theme-text-color-loud:   var(--pl-color-navy-text,      #2D3E48);
 
   /* Body / medium emphasis — same navy, readable on off-white */
-  --theme-text-color-medium: var(--pl-color-text-medium,        #2D3E48);
+  --theme-text-color-medium: var(--pl-color-navy-text,      #2D3E48);
 
   /* Muted text: captions, metadata, helper text */
-  --theme-text-color-soft:   var(--pl-color-text-soft,          #555F68);
+  --theme-text-color-soft:   var(--pl-color-text-muted,     #555F68);
 
   /* Links — amber */
-  --theme-link-color:        var(--pl-color-action-primary,     #F59E0B);
-  --theme-link-color-hover:  var(--pl-color-action-primary-alt, #92600A);
+  --theme-link-color:        var(--pl-color-amber,          #F59E0B);
+  --theme-link-color-hover:  var(--pl-color-amber-dark,     #92600A);
 
   /* Focus ring */
-  --theme-focus-ring-color:  var(--pl-color-action-primary,     #F59E0B);
+  --theme-focus-ring-color:  var(--pl-color-amber,          #F59E0B);
 
   /* Borders */
-  --theme-border-color:      var(--pl-color-border,             #555F68);
+  --theme-border-color:      var(--pl-color-text-muted,     #555F68);
 }
 
 /* ─── Dark / primary zones ────────────────────────────────────────────────  */
@@ -60,24 +88,24 @@ html .theme--primary,
 html .theme--dark,
 html .theme--black {
   /* Page surface — brand navy */
-  --theme-surface:           var(--pl-color-surface-dark,       #1B2638);
+  --theme-surface:           var(--pl-color-navy,           #1B2638);
 
   /* Alt surface — slightly lighter navy for cards within dark zones */
-  --theme-surface-alt:       var(--pl-color-surface-dark-alt,   #2D3E48);
+  --theme-surface-alt:       var(--pl-color-navy-text,      #2D3E48);
 
   /* Headings */
-  --theme-text-color-loud:   var(--pl-color-text-on-dark-loud,  #FFFFFF);
+  --theme-text-color-loud:   var(--pl-color-white,          #FFFFFF);
 
   /* Body text on dark */
-  --theme-text-color-medium: var(--pl-color-text-on-dark,       #F0F1F0);
+  --theme-text-color-medium: var(--pl-color-surface-page,   #F0F1F0);
 
   /* Muted text on dark */
-  --theme-text-color-soft:   var(--pl-color-text-on-dark-soft,  #AABBC8);
+  --theme-text-color-soft:   var(--pl-color-text-on-dark,   #AABBC8);
 
   /* Links on dark — amber */
-  --theme-link-color:        var(--pl-color-action-amber,       #F59E0B);
-  --theme-link-color-hover:  var(--pl-color-action-amber-alt,   #E8973A);
+  --theme-link-color:        var(--pl-color-amber,          #F59E0B);
+  --theme-link-color-hover:  var(--pl-color-amber-dark,     #92600A);
 
   /* Focus ring on dark */
-  --theme-focus-ring-color:  var(--pl-color-action-amber,       #F59E0B);
+  --theme-focus-ring-color:  var(--pl-color-amber,          #F59E0B);
 }
