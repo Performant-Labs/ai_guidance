@@ -41,6 +41,7 @@
         "drupal/ai_provider_amazeeio": "^1.2.7",
         "drupal/ai_provider_anthropic": "^1.1",
         "drupal/ai_provider_openai": "^1.1",
+        "drupal/asset_injector": "^2.21",
         "drupal/automatic_updates": "^4.1.0",
         "drupal/autosave_form": "^1.10.0",
         "drupal/book": "^3.0",
