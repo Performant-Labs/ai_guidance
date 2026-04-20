@@ -1,0 +1,74 @@
+/**
+ * @file
+ * performant_labs_20260418 — docs/book two-column sidebar layout.
+ *
+ * Layer: 5 (layout — global library, not libraries-extend)
+ * Scope: .docs-page class on <main>, applied by page--documentation.html.twig
+ *
+ * Two-pass trace ruling (2026-04-19):
+ *
+ *   Property: display:grid on .docs-layout
+ *
+ *   L1: Config cannot set grid layout geometry. OUT.
+ *
+ *   L2 / contrib: No CSS rules for .docs-page, .docs-layout, or .docs-sidebar
+ *     exist in neonbyte or dripyard_base. These are entirely custom classes.
+ *     Zero upstream conflict — all rules in this file are NEW at L5. ✅
+ *
+ *   L3: base.css is reserved for zone color tokens (per file-header contract). OUT.
+ *
+ *   L5: New rules. No cascade conflict. Global library, scoped by .docs-page
+ *     class on <main> (only set when page--documentation.html.twig renders). ✅
+ *
+ * Dependency chain (this CSS will NOT be visible until these are in place):
+ *   1. page--documentation.html.twig — adds <main class="site-main docs-page">
+ *      and renders the .docs-layout/.docs-sidebar/.docs-content structure.
+ *   2. hook_theme_suggestions_page_alter in .theme — routes book nodes to
+ *      the page--documentation template suggestion.
+ *   Both are Component #8 (Twig Templates) in the Stage 2 priority list.
+ *
+ * Improvement over 20260411 source:
+ *   - 'top: 5rem' (hardcoded) → var(--space-for-fixed-header, 5rem)
+ *     Stays in sync if neonbyte changes the fixed header height token.
+ *   - max-height uses the same token instead of a hardcoded calc.
+ *
+ * Source: adapted from performant_labs_20260411/css/base.css (docs section)
+ * See: docs/pl2/css-change-log.md
+ * See: docs/pl2/keytail-design/design-map.md § 7. Page Layouts (docs grid)
+ */
+
+/* ── 1. Two-column CSS Grid ────────────────────────────────────────────────── */
+/* Left: fixed 260px sidebar (book navigation / TOC).                          */
+/* Right: 1fr — content column, grows to fill remaining width.                 */
+.docs-page .docs-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2rem;
+  align-items: start;
+  padding-block: 2rem;
+  padding-inline: 1.5rem;
+}
+
+/* ── 2. Sticky sidebar ─────────────────────────────────────────────────────── */
+/* top uses the neonbyte token for the fixed header height so the sidebar       */
+/* sticks just below the header regardless of header size changes.              */
+.docs-page .docs-sidebar {
+  position: sticky;
+  top: var(--space-for-fixed-header, 5rem);
+  max-height: calc(100vh - var(--space-for-fixed-header, 5rem) - 2rem);
+  overflow-y: auto;
+}
+
+/* ── 3. Responsive: single column below 900px ──────────────────────────────── */
+/* The sidebar collapses above the content on mobile. No hidden sidebar —       */
+/* book navigation on mobile is inline, not a separate drawer.                  */
+@media (max-width: 900px) {
+  .docs-page .docs-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-page .docs-sidebar {
+    position: static;
+    max-height: none;
+  }
+}

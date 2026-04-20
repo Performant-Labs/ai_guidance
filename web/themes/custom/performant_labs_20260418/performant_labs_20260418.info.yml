@@ -8,6 +8,7 @@ core_version_requirement: ^11
 libraries:
   - performant_labs_20260418/base
   - performant_labs_20260418/canvas-layout   # Layout 1: canvas full-width guard
+  - performant_labs_20260418/docs-layout     # Layout 2: docs two-column sidebar grid
 version: 1.0.0
 generator: 'performant_labs_20260418:unknown-version'
 

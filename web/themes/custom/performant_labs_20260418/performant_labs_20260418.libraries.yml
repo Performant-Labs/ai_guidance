@@ -13,6 +13,16 @@ canvas-layout:
     layout:
       css/layout/canvas.css: {}
 
+# Docs two-column sidebar layout (book content type).
+# Global library — .docs-page scope limits reach to pages where
+# page--documentation.html.twig renders (Component #8 activates it).
+# Layer 5: new rules, no upstream conflict. Improvement: uses
+# var(--space-for-fixed-header) for sticky top instead of hardcoded 5rem.
+docs-layout:
+  css:
+    layout:
+      css/layout/docs.css: {}
+
 # Hero gradient — navy-to-amber radial gradient on .hero.theme--primary.
 # Layer 5: component local token override via libraries-extend.
 # Extends: core/components.neonbyte--hero (declared in .info.yml).
