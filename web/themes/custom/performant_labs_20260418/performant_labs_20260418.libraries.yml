@@ -4,6 +4,14 @@ base:
     theme:
       css/base.css: {}
 
+# Hero gradient — navy-to-amber radial gradient on .hero.theme--primary.
+# Layer 5: component local token override via libraries-extend.
+# Extends: core/components.neonbyte--hero (declared in .info.yml).
+hero-override:
+  css:
+    component:
+      css/components/hero.css: {}
+
 # Example library definition (used in testtheme.info.yml). Note the CSS file
 # will need to be created.
 # @see https://www.drupal.org/docs/develop/theming-drupal/adding-assets-css-js-to-a-drupal-theme-via-librariesyml

@@ -1,0 +1,57 @@
+/**
+ * @file
+ * performant_labs_20260418 — hero component brand overrides.
+ *
+ * Layer: 5 (component local token + pseudo-element)
+ * Mechanism: libraries-extend on core/components.neonbyte--hero
+ *
+ * Two-pass trace ruling (2026-04-19):
+ *   L1: Config primary already #1B2638; gradients cannot be expressed in config. RULED OUT.
+ *   L3: html .theme--primary { --hero-background } ruled out — hero.css re-declares
+ *       --hero-background directly on .hero (0,1,0), overriding any inherited ancestor
+ *       value. Layer 3 cannot reach past this redeclaration.
+ *   L5: .hero.theme--primary (0,2,0) beats .hero (0,1,0). CORRECT LAYER.
+ *
+ * Rules:
+ *   - No !important.
+ *   - No --theme-setting-* overrides.
+ *   - No theme-layer (--theme-*) variables — this is a component local token override.
+ *   - .hero already has position: relative (hero.css L7) — ::before works without adding it.
+ *
+ * See: docs/pl2/css-change-log.md
+ * See: docs/pl2/keytail-design/design-map.md § Hero
+ */
+
+/* ── 1. Navy background via component local token ──────────────────────────── */
+/* Specificity (0,2,0) beats hero.css .hero (0,1,0) on the same element.        */
+.hero.theme--primary {
+  --hero-background: #1B2638;
+}
+
+/* ── 2. Radial gradient overlay via ::before ───────────────────────────────── */
+/* Pseudo-element on .hero — no conflict with existing rules.                   */
+/* Gradient: from deep teal (top-left accent) → navy (mid) → dark amber (edge). */
+.hero.theme--primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 30% 40%,
+    #1e4a6b 0%,
+    #1B2638 45%,
+    #3d1f00 80%,
+    #F59E0B 130%
+  );
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── 3. z-index management ──────────────────────────────────────────────────── */
+/* Lift hero content and media above the ::before gradient overlay.              */
+/* .hero__content already has z-index: 1 in hero.css; these are belt-and-        */
+/* suspenders for container and media which do not.                              */
+.hero.theme--primary .hero__container,
+.hero.theme--primary .hero__media {
+  position: relative;
+  z-index: 1;
+}

@@ -15,18 +15,11 @@ generator: 'performant_labs_20260418:unknown-version'
 # @see https://www.drupal.org/docs/develop/theming-drupal/adding-assets-css-js-to-a-drupal-theme-via-librariesyml
 #
 
-# libraries-extend:
-
-# In this, case we extend dripyard_base's user-login-form library with
-# our own of the same name.
-
-#   dripyard_base/user-login-form:
-#     - testtheme/user-login-form
-
-# Here we extend dripyard_base's status-message SDC library with our own.
-
-#  core/components.dripyard_base--status-messages:
-#    - testtheme/status-messages
+libraries-extend:
+  # Hero — navy-to-amber gradient. Layer 5 component local token override.
+  # Trace: L1+L3 ruled out (see css/components/hero.css file header).
+  core/components.neonbyte--hero:
+    - performant_labs_20260418/hero-override
 
 regions:
   header_first: Header first (logo)
