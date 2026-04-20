@@ -31,6 +31,15 @@ hero-override:
     component:
       css/components/hero.css: {}
 
+# Footer — 'PL' watermark, social icon hover (amber), footer CTA link (amber).
+# Layer 5: new pseudo-element + custom classes from page--front.html.twig.
+# Nav links already white via token chain — no colour override needed.
+# Extends: core/components.neonbyte--footer (declared in .info.yml).
+footer-override:
+  css:
+    component:
+      css/components/footer.css: {}
+
 # Transparent sticky header + amber CTA — canvas/front pages.
 # Layer 5: component local token override via libraries-extend.
 # Extends: core/components.neonbyte--header (declared in .info.yml).

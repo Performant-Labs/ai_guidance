@@ -42,6 +42,10 @@ libraries-extend:
   # Trace: L3 too broad (affects all alt-color consumers). L5 via ::part() API. ✅
   core/components.dripyard_base--tab-group:
     - performant_labs_20260418/tabs-override
+  # Footer — 'PL' watermark, social icons, footer CTA. Layer 5: new pseudo-element
+  # + custom classes from page--front.html.twig. Nav links already white via token.
+  core/components.neonbyte--footer:
+    - performant_labs_20260418/footer-override
 
 regions:
   header_first: Header first (logo)

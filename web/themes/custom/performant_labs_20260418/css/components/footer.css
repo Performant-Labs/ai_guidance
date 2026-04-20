@@ -1,0 +1,130 @@
+/**
+ * @file
+ * performant_labs_20260418 — footer component brand overrides.
+ *
+ * Layer: 5 (component local token + new structural properties + custom classes)
+ * Mechanism: libraries-extend on core/components.neonbyte--footer
+ *
+ * Two-pass trace ruling (2026-04-19):
+ *
+ *   NAV LINKS (white on navy):
+ *     No CSS needed. neonbyte footer.css chains:
+ *       --footer-link-color: var(--theme-text-color-loud)
+ *     In .theme--primary our base.css sets:
+ *       --theme-text-color-loud: var(--pl-color-white, #FFFFFF)
+ *     Result: nav links are already white via the token chain. ✅
+ *
+ *   WATERMARK (::before on .site-footer):
+ *     L2: neonbyte footer.css has no position/overflow/::before on .site-footer.
+ *     New properties + new pseudo-element. Same specificity (0,1,0), later
+ *     load via libraries-extend wins for the new props. ✅
+ *
+ *   SOCIAL ICONS (.footer-social-icons, .footer-social-icons__link):
+ *     Custom classes injected by page--front.html.twig into footer_bottom slot.
+ *     Zero upstream CSS. New L5 rules. ✅
+ *
+ *   FOOTER CTA LINK (.footer-cta__link):
+ *     Custom class injected by page--front.html.twig into footer_right slot.
+ *     Zero upstream CSS. New L5 rules. ✅
+ *
+ * Token improvements over performant_labs_20260411 source:
+ *   #F59E0B → var(--pl-color-amber)    (declared at :root in base.css)
+ *   #1B2638 → var(--pl-color-navy)     (declared at :root in base.css)
+ *   Watermark char: 'K' → 'PL' (PL brand ligature)
+ *
+ * See: docs/pl2/css-change-log.md
+ * See: docs/pl2/keytail-design/design-map.md § 9. Footer Patterns
+ */
+
+/* ── 1. Footer structural base — enables watermark pseudo-element positioning  */
+/* neonbyte footer.css has no position or overflow — new properties (0,1,0).   */
+/* Without position:relative + overflow:hidden the ::before watermark overflows */
+/* and may appear over adjacent sections.                                        */
+.site-footer {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── 2. 'PL' watermark — ghost brand mark behind footer content ──────────────  */
+/* Absolutely positioned large text behind all footer content.                   */
+/* 'PL' replaces the Keytail 'K' watermark — matches PL brand mark.             */
+/* rgba opacity avoids a token since opacity-on-white has no brand equivalent.  */
+.site-footer::before {
+  content: 'PL';
+  position: absolute;
+  inset-block-start: -0.2em;
+  inset-inline-start: -0.05em;
+  font-size: clamp(16rem, 40vw, 32rem);
+  font-weight: 900;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.04);   /* ghost — intentional, no brand token */
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+/* ── 3. Lift footer content above the watermark pseudo-element ───────────────  */
+/* The ::before is z-index:0; direct children need relative + z-index:1.        */
+.site-footer > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── 4. Social icon row ───────────────────────────────────────────────────────  */
+/* Injected into footer_bottom slot by page--front.html.twig.                   */
+/* Flex row of circular ghost-glass icon links.                                  */
+.footer-social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  padding-block: 1rem;
+  margin-block-start: 1rem;
+  border-block-start: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ── 4a. Individual circular icon link ──────────────────────────────────────── */
+.footer-social-icons__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+/* ── 4b. Social icon hover — amber fill with navy icon ──────────────────────── */
+.footer-social-icons__link:hover,
+.footer-social-icons__link:focus-visible {
+  background: var(--pl-color-amber);    /* amber fill on hover */
+  color: var(--pl-color-navy);          /* navy icon for contrast */
+  transform: translateY(-2px);
+}
+
+/* ── 5. Footer CTA "Get in touch" link ──────────────────────────────────────── */
+/* Injected into footer_right slot by page--front.html.twig below the headline. */
+/* Arrow gap animates outward on hover to suggest forward motion.               */
+/*                                                                               */
+/* Specificity fix: neonbyte footer.css applies                                  */
+/*   .site-footer[class] :where(a:not([class*="button"])) { color: var(--footer-link-color) }
+   at (0,2,0) — white in dark zone. Our plain .footer-cta__link is (0,1,0)    */
+/* and loses. Scope to .site-footer .footer-cta__link → (0,2,0), later load ✅ */
+.site-footer .footer-cta__link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--pl-color-amber);          /* amber CTA — stands out on navy */
+  text-decoration: none;
+  gap: 0.25rem;
+  transition: gap 0.2s ease, opacity 0.2s ease;
+}
+
+.site-footer .footer-cta__link:hover,
+.site-footer .footer-cta__link:focus-visible {
+  opacity: 0.85;
+  gap: 0.5rem;                           /* arrow moves right on hover */
+}
