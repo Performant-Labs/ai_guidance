@@ -29,6 +29,7 @@ These components have dedicated CSS files in `20260411/components/`.
 | **Design intent** | Ultra-thin border rows, no background fill, `+` icon in amber |
 | **Key rules** | `border-top: 1px solid #e5e7eb`, `border-radius: 0`, no `box-shadow`, `.accordion-item__icon { color: #F59E0B }` |
 | **Override type** | CSS-only → use `libraries-extend` |
+| **Mobile** | Single column always; confirm toggle touch target ≥48px; verify text wraps cleanly at 375px |
 | **Status** | ⬜ Pending |
 | **Decision** | Port / Improve / Drop |
 
@@ -42,6 +43,7 @@ These components have dedicated CSS files in `20260411/components/`.
 | **Design intent** | Elevated card — `box-shadow`, `border-radius: 1rem`, hover lift animation |
 | **Key rules** | `box-shadow: 0 8px 32px rgba(0,0,0,.10)`, `transform: translateY(-2px)` on hover, `16:9` image aspect ratio, `.content-card__title { color: #1B2638 }` |
 | **Override type** | CSS-only → use `libraries-extend` |
+| **Mobile** | Cards stack to full-width single column at ≤640px; hover lift disabled (`@media (hover: hover)`); shadow reduced to avoid performance issues |
 | **Status** | ⬜ Pending |
 | **Decision** | Port / Improve / Drop |
 
@@ -55,6 +57,7 @@ These components have dedicated CSS files in `20260411/components/`.
 | **Design intent** | Underline-only active indicator — no boxed/pill tabs, amber bottom border |
 | **Key rules** | `wa-tab::part(base) { border-bottom: 3px solid transparent }`, `wa-tab[active]::part(base) { border-bottom-color: #F59E0B }`, full-width images inside panes |
 | **Override type** | CSS-only → Web Components `::part()` selector — use `libraries-extend` |
+| **Mobile** | Tab labels scroll horizontally at ≤640px (`overflow-x: auto`, no wrap); tab panel images scale to full container width |
 | **Status** | ⬜ Pending |
 | **Decision** | Port / Improve / Drop |
 
@@ -145,7 +148,7 @@ These templates exist in `20260411/templates/` and have no equivalent in `202604
 
 ## Priority Order for Stage 2
 
-High-visibility items to tackle first:
+High-visibility items to tackle first. **Each item must pass both desktop and mobile T3 before the next item is started.**
 
 1. **Hero gradient** (Slice 01) — most prominent, immediately visible
 2. **Transparent sticky header** — affects every canvas page

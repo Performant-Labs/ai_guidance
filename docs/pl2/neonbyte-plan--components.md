@@ -48,15 +48,16 @@ All CSS decisions defer to the `theme-change` document family. No component CSS 
 
 ### Phase 2 — Per-Component Override Loop
 
-Repeat for each component identified in Phase 1. The loop is:
+Repeat for each component identified in Phase 1. **Mobile and desktop are verified together — do not move to the next component until both pass.** The loop is:
 
 1. **Read** the component schema at `themes/dripyard_base/components/[name]/[name].component.yml`
 2. **Check** `component-cookbook.md` for known prop/slot names
 3. **Determine override type** — CSS-only, Twig, or structural (see §Override Patterns below)
 4. **Follow** [`theme-change--workflow.md`](theme-change--workflow.md) — mandatory trace before any edit
-5. **Apply** the override to `themes/custom/performant_labs_20260418/`
-6. **Verify** in the SDC explorer — T1 structure check, then visual pass in explorer
-7. **Commit**
+5. **Apply** the override — desktop styles first, then add `@media` breakpoints in the same file
+6. **Verify desktop** in the SDC explorer — T1 structure check, then visual pass
+7. **Verify mobile** — resize explorer viewport to 375px; confirm layout, touch targets, and text scale
+8. **Commit** only when both desktop and mobile pass T2 + T3
 
 > **Commit point:** One commit per component.
 > ```bash
@@ -118,11 +119,12 @@ themes/custom/performant_labs_20260418/
 
 ## Verification (per component)
 
-| Tier | Method | Pass condition |
-|---|---|---|
-| T1 — Route | `curl -sk https://..../styleguide/explorer` | HTTP `200` or `403` (auth-gated) |
-| T2 — Explorer | Load component in explorer with props filled | Component renders without PHP/Twig errors |
-| T3 — Visual | Screenshot or visual inspection in explorer | Brand colours, radius, spacing match intent |
+| Tier | Check | Method | Pass condition |
+|---|---|---|---|
+| T1 — Route | Both | `curl -sk https://..../styleguide/explorer` | HTTP `200` or `403` (auth-gated) |
+| T2 — Explorer | Both | Load component in explorer with props filled | Component renders without PHP/Twig errors |
+| T3 — Desktop | Desktop | Screenshot at ≥1280px viewport | Brand colours, radius, spacing match design intent |
+| T3 — Mobile | Mobile | Screenshot at 375px viewport | Stack layout correct; text readable; touch targets ≥44px; no overflow |
 
 ---
 

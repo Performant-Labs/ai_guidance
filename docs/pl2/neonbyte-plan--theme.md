@@ -1,6 +1,7 @@
 # `performant_labs_20260418` — Stage 1: Theme Scaffolding
 
 > **Parent:** [`neonbyte-plan.md`](neonbyte-plan.md)
+> **Previous:** [`neonbyte-plan--design.md`](neonbyte-plan--design.md)
 > **Next:** [`neonbyte-plan--components.md`](neonbyte-plan--components.md)
 
 ---
@@ -11,6 +12,7 @@ Before creating any files, these must be resolved:
 
 | Item | Status | Source |
 |---|---|---|
+| Stage 0 complete — `design-map.md` committed | ⬜ Pending | [`neonbyte-plan--design.md`](neonbyte-plan--design.md) |
 | Primary brand hex | ⬜ Pending | Performant Labs brand guide |
 | Secondary brand hex | ⬜ Pending | Performant Labs brand guide |
 | Primary colour brightness (`light`/`dark`) | ⬜ Pending | Confirm via `ThemeColors::isLightColor()` |

@@ -154,7 +154,43 @@ A **Drop** decision is a win. Every line not written is a line that can't break.
 
 ---
 
-## File Structure Target
+### Rule 8 — Mobile is not optional; it is part of done
+
+Every component CSS file must include responsive breakpoints **before the component is committed**. A component that looks correct on desktop but breaks on mobile is not done.
+
+**Required mobile checks for every component:**
+- Layout stacks correctly at 375px (single-column where applicable)
+- Text is legible at base font size; no horizontal overflow
+- Touch targets are ≥44px tall (WCAG 2.5.5 recommended)
+- Hover animations use `@media (hover: hover)` guard — never fire on touch devices
+- Images scale within their containers without unexpected cropping
+
+**Pattern — touch-safe hover:**
+```css
+/* Wrong — fires on tap, leaves element lifted permanently on touch */
+.content-card:hover { transform: translateY(-2px); }
+
+/* Right — only on devices that can hover */
+@media (hover: hover) {
+  .content-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
+  }
+}
+```
+
+**Pattern — responsive stacking:**
+```css
+@media (max-width: 640px) {
+  .content-card {
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* lighter shadow on mobile */
+  }
+}
+```
+
+---
+
 
 When Stage 2 is complete, `performant_labs_20260418/` should look like:
 

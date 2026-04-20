@@ -16,11 +16,12 @@ All customisation lives in `themes/custom/performant_labs_20260418/`. Neither `n
 
 ## Document Family
 
-This plan is split into three stage documents. Execute them in order. Each stage has its own pre-conditions, phases, and commit points.
+This plan is split into four stage documents. Execute them in order. Each stage has its own pre-conditions, phases, and commit points.
 
 | Document | Stage | Entry condition |
 |---|---|---|
-| [`neonbyte-plan--theme.md`](neonbyte-plan--theme.md) | 1 — Theme scaffolding and brand wiring | Brand assets resolved (hex, logo, favicon) |
+| [`neonbyte-plan--design.md`](neonbyte-plan--design.md) | 0 — Design analysis and clip extraction | Design snapshots present in `keytail-design/`; ImageMagick available |
+| [`neonbyte-plan--theme.md`](neonbyte-plan--theme.md) | 1 — Theme scaffolding and brand wiring | Stage 0 complete; `design-map.md` committed; brand assets resolved (hex, logo, favicon) |
 | [`neonbyte-plan--components.md`](neonbyte-plan--components.md) | 2 — SDC component work | Stage 1 complete; theme active and verified (T1+T2 pass) |
 | [`neonbyte-plan--pages.md`](neonbyte-plan--pages.md) | 3 — Page composition | Stage 2 complete; all targeted components verified in explorer |
 

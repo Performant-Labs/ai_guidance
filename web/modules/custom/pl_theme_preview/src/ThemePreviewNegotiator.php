@@ -2,16 +2,19 @@
 
 namespace Drupal\pl_theme_preview;
 
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Theme\ThemeNegotiatorInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
+/**
+ * Switches the active theme via ?theme= URL query parameter.
+ *
+ * No permission check — dev/preview use only. Do not enable on production.
+ */
 class ThemePreviewNegotiator implements ThemeNegotiatorInterface {
 
   public function __construct(
-    protected AccountInterface $currentUser,
     protected ThemeHandlerInterface $themeHandler,
     protected RequestStack $requestStack,
   ) {}
@@ -23,7 +26,6 @@ class ThemePreviewNegotiator implements ThemeNegotiatorInterface {
     }
     $theme = $request->query->get('theme');
     return !empty($theme)
-      && $this->currentUser->hasPermission('administer themes')
       && $this->themeHandler->themeExists($theme);
   }
 
