@@ -1,0 +1,32 @@
+{#
+/**
+ * @file
+ * Ported from performant_labs_20260411 — article node teaser override.
+ *
+ * Swaps the default dripyard_base:teaser SDC for dripyard_base:card so that
+ * field_image is visible on the /articles listing page.  The eyebrow shows the
+ * formatted publish date and content type for quick scanning.
+ *
+ * Available variables (from node.html.twig context):
+ *   - node:        The full node entity.
+ *   - label:       Rendered node title.
+ *   - url:         Canonical node URL object (cast to string for href).
+ *   - content:     Render array for all view-mode fields.
+ */
+#}
+{% set body_summary %}
+  {% if node.body.summary %}
+    {{ node.body.summary }}
+  {% elseif content.body %}
+    {{ content.body|render|striptags('<p>')|raw }}
+  {% endif %}
+{% endset %}
+
+{{ include('dripyard_base:card', {
+  title: label,
+  image: content.field_image|default(''),
+  href: url,
+  byline: 'Read more',
+  eyebrow_text: node.created.value|date('d M Y') ~ ' · Article',
+  body: body_summary|default(' '),
+}, with_context = false) }}
