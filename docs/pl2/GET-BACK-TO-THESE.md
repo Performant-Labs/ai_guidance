@@ -86,8 +86,55 @@ Created 2026-04-20 during the `articles-2` Canvas page work-stream.
 
 ---
 
+## D. Site-wide visual issues
+
+### D.2 — FriendlyCaptcha sitekey appears unresolved on `/contact` (2026-04-20)
+
+**Observed:** During T3 verification of the new `/contact` Canvas page, the rendered FriendlyCaptcha markup contains a literal `${site_uuid}` token rather than a real sitekey:
+
+```html
+<fieldset data-drupal-selector="edit-captcha" class="captcha captcha-type-challenge--friendlycaptcha" data-nosnippet>
+  ...
+  <div class="frc-captcha" data-sitekey="${site_uuid}" data-lang="en" data-puzzle-endpoint="https://.../api/v1/puzzle">
+```
+
+**Hypothesis:** The FriendlyCaptcha module expects a configured sitekey at `/admin/config/people/captcha/friendlycaptcha` (or via the `captcha.settings` / FriendlyCaptcha-specific config). The `${site_uuid}` literal suggests a default/placeholder value shipped with the `drupal_cms_anti_spam` recipe that was never substituted for a real FriendlyCaptcha tenant key. With an invalid sitekey, the captcha challenge likely fails to initialize, which means the form's spam protection may not actually be challenging submissions — it's relying on honeypot alone.
+
+**Why deferred:** Not a page-breaking bug (form still submits, honeypot still works), but anti-spam posture is weaker than intended. Fixing requires obtaining a real FriendlyCaptcha sitekey from the Performant Labs FriendlyCaptcha account and entering it through the admin UI (or updating `captcha.captcha_point.*` / FriendlyCaptcha config in sync).
+
+**When to revisit:** Before relying on `/contact` in production, or as part of a broader spam-protection pass. Verify by inspecting the rendered captcha on `/contact` and confirming `data-sitekey` contains a concrete UUID-like value, then submitting a test message and watching the FriendlyCaptcha admin dashboard for a puzzle event.
+
+**Scope if fixed:** Admin config change + re-export `captcha.*.yml` config + `drush cim` + T3 re-verify.
+
+### D.1 — Header logo not visible on any page (2026-04-20)
+
+**Observed:** User reports the upper-left logo (intended to be the home link on every page) is not visible on any page. Not just `/articles-2` or `/open-source-projects` — everywhere.
+
+**DOM/asset audit is clean:**
+- `<div data-component-id="dripyard_base:header-logo">` present in every page's `<header>` region
+- Anchor wraps with `<a href="/" rel="home">` — correct semantics
+- Asset `logo.svg` returns HTTP 200 from nginx (421 bytes, valid SVG markup)
+- No filter / opacity / display-none rule in `dripyard_base/components/header-logo/header-logo.css` (only `max-height: 44px`) or in subtheme CSS
+- Header background on interior Canvas pages is 55%-amber fill (per canvas.css Pass 1 notes); against that backdrop a navy-square logo should read clearly
+
+**Primary hypothesis — SVG intrinsic-size collapse:**
+The SVG declares `width="100%" height="100%"` rather than a concrete size. Used via `<img src="logo.svg">`, some browsers fall back to 0×0 or to the parent's (undefined) width when the SVG uses percentage dimensions without an intrinsic pixel size. The `.header-logo__link` has `display: block` but no explicit width; `.header-logo__image` has only `max-height: 44px`. If intrinsic width resolves to 0, the logo renders at 0×0 and appears absent even though the DOM is correct.
+
+**Secondary hypothesis — placeholder content:** Current SVG is a generic "KEYTAIL" mark (navy square, amber K, white KEYTAIL label) rather than Performant Labs branding. Even if sized correctly, the user may be looking for a different glyph.
+
+**When to revisit:** Next session or this session with explicit go-ahead. Run T3 screenshots at desktop 1440 / mobile 375 on /, /articles-2, /open-source-projects to see exactly what renders. Likely fix is one of:
+- a) Edit `logo.svg`: replace `width="100%" height="100%"` with `width="100" height="100"` (intrinsic size matches viewBox). Cheapest. Should resolve intrinsic-size issue immediately.
+- b) Add explicit width rule: `.header-logo__image { width: auto; height: 44px; }` in subtheme CSS. Forces concrete sizing regardless of SVG attributes.
+- c) Replace the SVG entirely with the real Performant Labs logo — solves (D.1) and the branding concern at once.
+
+**Verification after fix:** T3 screenshot of any page — upper-left should show the logo as a 44px-tall clickable element linking to `/`.
+
+---
+
 ## Triage notes
 
 Items in sections A and B are low-medium stakes, defer to pre-launch or a dedicated a11y/visual pass.
 Items in section C are decisions, not bugs — they wait on product/content input.
+Item D.1 is a site-wide visible-chrome bug — promote before next external review. (Resolved 2026-04-20 via `logo.svg` intrinsic-size fix; leaving entry for reference until branding/placeholder decision is final.)
+Item D.2 is a spam-protection concern on `/contact` — resolve before the form goes live for public traffic.
 Nothing here is blocking the merge of the `/articles-2` work-stream.
