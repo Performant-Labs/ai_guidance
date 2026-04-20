@@ -1,32 +1,18 @@
 --- a/src/Plugin/Canvas/ComponentSource/GeneratedFieldExplicitInputUxComponentSourceBase.php	2026-04-20 14:25:00
-+++ b/src/Plugin/Canvas/ComponentSource/GeneratedFieldExplicitInputUxComponentSourceBase.php	2026-04-20 13:39:22
-@@ -902,15 +902,29 @@
-     // Cache, for the `/canvas/api/v0/config/component` route; this expense is
-     // incurred only when Components change.
-     // @see \Drupal\Tests\canvas\Functional\CanvasConfigEntityHttpApiTest::testComponent()
--    $prop_shapes = GeneratedFieldExplicitInputUxComponentSourceBase::getComponentInputsForMetadata($component->id(), $this->getMetadata());
-+    // PATCH (Canvas 1.3.2 bug): use getSourceSpecificComponentId() — not
-+    // $component->id() — so the ComponentPropExpression keys match what
-+    // PersistentPropShapeRepository cached via getExplicitInputDefinitions().
-+    // $component->id() = "sdc.dripyard_base.foo"  (Canvas config entity ID)
-+    // getSourceSpecificComponentId() = "dripyard_base:foo" (SDC plugin ID)
-+    // Using the wrong ID causes an array key miss → null → TypeError on line 914.
-+    $source_component_id = $this->getSourceSpecificComponentId();
-+    $prop_shapes = GeneratedFieldExplicitInputUxComponentSourceBase::getComponentInputsForMetadata($source_component_id, $this->getMetadata());
- 
-     $field_data = [];
-     $default_props_for_default_markup = [];
-     $unpopulated_props_for_default_markup = [];
++++ b/src/Plugin/Canvas/ComponentSource/GeneratedFieldExplicitInputUxComponentSourceBase.php	2026-04-20 14:40:34
+@@ -910,7 +910,17 @@
      $transforms = [];
      foreach ($prop_field_definitions as $prop_name => $static_prop_source_field_definition) {
--      $component_prop_expression = new ComponentPropExpression($component->id(), $prop_name);
+       $component_prop_expression = new ComponentPropExpression($component->id(), $prop_name);
 -      $prop_shape = $prop_shapes[(string) $component_prop_expression];
-+      $component_prop_expression = new ComponentPropExpression($source_component_id, $prop_name);
 +      $prop_shape = $prop_shapes[(string) $component_prop_expression] ?? NULL;
-+      // PATCH (Canvas 1.3.2 bug): $prop_shape can be null when a prop exists
-+      // in the Component config entity's prop_field_definitions but has since
-+      // been removed from the SDC's .component.yml. Skip stale props gracefully
-+      // instead of crashing with a TypeError in getStorablePropShape().
++      // Local backport of Canvas upstream fix for drupal.org/project/canvas/issues/3574743:
++      // $prop_shape is null when a prop still exists in the Component config
++      // entity's prop_field_definitions but has since been removed from the
++      // SDC's .component.yml (e.g. dripyard_base:card-canvas, logo-item-canvas
++      // have a stale 'loading' prop). Skip it instead of crashing with a
++      // TypeError in getStorablePropShape(). Fixed in Canvas 1.x-dev but not
++      // yet in a stable release as of 1.3.2.
 +      if ($prop_shape === NULL) {
 +        continue;
 +      }
