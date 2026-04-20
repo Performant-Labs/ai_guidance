@@ -1,0 +1,61 @@
+/**
+ * @file
+ * performant_labs_20260418 — content-card component brand overrides.
+ *
+ * Layer: 5 (component local token overrides + new structural properties)
+ * Mechanism: libraries-extend on core/components.dripyard_base--content-card
+ *
+ * Two-pass trace ruling (2026-04-19):
+ *
+ *   --content-card-border-radius (radius-sm 4px → radius-lg 16px):
+ *     L5: .content-card (0,1,0), later load via libraries-extend wins. ✅
+ *
+ *   --content-card-background in --has-background variant (surface-alt → white):
+ *     L3: html .theme--white { --theme-surface-alt: white } — too broad, affects
+ *     all surface-alt consumers site-wide. Ruled out.
+ *     L5: .content-card.content-card--has-background (0,2,0) same specificity as
+ *     component's own rule; later load wins. Scoped exactly to the variant. ✅
+ *
+ *   box-shadow, hover lift, transition: new properties, no token chain. L5. ✅
+ *
+ * --theme-border in content-card.css resolves to undefined (no declaration in the
+ * entire contrib tree) → border: 1px solid <invalid> → effectively invisible. No
+ * action needed; the card renders without a visible border by default.
+ *
+ * See: docs/pl2/css-change-log.md
+ * See: docs/pl2/keytail-design/design-map.md § content-card
+ */
+
+/* ── 1. Border radius — rounded-xl to match Keytail (~16px) ───────────────── */
+/* Same specificity (0,1,0) as component, later load wins. ✅                   */
+.content-card {
+  --content-card-border-radius: var(--radius-lg);
+
+  /* ── 2. Elevation shadow — white card on off-white section bg ──────────── */
+  /* New property not in content-card.css. Using brand navy for shadow hue.   */
+  box-shadow:
+    0 2px 8px rgba(27, 38, 56, 0.08),
+    0 1px 2px rgba(27, 38, 56, 0.04);
+
+  /* ── 3. Smooth hover transition ─────────────────────────────────────────── */
+  @media (prefers-reduced-motion: no-preference) {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+}
+
+/* ── 4. White card background in the --has-background variant ─────────────── */
+/* Specificity (0,2,0) = same as component rule; later load wins. ✅            */
+/* Scoped to the variant — dark-zone cards retain their --theme-surface-alt.   */
+.content-card.content-card--has-background {
+  --content-card-background: #FFFFFF;
+}
+
+/* ── 5. Hover lift ────────────────────────────────────────────────────────── */
+/* Lift 3px + deeper shadow gives the card a tactile "rise" on hover.          */
+/* .content-card already has position: relative in content-card.css — safe.   */
+.content-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 24px rgba(27, 38, 56, 0.12),
+    0 3px 8px rgba(27, 38, 56, 0.06);
+}

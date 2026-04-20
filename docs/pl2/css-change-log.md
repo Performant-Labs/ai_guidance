@@ -116,3 +116,26 @@ Format: `[Layer N] property/token  in  selector  →  value  file:line  YYYY-MM-
 [Layer 5] .header-cta → amber pill (#F59E0B fill, #1B2638 text, border-radius 999px)  css/components/header.css:L57  2026-04-19
   Ruling: Custom class, no Dripyard token chain. Direct L5 style.
 ```
+
+---
+
+## Session 2026-04-19 — Stage 2, Component 3: content-card
+
+```
+[Layer 5] --content-card-border-radius in .content-card → var(--radius-lg)  css/components/content-card.css:L33  2026-04-19
+  Mechanism: libraries-extend on core/components.dripyard_base--content-card
+  Ruling: Same specificity (0,1,0) as component rule; later load wins. ✅
+
+[Layer 5] --content-card-background in .content-card.content-card--has-background → #FFFFFF  css/components/content-card.css:L46  2026-04-19
+  Ruling: L3 (html .theme--white { --theme-surface-alt }) too broad — affects all
+  surface-alt consumers. Ruled out. L5 scoped to .content-card.content-card--has-background
+  (0,2,0) = same specificity as component rule; later load wins. Dark-zone cards unaffected. ✅
+  Note: --theme-border undefined in all contrib CSS → border: 1px solid var(--theme-border)
+  resolves to invalid → no visible border. No action needed.
+
+[Layer 5] box-shadow on .content-card → 0 2px 8px rgba(27,38,56,0.08), 0 1px 2px rgba(27,38,56,0.04)  css/components/content-card.css:L36  2026-04-19
+  Ruling: New property, no token chain. L5 direct addition. ✅
+
+[Layer 5] transform + box-shadow on .content-card:hover → translateY(-3px) + deeper shadow  css/components/content-card.css:L55  2026-04-19
+  Ruling: New rule, L5. Transition guarded by prefers-reduced-motion. ✅
+```

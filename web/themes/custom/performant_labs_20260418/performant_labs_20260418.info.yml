@@ -25,6 +25,11 @@ libraries-extend:
   # Trace: L1+L3 ruled out (see css/components/header.css file header).
   core/components.neonbyte--header:
     - performant_labs_20260418/header-override
+  # content-card — white bg, radius-lg, shadow, hover lift.
+  # Layer 5: component local token + new structural properties.
+  # Trace: L3 ruled out (too broad); L5 .content-card.content-card--has-background (0,2,0).
+  core/components.dripyard_base--content-card:
+    - performant_labs_20260418/content-card-override
 
 regions:
   header_first: Header first (logo)

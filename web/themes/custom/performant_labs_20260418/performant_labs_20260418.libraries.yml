@@ -25,6 +25,14 @@ header-override:
     - core/drupal
     - core/once
 
+# content-card — white bg, 16px radius, shadow, hover lift.
+# Layer 5: component local token override + new structural properties.
+# Extends: core/components.dripyard_base--content-card (declared in .info.yml).
+content-card-override:
+  css:
+    component:
+      css/components/content-card.css: {}
+
 # Example library definition (used in testtheme.info.yml). Note the CSS file
 # will need to be created.
 # @see https://www.drupal.org/docs/develop/theming-drupal/adding-assets-css-js-to-a-drupal-theme-via-librariesyml
