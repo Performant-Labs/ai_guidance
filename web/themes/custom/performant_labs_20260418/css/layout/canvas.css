@@ -43,3 +43,614 @@
   max-width: none;
   padding-inline: 0;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   2026-04-20 — Hero bleeds to top of viewport on canvas pages
+   ══════════════════════════════════════════════════════════════════════════════
+
+   Problem:
+     neonbyte's layout.css declares:
+       .layout-container { padding-top: var(--space-for-fixed-header); }
+     with :root { --space-for-fixed-header: 160px }.
+
+     That pads the top of every page by 160px to reserve space for the fixed
+     header. It's correct for article / interior pages where content should
+     clear the floating header. But on canvas pages whose first block is a
+     full-screen hero (class hero--position-against-screen-top), the hero
+     wants to start at y=0 so the atmospheric background fills the viewport
+     edge-to-edge — the fixed transparent header then floats over it.
+
+     Keytail's pattern exactly: hero at y=0, header on top.
+
+   Token-first fix (not consumer-rule override):
+     Neonbyte already anticipated needing to flex this. The token has an
+     escape hatch for the no-sticky + full-width combo:
+       :root.site-header-no-sticky.site-header-full-width {
+         --space-for-fixed-header: 64px;
+       }
+     We follow the same mechanism — re-point the TOKEN on canvas-page scope
+     so .layout-container reads 0 and all consumers stay in sync.
+
+   Two-pass trace ruling:
+     L1 Config: --space-for-fixed-header is a layout primitive, not config.
+        OUT.
+     L3 Theme layer: would affect every page of that theme — too broad.
+        OUT.
+     L4 Layout zone: .canvas-page on body is the canonical canvas scope.
+        Right layer. ✅
+     L5 Component override (patching .layout-container directly): would
+        sidestep the token — any future neonbyte change to how the spacer
+        is applied (e.g. margin vs padding, or a second consumer) would
+        de-sync. OUT in favour of L4 token override.
+
+   Specificity math:
+     Neonbyte sets the token at :root (html)         (0,1,0) — distance 2
+     We set it at .canvas-page (body)                (0,1,0) — distance 1
+     Ties on specificity; proximity in the cascade (closer ancestor) wins.
+     Custom-property inheritance favours the nearer ancestor's declaration
+     when specificity ties. ✅
+
+   Grep check (single consumer):
+     --space-for-fixed-header is consumed ONLY by .layout-container in
+     neonbyte/css/layout/layout.css. No other consumer exists, so zeroing
+     the token on canvas-page has a single, bounded effect.
+
+   See: docs/pl2/css-change-log.md
+   See: docs/pl2/keytail-design/design-map.md § Header
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Zero the fixed-header spacer on the homepage canvas-hero ─────────────── */
+/* Lets the hero start at y=0 under the floating transparent header.            */
+/*                                                                              */
+/* Scope narrowed 2026-04-20 (Pass 2): originally .canvas-page alone, which     */
+/* zeroed the spacer for ALL canvas pages. Interior canvas pages (like          */
+/* /services) have no full-screen hero and want content to begin below the      */
+/* sticky header rather than under it. Scope is now .canvas-page.path-frontpage */
+/* so only the homepage hero bleeds. Interior pages inherit neonbyte's default  */
+/* (--space-for-fixed-header: 160px on :root) unless further narrowed below.    */
+.canvas-page.path-frontpage {
+  --space-for-fixed-header: 0;
+}
+
+/* ── Clear the header on interior canvas pages ─────────────────────────────── */
+/* Interior canvas pages (.canvas-page:not(.path-frontpage)) get a spacer that  */
+/* matches the sticky header height so the first block (typically               */
+/* .block-page-title-block) starts flush with the header's bottom edge,         */
+/* producing a continuous vertical read header → title band → content.          */
+/*                                                                              */
+/* 80px matches the empirical sticky-header height measured on 2026-04-20 DOM   */
+/* probes (header rect.h = 80 on /services at all viewports). If the header     */
+/* height ever changes, updating this single token keeps all interior pages in  */
+/* sync — same token-first principle described above for the homepage.          */
+.canvas-page:not(.path-frontpage) {
+  --space-for-fixed-header: 80px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   2026-04-20 — Edge-to-edge themed section backgrounds on canvas pages
+   ══════════════════════════════════════════════════════════════════════════════
+
+   Problem:
+     On canvas pages, the hero renders its themed background viewport-edge-to-
+     edge (it uses the hero SDC's full-width mechanism), but subsequent
+     dy-sections configured as dy-section--section-max-width only paint their
+     theme surface within .container (92cqw of the region). If the page body
+     colour matches the section's --theme-surface (e.g. both are off-white
+     #F0F1F0 for .theme--white), the boundary is invisible — but headings then
+     appear to sit flush against "nothing" (actually the invisible section
+     edge), which reads as broken spacing. If body and section colours DIFFER
+     (e.g. a .theme--primary navy section), you'd see off-white gutter stripes.
+
+     In both cases, the Keytail vibe is: SECTION BG bleeds full-bleed; CONTENT
+     stays at container width. Exactly the pattern the hero already achieves.
+
+   Additional problem (independent):
+     dripyard_base section.css declares --dy-section-padding-inline on themed
+     .container sections but does NOT apply it to .dy-section__container
+     (it only applies padding-inline inside the edge-to-edge modifier combo).
+     So non-edge-to-edge themed sections have ZERO internal horizontal
+     padding — text hits the section's inner edge directly.
+
+   Two-pass trace ruling:
+     L1: Not expressible in Drupal config. OUT.
+     L2: Fixing upstream section.css would mean patching contrib. OUT for this
+         theme-only fix; we override downstream.
+     L3: Too broad — would affect ALL pages. OUT — we only want this on canvas.
+     L5: .canvas-page .dy-section.container[class*="theme"]... at (0,4,0) beats
+         upstream .dy-section[class*="theme"].container (0,3,0) and gives us
+         a safe, front-page-scoped fix. ✅
+
+   Mechanism — edge-to-edge background:
+     A ::before pseudo-element anchored to each themed+container+max-width
+     section. Positioned absolute, inset-block: 0 (full section height),
+     left: 50% + translateX(-50%), width: 100vw — paints the theme-surface
+     across the entire viewport width behind the section's content.
+     z-index: -1 places it behind content while the section's own background
+     is zeroed out so the two layers don't compound.
+
+   Note on scrollbar width:
+     100vw includes the vertical scrollbar on most browsers, which can cause
+     a tiny horizontal scroll. We add overflow-x: clip on the body.canvas-page
+     as a safety net — `clip` (unlike `hidden`) doesn't create a scroll
+     container and plays well with position: sticky descendants.
+
+   See: docs/pl2/css-change-log.md
+   See: docs/pl2/keytail-design/design-map.md § 7. Page Layouts (canvas)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Prevent horizontal scroll from 100vw pseudo-elements ──────────────────── */
+body.canvas-page {
+  overflow-x: clip;
+}
+
+/* ── 1. Themed, max-width section: anchor pseudo-element + clear own bg ───── */
+/* Target: .dy-section that is themed (has any theme--* class) AND container- */
+/* constrained AND explicitly marked section-max-width. Edge-to-edge sections */
+/* are deliberately untouched — they already bleed naturally.                 */
+/* Specificity: (0,4,0) beats upstream .dy-section[class*="theme"] (0,3,0). ✅*/
+/*                                                                             */
+/* isolation: isolate establishes a stacking context so our z-index: -1        */
+/* pseudo-element stays confined behind the section's own content and does    */
+/* NOT escape to the root layer (where it would fight with the body bg).      */
+.canvas-page .dy-section.container[class*="theme"].dy-section--section-max-width {
+  position: relative;
+  isolation: isolate;
+  background: transparent;   /* disable upstream bg — ::before paints it full-bleed */
+}
+
+/* ── 2. Full-bleed background layer ─────────────────────────────────────────── */
+.canvas-page .dy-section.container[class*="theme"].dy-section--section-max-width::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  background: var(--theme-surface);  /* same token the SDC would have used */
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ── 3. Restore content z-index above the bleed layer ─────────────────────── */
+/* Upstream section.css only adds z-index: 1 to children when .background-image*/
+/* is present. Our ::before needs content to render above it regardless.       */
+.canvas-page .dy-section.container[class*="theme"].dy-section--section-max-width
+  > .dy-section__container {
+  position: relative;
+  z-index: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   2026-04-20 — Apply the declared but unused --dy-section-padding-inline
+   ══════════════════════════════════════════════════════════════════════════════
+
+   Dripyard's section.css:
+     .dy-section { --dy-section-padding-inline: 0px }
+     .dy-section[class*="theme"].container {
+        --dy-section-padding-inline: var(--spacing-xs);      // 20px
+        @container (width > 600px) {
+          --dy-section-padding-inline: var(--spacing-m);     // 40px
+        }
+     }
+
+   The variable is never consumed outside the edge-to-edge modifier. Apply it
+   here so themed container sections get the horizontal padding they were
+   clearly designed to have, without touching contrib. padding-block is also
+   safe to apply — the SDC declares --dy-section-padding-block: var(--spacing-
+   component) by default.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.canvas-page .dy-section.container[class*="theme"]
+  > .dy-section__container {
+  padding-inline: var(--dy-section-padding-inline);
+  /* padding-block intentionally NOT added — many sections already use the
+     utility classes .padding-top--l / .padding-bottom--l which take precedence
+     editorially. Adding it here would double-pad. */
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   2026-04-20 — Release .region-container so themed section bleed reaches viewport
+   ══════════════════════════════════════════════════════════════════════════════
+
+   Problem:
+     The section-bleed mechanism above (::before at width: 100vw, left: 50%,
+     translateX(-50%)) paints the theme surface viewport-edge-to-edge IF the
+     nearest containing block reaches the viewport edges. On a canvas page the
+     actual rendered chain is:
+
+       html.theme--white
+         body.canvas-page.path-frontpage
+           div.layout-container                 ← already released (line 42)
+             main.site-main.canvas-page
+               div.region.region-content.query-container
+                 div.region-container           ← imposes width: var(--container-width)
+                   div#block-performant-labs-20260418-content.block-system-main-block
+                     div.dy-section.theme--*.container.dy-section--section-max-width
+                       ::before width: 100vw    ← escape attempt clipped by .region-container
+
+     dripyard_base/css/layout/layout.css declares:
+       .region-container, .container {
+         width: var(--container-width);
+         margin-inline: auto;
+       }
+
+     --container-width resolves from --theme-setting-container-max-pixel
+     (1440px on this install), so .region-container constrains everything below
+     it to at most 1440px with auto-centred margins. The 100vw pseudo-element
+     on themed sections is therefore clipped to the region-container width,
+     producing visible side gutters instead of a true edge-to-edge bleed.
+
+   Two-pass trace ruling (DOM-inspection-gated, 2026-04-20):
+     Tier 1 curl on /page/1 returned 301 → / — the canvas front page.
+     Tier 1 grep on the rendered HTML confirmed:
+       ✓ .layout-container, .site-main.canvas-page, .region.region-content,
+         .region-container, #block-performant-labs-20260418-content,
+         .block-system-main-block are all present
+       ✗ .region--content (double-dash), .field--name-field-sections,
+         .field--type-entity-reference-revisions are NOT rendered
+     Tier 1 inspection of contrib layout CSS confirmed:
+       ✓ .region-container carries `width: var(--container-width)` — width cap
+       ✗ .site-main, .region, .block-system-main-block, the block id and the
+         field wrappers have NO width/padding constraints from contrib
+
+     L1: Not a config concern. OUT.
+     L2: The sole contrib rule imposing a width cap on this chain is on
+         .region-container. Patching contrib is out of scope.
+     L3: Global .region-container release would affect every page. Scope to
+         .canvas-page instead. OUT as global, keep as scoped.
+     L5: .canvas-page .region-container (0,2,0) beats upstream .region-container
+         (0,1,0) without !important. ✅
+
+   Mechanism — release only the wrapper that empirically caps width:
+     A single-selector release on .region-container under .canvas-page. Every
+     other wrapper between the region and the .dy-section is already
+     unconstrained by contrib CSS — adding defensive rules for them would
+     target a width cap that does not exist. If a future contrib update
+     introduces a new cap, Tier 1 will surface it and the rule is one line.
+
+   Why overflow: visible:
+     The 100vw pseudo-element escapes beyond .region-container's computed
+     width. overflow: hidden/auto/clip on the release target would cut it off.
+     body.canvas-page carries overflow-x: clip (line 100) as the single
+     horizontal-scroll safety net; no inner wrapper should restrict overflow.
+
+   Note on .container-based sections that are NOT edge-to-edge:
+     Non-bleed sections (no --section-max-width class, no themed bg) still
+     self-constrain via their own .container rule (0,1,0), so releasing
+     .region-container does not change their visual width — it only removes
+     the redundant constraint that was blocking the pseudo-element's reach.
+
+   Selectors removed from this block after DOM inspection on 2026-04-20:
+     - .canvas-page .site-main.canvas-page    (exists, no contrib cap — speculative)
+     - .canvas-page .region                   (exists, no contrib cap — speculative)
+     - .canvas-page .region--content          (does NOT render — dead selector)
+     - .canvas-page #block-performant-labs-20260418-content
+                                              (exists, no contrib cap — speculative)
+     - .canvas-page .block-system-main-block  (exists, no contrib cap — speculative)
+     - .canvas-page [id^="block-"][id$="-content"]
+                                              (redundant with id form — speculative)
+     - .canvas-page .field--name-field-sections           (does NOT render)
+     - .canvas-page .field--type-entity-reference-revisions (does NOT render)
+
+   See: docs/pl2/css-change-log.md
+   See: docs/pl2/keytail-design/design-map.md § 7. Page Layouts (canvas)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Release the one wrapper that empirically imposes a width cap ─────────── */
+/* dripyard_base/css/layout/layout.css: .region-container { width: var(--container-width) } */
+/* Scope to .canvas-page so non-canvas pages keep their container behaviour.    */
+/* Specificity: (0,2,0) beats upstream .region-container (0,1,0). ✅            */
+.canvas-page .region-container {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: 0;
+  overflow: visible;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   2026-04-20 — Responsive card grid for grid-wrapper + card-canvas
+   ══════════════════════════════════════════════════════════════════════════════
+
+   Problem (observed on /services):
+     dripyard's grid-wrapper component renders a 12-column CSS grid:
+       .grid-wrapper__grid { display: grid; grid-template-columns: repeat(12, 1fr); }
+     Direct children (cards) default to grid-column: 1 / -1 — each spans ALL
+     12 columns. The component exposes per-child column-span props, but those
+     are only set when the editor configures column_count at paragraph level.
+     On pages where the editor did not configure the span (e.g. /services'
+     "What we do specifically" with 20+ card-canvas items), the result is
+     a flat single-column stack of 53-113px text rows. Unreadable as a list,
+     far from Keytail-vibe tile grids.
+
+   DOM evidence (Tier 2 probe 2026-04-20, probe file t2-services-dom.js):
+     .grid-wrapper__grid  display:grid  grid-template-columns: 12 tracks
+       > article.card    grid-column: 1 / -1   width: full row (1231px at 1440 viewport)
+
+     On /                (homepage): grid-wrapper present, but children are NOT .card
+                                    articles — different content block. Rule below
+                                    targets only .card children, so homepage untouched.
+     On /services        (interior): 2 card sections affected:
+                                    • "What we do generally" (4 cards, 113px each)
+                                    • "What we do specifically" (20+ cards, 53px each)
+
+   Two-pass trace ruling:
+     L1 Config: no paragraph-level column-span knob reachable from theme. OUT.
+     L3 Theme layer: grid-column is a structural property, not a --theme-* token.
+        OUT.
+     L4 Layout: this is a cross-component layout concern — grid-wrapper children
+        need a responsive span regardless of which paragraph type they are.
+        Layout file is correct per strategy Rule 5. ✅
+     L5 Component override via libraries-extend on grid-wrapper SDC: would also
+        work but would require duplicating the component's library declaration.
+        A single scoped layout rule is simpler and equally correct.
+
+   Selector scope:
+     .canvas-page .grid-wrapper__grid > .card
+     — applies to canvas pages only (both /services and future interior canvas
+       pages, AND the homepage if it ever gains card-in-grid-wrapper content).
+     — only direct .card children, not deeper descendants.
+     — homepage grid-wrapper today does NOT have .card children (T2 verified),
+       so this rule currently affects only /services and any future page using
+       the same pattern.
+
+   Why grid-column: span N and not a new grid-template-columns:
+     grid-wrapper sets grid-template-columns on the parent (12 tracks).
+     Overriding the parent would fight every other grid-wrapper rule. Instead
+     we keep the 12-track context and choose how many tracks each card covers,
+     which is the mechanism the component already uses when editors configure
+     column_count.
+
+   Breakpoints mirror dripyard's container query conventions:
+     ≥ 901px  desktop:  span 4  → 3 tiles per row (12 / 4)
+     601-900  tablet:   span 6  → 2 tiles per row
+     ≤ 600px  mobile:   span 12 → 1 tile per row
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Responsive column span for card-canvas tiles ──────────────────────── */
+.canvas-page .grid-wrapper__grid > .card {
+  grid-column: span 4;
+}
+
+@container (width < 901px) {
+  .canvas-page .grid-wrapper__grid > .card {
+    grid-column: span 6;
+  }
+}
+
+@container (width < 601px) {
+  .canvas-page .grid-wrapper__grid > .card {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Media-query fallback for browsers without @container on the right scope.    */
+/* (section CSS uses container queries; if the rule above misses, this picks   */
+/* up via classic viewport media queries.)                                     */
+@media (max-width: 900px) {
+  .canvas-page .grid-wrapper__grid > .card {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 600px) {
+  .canvas-page .grid-wrapper__grid > .card {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ── 2. Interior card chrome ──────────────────────────────────────────────── */
+/* dripyard's .card ships with padding:0, making text hug the tile edge. Cards */
+/* carrying a title-only payload (the /services "specifically" section) still  */
+/* need internal breathing room. Apply a moderate padding + visible border and */
+/* hover lift so the tile reads as actionable.                                 */
+/*                                                                              */
+/* Restricted to the grid-wrapper context so cards used in content-card or     */
+/* hero media slots (which have their own internal spacing) are untouched.     */
+.canvas-page .grid-wrapper__grid > .card {
+  padding: var(--spacing-s, 1rem) var(--spacing-m, 1.5rem);
+  border: 1px solid color-mix(in oklch, var(--theme-text-color-loud) 10%, transparent);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-page .grid-wrapper__grid > .card {
+    transition: none;
+  }
+}
+
+.canvas-page .grid-wrapper__grid > .card:hover,
+.canvas-page .grid-wrapper__grid > .card:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px 0 color-mix(in oklch, var(--theme-text-color-loud) 10%, transparent);
+  border-color: color-mix(in oklch, var(--theme-text-color-loud) 20%, transparent);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   2026-04-20 — Atmospheric backdrop for the page-title band (interior pages)
+   ══════════════════════════════════════════════════════════════════════════════
+
+   Problem (observed on /services):
+     Between the sticky site-header (80px tall, amber-fill on scroll) and the
+     first content section, Drupal renders a .block-page-title-block wrapping
+     h1.page-title. Its h1 ships with margin: 80px 0 40px — a 193px vertical
+     stripe of bare off-white between header and content.
+
+     That stripe reads as a layout gap, not a deliberate band. No visual weight
+     supports the page title, and the header-to-content transition is abrupt.
+
+   DOM evidence (Tier 2 probe 2026-04-20, t2-page-title-audit.js):
+     /services      body.canvas-page.path-page
+                    main > .block-page-title-block (y=80, h=73, full-width)
+                    bg: transparent, padding: 0, margin: 0
+                    > h1.page-title  margin: 80px 0 40px  font-size: 80/42px
+
+     /            body.canvas-page.path-frontpage
+                    .block-page-title-block NOT rendered (hidden by block
+                    visibility config on frontpage). Homepage hero sits
+                    directly under the transparent header — no title band.
+
+   Architectural pattern — "interior canvas page" scope:
+     Pass 1 (2026-04-20) split header styling on the axis of "hero intent":
+       .path-frontpage          → dark-hero header (transparent, white nav)
+       .canvas-page (default)   → light-page header (55% amber, dark nav)
+
+     Pass 2 introduces the inverse scope as a first-class architectural lever:
+       .canvas-page:not(.path-frontpage)  = every interior canvas page
+     Use this selector for any styling that should apply to interior canvas
+     pages but NOT the homepage hero. Future interior-page work should reach
+     for this scope rather than adding one-off path-* rules.
+
+   Two-pass trace ruling:
+     L1 Config: background art is not a Drupal config concern. OUT.
+     L2 Parent theme: neonbyte / dripyard do not style .block-page-title-block.
+        No upstream rule to override. N/A.
+     L3 Theme zone: we'd affect every theme zone's page-title block on every
+        page — too broad. OUT.
+     L4 Layout: this is a page-layout concern specific to canvas pages that
+        are NOT the homepage. Scope via .canvas-page:not(.path-frontpage) makes
+        the intent explicit and leaves the hero untouched. ✅
+     L5 Component SDC override: would require duplicating a page-title library
+        declaration and is overkill for an L4 atmospheric backdrop.
+
+   Full-bleed mechanism:
+     Same 100vw ::before pattern used above for themed sections. The band
+     needs to bleed beyond .layout-container (which is already released on
+     .canvas-page above) for the backdrop to meet the viewport edges.
+     body.canvas-page { overflow-x: clip } (set above) prevents scrollbar-
+     width overflow from this 100vw element.
+
+   Layering:
+     1. ::before — gradient wash (warm-off-white → base off-white), z-index: -2
+     2. ::after  — soft radial amber glow, top-left, z-index: -1
+     3. h1       — normal flow, stacking context establishes via isolation
+
+   Tokens:
+     Uses only L3 tokens (--theme-surface, --theme-text-color-loud) and
+     primitive --pl-color-amber. No new tokens introduced. Wash % chosen so
+     the h1 loud-text contrast (navy on off-white, >8:1) remains well above
+     AA regardless of the 4% amber tint at the top.
+
+   Responsive:
+     Container query + @media fallback (consistent with the grid rule above).
+     Mobile reduces block padding; the title itself is already smaller via
+     upstream font-size rules.
+
+   See: docs/pl2/css-change-log.md
+   See: docs/pl2/keytail-design/design-map.md § 7. Page Layouts (canvas)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Band geometry: full-bleed, padded, stacking context ──────────────── */
+/* Scope .canvas-page:not(.path-frontpage) = interior canvas pages only.       */
+/* position: relative + isolation: isolate so ::before/::after z-index is      */
+/* confined to the band's own stacking context (does not escape to root).      */
+/*                                                                              */
+/* padding-inline aligns the title text with the container-padded content      */
+/* sections below. dripyard's --dy-section-padding-inline is declared ON       */
+/* .dy-section so it's not inherited here — mirror the same value table        */
+/* directly (--spacing-m wide / --spacing-xs narrow) with a clamp fallback     */
+/* that degrades sensibly without tokens. The ::before and ::after use 100vw   */
+/* independently, so they ignore this inline padding and continue to bleed.    */
+.canvas-page:not(.path-frontpage) .block-page-title-block {
+  position: relative;
+  isolation: isolate;
+  padding-block: clamp(3.5rem, 6vw, 5rem);
+  padding-inline: var(--spacing-m, clamp(1.25rem, 4vw, 2.5rem));
+  margin-block: 0;
+  box-sizing: border-box;
+}
+
+@container (width < 601px) {
+  .canvas-page:not(.path-frontpage) .block-page-title-block {
+    padding-inline: var(--spacing-xs, 1.25rem);
+  }
+}
+
+@media (max-width: 600px) {
+  .canvas-page:not(.path-frontpage) .block-page-title-block {
+    padding-inline: var(--spacing-xs, 1.25rem);
+  }
+}
+
+/* Zero the h1's default margins — band padding now governs vertical rhythm.  */
+/* Upstream h1.page-title: margin: 80px 0 40px. Replace with 0 so the         */
+/* atmospheric backdrop fully encloses the title visually.                    */
+.canvas-page:not(.path-frontpage) .block-page-title-block > .page-title,
+.canvas-page:not(.path-frontpage) .block-page-title-block > h1 {
+  margin-block: 0;
+}
+
+/* ── 2. ::before — gradient wash, full-bleed ─────────────────────────────── */
+/* 4% amber tint at top fades to the theme surface. Creates a soft horizon.   */
+/* left: 50% + translateX(-50%) + width: 100vw: break out of any non-edge-    */
+/* to-edge container parent while staying centred in the viewport.            */
+.canvas-page:not(.path-frontpage) .block-page-title-block::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--pl-color-amber, #F59E0B) 4%, var(--theme-surface, #F0F1F0)) 0%,
+    var(--theme-surface, #F0F1F0) 100%
+  );
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* ── 3. ::after — soft radial amber glow, full-bleed ─────────────────────── */
+/* Atmospheric accent. Positioned toward top-left for a "morning light" read. */
+/* 12% amber fades to transparent in a wide ellipse — subtle, not a spotlight.*/
+.canvas-page:not(.path-frontpage) .block-page-title-block::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  background: radial-gradient(
+    ellipse 60% 120% at 18% 35%,
+    color-mix(in oklch, var(--pl-color-amber, #F59E0B) 12%, transparent) 0%,
+    transparent 55%
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ── 4. Hairline divider at the bottom edge ──────────────────────────────── */
+/* A 1px low-alpha line that visually terminates the band and separates it    */
+/* from the first content section. Positioned on the ::before so it scales    */
+/* with the full-bleed layer — using outline here would be clipped by the     */
+/* band's own bounds.                                                          */
+.canvas-page:not(.path-frontpage) .block-page-title-block::before {
+  border-bottom: 1px solid color-mix(in oklch, var(--theme-text-color-loud, #2D3E48) 8%, transparent);
+}
+
+/* ── 5. Responsive: trim block padding on narrow viewports ───────────────── */
+/* Container query preferred; @media fallback for browsers missing container  */
+/* context at this scope. Targets the same thresholds as the card-grid above. */
+@container (width < 901px) {
+  .canvas-page:not(.path-frontpage) .block-page-title-block {
+    padding-block: clamp(2.5rem, 5vw, 3.5rem);
+  }
+}
+
+@container (width < 601px) {
+  .canvas-page:not(.path-frontpage) .block-page-title-block {
+    padding-block: clamp(2rem, 6vw, 2.75rem);
+  }
+}
+
+@media (max-width: 900px) {
+  .canvas-page:not(.path-frontpage) .block-page-title-block {
+    padding-block: clamp(2.5rem, 5vw, 3.5rem);
+  }
+}
+
+@media (max-width: 600px) {
+  .canvas-page:not(.path-frontpage) .block-page-title-block {
+    padding-block: clamp(2rem, 6vw, 2.75rem);
+  }
+}

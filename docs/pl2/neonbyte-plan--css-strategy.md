@@ -1,10 +1,14 @@
 # `performant_labs_20260418` — CSS Strategy
 
+> **⚠ Superseded — 2026-04-20.** The operative CSS strategy is [`theme-change.md`](theme-change.md). The operating procedure is [`theme-change--workflow.md`](theme-change--workflow.md). The 8 rules below are preserved as historical context for `20260418` only — read them to understand *why* the current approach was adopted, then follow `theme-change.md` for any new work.
+>
 > **Parent:** [`neonbyte-plan--components.md`](neonbyte-plan--components.md)
-> **Read before:** any CSS is written in `20260418`
 > **Replaces the approach used in:** `performant_labs_20260411`
 
 ---
+
+<details>
+<summary><strong>Legacy — the 8-rule strategy as written for `20260418` (kept for historical reference; do not cite as authoritative)</strong></summary>
 
 ## What Went Wrong in `20260411`
 
@@ -221,3 +225,20 @@ grep -r "\-\-" themes/dripyard_base/css/ | grep "^\s*--" | sort -u | head -40
 ```
 
 Run this before starting Stage 2. The output is the full token vocabulary available without writing a single line of CSS.
+
+</details>
+
+---
+
+## Where the rules map in the current system
+
+| Legacy rule (above) | Status under `theme-change.md` |
+|---|---|
+| Rule 1 — Tokens first, CSS last | Retained as the foundation of Q4 in the Trace Worksheet |
+| Rule 2 — `base.css` is for globals only | Refined: `base.css` is for tokens + `html .theme--*` zone overrides; structural layout CSS lives in `layout/*.css` |
+| Rule 3 — One file per component via `libraries-extend` | Retained and made authoritative (see `theme-change.md` §Rules) |
+| Rule 4 — Reference tokens, never hardcode hex | Retained; the `var(--token, #hex)` fallback pattern is **dropped** — `@property` registration in `base.css` provides a stronger fallback that survives successful-but-invalid declarations, not just missing ones |
+| Rule 5 — CSS layer awareness | Retained as context; `@layer` is for organising the subtheme's own rules, not for beating unlayered contrib CSS (see `theme-change.md` §Option C caveat) |
+| Rule 6 — Mandatory workflow | Superseded by [`theme-change--workflow.md`](theme-change--workflow.md) |
+| Rule 7 — Audit document drives the order | Retained via [`neonbyte-plan--component-audit.md`](neonbyte-plan--component-audit.md) |
+| Rule 8 — Mobile is part of done | Retained verbatim; consumed by Step 5 T1/T2 verification |

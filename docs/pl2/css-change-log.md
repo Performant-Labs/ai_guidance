@@ -246,3 +246,126 @@ Decision: No libraries-extend, no CSS file, no libraries.yml or info.yml changes
   Fix: class="header-cta" only — matches page--front.html.twig. Amber pill now consistent. ✅
   Note: Twig template change only — no CSS layer implications.
 ```
+
+---
+
+## Session 2026-04-20 — /services audit (Pass 1): scope narrowing + card grid
+
+```
+[Layer 5] Scope of transparent-header / scroll-fill / nav-color / white-CTA rules
+          narrowed from (.path-frontpage, .canvas-page) → (.path-frontpage) only
+          css/components/header.css §1c, §1d, §5, §6, §7  2026-04-20
+  Problem: .canvas-page is a layout class (full-width) — NOT a "has dark hero"
+  marker. Services page carries .canvas-page without a dark hero, so the
+  translucent-white nav colour rendered invisible over the light page-title
+  band (WCAG fail + unreadable).
+  Ruling: L1 N/A (layout selector). L3 too broad. L4 body class is the right
+  scope, but .canvas-page maps layout, not hero intent — wrong semantic match.
+  L5 with .path-frontpage scope is the one page in the theme that has a dark
+  hero today. If another page gains a dark hero later, add its selector to
+  each block that previously had .canvas-page. ✅
+  T2 verification (2026-04-20):
+    /services 1440:  nav color rgb(45,62,72) (dark navy)  ✅
+                     CTA bg rgb(245,158,11) amber, no border  ✅ (default §4)
+    /         1440:  nav color oklab(~white / 0.75)        ✅ (unchanged)
+                     CTA bg rgb(255,255,255), 1px border   ✅ (unchanged)
+
+[Layer 4] canvas.css — responsive card grid for .canvas-page .grid-wrapper__grid > .card
+          grid-column: span 4 / span 6 / 1 / -1  (1440 / 768 / 375)
+          padding 32/40px, 1px token-derived border, hover translateY(-2px)
+          css/layout/canvas.css L367-446  2026-04-20
+  Problem: grid-wrapper__grid renders a 12-col grid, cards default to span 12
+  (rendering as a flat vertical list) unless editor sets column_count on each
+  paragraph. Services "What we do specifically" had 20+ cards stacked this way.
+  Ruling: L1 unreachable (per-paragraph config). L3 not a token issue.
+  L4 layout is correct — scoped to .canvas-page so non-canvas uses of grid-
+  wrapper keep their editor-configured behaviour. Media + @container queries
+  give responsive 3/2/1-up. ✅
+  DOM-inspection gate (T2 probe 2026-04-20):
+    .grid-wrapper__grid  display:grid  grid-template-columns: 12 tracks
+      > article.card  grid-column: 1 / -1  → before: full-width row
+    /services grid-wrapper children ARE .card articles (22 total)
+    /        grid-wrapper children are NOT .card — rule does not affect home
+  T2 verification:
+    /services 1440:  span 4, width 368px (3-up)  ✅
+    /services 768:   span 6, width 281px (2-up)  ✅
+    /services 375:   1 / -1, width 291px (1-up)  ✅
+    /        1440:   cardCount:0 — homepage unaffected  ✅
+```
+
+---
+
+## Session 2026-04-20 — /services Pass 2: atmospheric page-title backdrop
+
+```
+[Layer 4] canvas.css — --space-for-fixed-header scope split across homepage vs interior
+          canvas pages. Originally .canvas-page {=0} zeroed the spacer for every
+          canvas page; Pass 1 audit surfaced that only the homepage hero should
+          bleed to y=0, while interior pages want content to clear the 80px sticky
+          header. Scope now bifurcates:
+            .canvas-page.path-frontpage             → --space-for-fixed-header: 0
+            .canvas-page:not(.path-frontpage)       → --space-for-fixed-header: 80px
+          css/layout/canvas.css §hero-bleed (line 104 area)  2026-04-20
+  Problem: Pass 2 T2 probe revealed .block-page-title-block was rendering at y=0
+  on /services — the same token-zero that the homepage needs was being applied
+  to every canvas page, hiding the top of interior content under the sticky
+  header.
+  Ruling: L1 N/A (token). L3 too broad (affects every theme zone). L4 body-class
+  scope is correct; the bifurcation mirrors the Pass 1 header-scope split. Token-
+  first fix (not consumer-rule override): single consumer is neonbyte's
+  .layout-container padding-top (grep check confirmed). ✅
+  T2 verification (2026-04-20):
+    /services 1440:  .block-page-title-block rect.y = 80 (was 0)    ✅
+    /services 768:   rect.y = 80                                    ✅
+    /services 375:   rect.y = 80                                    ✅
+    /        1440:   hero rect.y = 0 (.path-frontpage branch)       ✅ unchanged
+
+[Layer 4] canvas.css — atmospheric backdrop on .canvas-page:not(.path-frontpage)
+          .block-page-title-block. Full-bleed 100vw ::before gradient wash
+          (4% amber → surface) at z-index -2, full-bleed ::after radial glow
+          (12% amber, ellipse at 18% 35%) at z-index -1, hairline border-bottom
+          (8% loud-text). Band padding-block clamp(3.5rem, 6vw, 5rem) desktop
+          tapering at tablet/mobile. padding-inline = var(--spacing-m) desktop,
+          var(--spacing-xs) ≤600 so title text aligns with dy-section content
+          below while the backdrop continues to bleed edge-to-edge.
+          css/layout/canvas.css §atmospheric-backdrop  2026-04-20
+  Problem: Between the 80px sticky header and the first content section,
+  Drupal renders .block-page-title-block with only an unstyled h1 (margin:
+  80px 0 40px). The resulting 193px of bare off-white reads as a layout gap,
+  gives the title no visual weight, and makes the header-to-content handoff
+  abrupt. No upstream rule styles the block.
+  Architectural pattern introduced: .canvas-page:not(.path-frontpage) is the
+  canonical "interior canvas page" scope. It is the inverse of Pass 1's
+  .path-frontpage-only header scope. Future interior-page layout work should
+  reach for this selector rather than adding one-off path-* rules.
+  Ruling: L1 background art is not config. L2 parent themes do not style
+  the block — no upstream to override. L3 would affect every theme zone's
+  title on every page — too broad. L4 with the :not(.path-frontpage)
+  narrowing is exactly the "interior canvas" lever. L5 SDC override would
+  need a duplicated library declaration; not warranted here. ✅
+  Tokens: --pl-color-amber (primitive), --theme-surface, --theme-text-color-loud.
+  No new tokens.
+  a11y: h1 uses --theme-text-color-loud (oklch 0.15 ≈ #2D3E48) on a gradient
+  surface that averages to ≈ #F0F1F0 with 4% amber tint at top. Contrast
+  remains > 8:1 (AA-AAA).
+  T1 verification (2026-04-20):
+    curl canvas.css?tdssgz | grep "canvas-page:not(.path-frontpage) .block-page-title-block"
+    → 7 declarations served                                        ✅
+  T2 verification:
+    /services 1440:  rect y=80 h=233, padding-block 80/80, h1 margin 0
+                     ::before 1440px linear-gradient, ::after 1440px radial
+                     border-bottom 1px oklch(.15 .008 260 / .08)      ✅
+    /services 768:   padding-block 40/40                              ✅ (container-query tier)
+    /services 375:   padding-block 32/32                              ✅ (mobile tier)
+    /        1440:   .block-page-title-block NOT present (block
+                     visibility hidden on frontpage) — rule no-op     ✅
+
+[Layer 4] canvas.css — h1 inside band zeroed (margin:0) and padding-inline
+          propagated so title visually aligns with content sections below.
+          Prior to this refinement the h1 sat at x=0 flush to viewport edge;
+          content sections sit at --spacing-m (40px) inset. Alignment
+          now matches.
+          css/layout/canvas.css §atmospheric-backdrop  2026-04-20
+  Ruling: cosmetic refinement inside the Pass 2 block. ✅
+```
+

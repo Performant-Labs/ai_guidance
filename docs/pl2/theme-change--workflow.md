@@ -41,6 +41,33 @@ Comes from:    Layer 3 (theme-primary.css)
 Traces to:     --primary (Layer 2) → base_primary_color config (Layer 1)
 ```
 
+---
+
+**DOM-inspection gate — mandatory before Pass 2.**
+
+Pass 2 cannot start until **one** of the following is true:
+
+- **(a)** the relevant ancestor DOM chain has been inspected with live-page evidence — Tier 1 (curl + grep) is sufficient; Tier 2 (ARIA structural read) is used when JS renders into the chain — and the inspected wrappers and their applied width/padding/overflow constraints are recorded in the trace worksheet; **or**
+- **(b)** the proposed change is unambiguously at **Layer 1** (Drupal config) or **Layer 3** (`--theme-*` token override in `html .theme--*`), where no DOM wrapper is involved.
+
+Any Layer 4 or Layer 5 change that targets a structural wrapper (region, block, field, layout container, site-main, etc.) **requires (a)**. Writing defensive selectors for wrappers that have not been DOM-verified is the anti-pattern this gate exists to prevent — it was how the 2026-04-20 canvas.css release block accumulated selectors for `.region--content`, `.field--name-field-sections`, and `.field--type-entity-reference-revisions`, all three of which never rendered on the page they were trying to fix.
+
+The verification protocol is defined in [`theming/verification-cookbook.md`](../ai_guidance/frameworks/drupal/theming/verification-cookbook.md) §Tier 1 and §Tier 2. Use the fastest tier that answers "does this wrapper render, and does it impose the constraint we're trying to defeat?"
+
+**Worksheet addition — Pass 2 entry gate:**
+```
+DOM inspection evidence (required for Layer 4/5 structural fixes):
+  [ ] Tier 1: wrapper exists in rendered HTML       (command run + match/no-match)
+  [ ] Tier 1: wrapper has a width/padding/overflow
+              cap imposed by contrib CSS            (file + line)
+  [ ] Tier 2: (only if JS-rendered)                 (landmark path)
+  [ ] N/A — change is Layer 1 or Layer 3            (explain)
+```
+
+If a row is checked but the evidence string is missing, the gate is closed. Pass 2 does not start.
+
+---
+
 **Pass 2 — Top-down eligibility (rule out higher layers first):**
 ```
 Layer 1 check: Is base_primary_color in config wrong?
@@ -89,7 +116,19 @@ This is the only judgment call requiring a human.
 
 ### Step 4 — AntiGravity: Makes the change
 
-**Rapid Iteration Protocol**: To avoid slow file-system cache clears (`drush cr`) during visual development, AntiGravity first writes the CSS into an **Asset Injector** entity. This allows for immediate visual verification.
+AntiGravity writes the CSS (or config change) directly to the permanent subtheme file at the approved layer. No staging through Drupal config entities.
+
+**Iteration speed**: keep a local watch task running during visual work so file saves surface in the browser within ~1s. Two acceptable setups:
+
+1. **Vite / browsersync watch** pointed at `themes/custom/[subtheme]/css/**/*.css`, injecting CSS on change. No Drupal cache clear needed for CSS-only edits because Drupal serves the physical file directly when aggregation is off.
+2. **Aggregation off + targeted cache-tag invalidation**:
+   ```bash
+   ddev drush config:set system.performance css.preprocess 0 -y   # once
+   # then on each save:
+   ddev drush cache:rebuild --tags=library_info
+   ```
+
+Either way, the edit lives in the permanent file from the first keystroke. The previous "write to Asset Injector first, migrate later" loop is explicitly **not** used — it creates orphan-entity risk and a manual cleanup step that is reliably forgotten.
 
 AntiGravity drafts the CSS (or config change) at the approved layer, with a comment that records the layer and the ruling from Pass 2:
 
@@ -121,26 +160,37 @@ This distinction matters for the loop: a structural fix at Layer 3 should not be
 
 ### Step 5 — AntiGravity: Runs T1 + T2 verification
 
-AntiGravity runs:
-1. **T1 (headless)** — clears cache, curls the page, confirms the CSS file is being served and the variable value is present in the rendered output.
-2. **T2 (structural)** — reads the rendered DOM and confirms the computed value of the changed property matches what was written. If it doesn't match, something downstream is overriding it — AntiGravity re-runs the trace (back to Step 2) on the conflicting rule. The human is not involved unless the conflict requires a scope decision.
+AntiGravity follows the Three-Tier Verification Hierarchy defined in [`theming/verification-cookbook.md`](../ai_guidance/frameworks/drupal/theming/verification-cookbook.md). That document is the authoritative reference — this section names which tiers are mandatory at Step 5 and what counts as passing.
 
-The human sees nothing unless a problem is found.
+1. **T1 — Headless (curl + grep), 1–5s.** Clear cache (`ddev drush cr`), curl the target page, and grep for the variable value or selector in the rendered HTML. Mandatory. T1 confirms the CSS file is being served and the token/property is present.
+   ```bash
+   ddev drush cr
+   curl -sk "$URL" | grep -oE '--theme-link-color:[^;]+;' | head -1
+   ```
+2. **T2 — ARIA structural tree, 5–10s.** Read the rendered structure and confirm the computed value of the changed property matches what was written. T2 is required when the change affects structural behaviour (layout, visibility, focus order) or when T1 alone cannot confirm the fix landed (e.g., the property is set by JS at runtime). If the computed value does not match what was written, something downstream is overriding it — AntiGravity re-runs Step 2 (trace) on the conflicting rule; the human is not involved unless the conflict requires a scope decision.
+
+Never skip T1 in favour of a screenshot. Never skip T2 when the change is structural.
+
+The human sees nothing unless T1 or T2 fails.
 
 ---
 
 ### Step 6 — Human: Visual sign-off (T3 — only when needed)
 
-AntiGravity can take a screenshot, but cannot judge whether the result matches brand intent. If the change is purely mechanical (a variable value that was wrong), visual sign-off may not be needed. If it involves brand colour or typography decisions, the human looks at the page and confirms.
+T3 (browser screenshot, 60–90s) is the last tier and is **blocking** when the change involves brand colour, typography, spacing, or any decision that cannot be judged from curl or ARIA output. Follow the protocol in [`theming/visual-regression-strategy.md`](../ai_guidance/frameworks/drupal/theming/visual-regression-strategy.md): one screenshot = one design slice vs. one live viewport; pass pre-sliced `designs/NN_*.webp` files (never the full composite); write findings incrementally to the visual regression report before returning.
+
+If the change is purely mechanical (a variable value that was demonstrably wrong, verified at T1/T2), T3 may be skipped. If it involves brand intent, the human is the judge.
 
 > *"Yes, that's the right shade"* → done.
 > *"Still not right"* → back to Step 1 with the new description.
+
+**Do not open a browser/screenshot loop until T1 and T2 have both passed.** A screenshot that looks right while T2 is failing is masking a structural defect that will surface on another page.
 
 ---
 
 ### Step 7 — Human/AntiGravity: Finalize and Commit
 
-**Finalize CSS**: If the change was staged via Asset Injector during Step 4, AntiGravity must now migrate the approved CSS from the Asset Injector entity into the permanent local file (e.g., `css/base.css` or component `.css`), delete the temporary Asset Injector entity, and clear the cache before the commit.
+Re-enable CSS aggregation if it was turned off for iteration (`ddev drush config:set system.performance css.preprocess 1 -y`) and run `ddev drush cr` so the committed version matches the production-like path.
 
 The change log entry written during the process travels with the commit. Git history plus the log gives a complete record of what was changed, at what layer, and when.
 

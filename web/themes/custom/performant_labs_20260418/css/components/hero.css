@@ -2,21 +2,33 @@
  * @file
  * performant_labs_20260418 — hero component brand overrides.
  *
- * Layer: 5 (component local token + pseudo-element)
+ * Layer: 5 (component local token + pseudo-element + canvas-page scoped geometry)
  * Mechanism: libraries-extend on core/components.neonbyte--hero
  *
- * Two-pass trace ruling (2026-04-19):
+ * Two-pass trace ruling (2026-04-19, revised 2026-04-20 for Keytail vibe pass):
  *   L1: Config primary already #1B2638; gradients cannot be expressed in config. RULED OUT.
  *   L3: html .theme--primary { --hero-background } ruled out — hero.css re-declares
  *       --hero-background directly on .hero (0,1,0), overriding any inherited ancestor
  *       value. Layer 3 cannot reach past this redeclaration.
  *   L5: .hero.theme--primary (0,2,0) beats .hero (0,1,0). CORRECT LAYER.
  *
+ *   2026-04-20 addition — front-page-only geometry changes (big headline, centred
+ *   content, floating media) are scoped to .canvas-page so non-front heroes
+ *   (e.g. a theme--primary hero on a secondary page) retain the default neonbyte
+ *   geometry. Same .canvas-page scope used by header.css.
+ *
  * Rules:
  *   - No !important.
  *   - No --theme-setting-* overrides.
- *   - No theme-layer (--theme-*) variables — this is a component local token override.
+ *   - No theme-layer (--theme-*) variables at this layer — component local tokens only.
  *   - .hero already has position: relative (hero.css L7) — ::before works without adding it.
+ *   - ::after is new; component has no existing ::after usage.
+ *
+ * Vibe: Keytail-inspired (see Performant Labs Theme/keytail-desktop-homepage.jpg)
+ *   - Atmospheric landscape-like gradient (cool sky top → warm horizon bottom)
+ *   - Huge, centred display headline
+ *   - Subtle horizon glow as an ::after band at the viewport bottom
+ *   - Floating media panel with soft navy-hued shadow
  *
  * See: docs/pl2/css-change-log.md
  * See: docs/pl2/keytail-design/design-map.md § Hero
@@ -28,30 +40,169 @@
   --hero-background: var(--pl-color-navy);  /* → #1B2638 deep navy */
 }
 
-/* ── 2. Radial gradient overlay via ::before ───────────────────────────────── */
+/* ── 2. Atmospheric landscape gradient via ::before ────────────────────────── */
 /* Pseudo-element on .hero — no conflict with existing rules.                   */
-/* Gradient: from deep teal (top-left accent) → navy (mid) → dark amber (edge). */
+/* Three-stop vertical gradient for a "sky → mid-air → warm horizon" feel,     */
+/* layered on top of a very soft off-centre radial highlight that keeps the     */
+/* eye drawn to the headline without feeling theatrical.                        */
+/*                                                                              */
+/* Before (2026-04-19): single ellipse, teal centre + amber-brown edge ring.   */
+/* After  (2026-04-20): linear sky gradient + soft radial key light. Softer,   */
+/* more atmospheric — closer to the Keytail vibe while keeping PL brand tones. */
 .hero.theme--primary::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    ellipse at 30% 40%,
-    #1e4a6b 0%,    /* artistic deep teal — no brand token; deliberately chosen */
-    var(--pl-color-navy) 45%,
-    #3d1f00 80%,   /* artistic dark amber-brown — no brand token; deliberately chosen */
-    var(--pl-color-amber) 130%
-  );
+  background:
+    /* top-layer: soft off-centre key light picks out the headline */
+    radial-gradient(
+      ellipse 80% 60% at 50% 35%,
+      rgba(30, 74, 107, 0.55) 0%,              /* gentle teal glow */
+      rgba(27, 38, 56, 0) 70%
+    ),
+    /* base-layer: vertical "sky → horizon" gradient */
+    linear-gradient(
+      180deg,
+      #131d2e 0%,                                /* deep night-sky top      */
+      var(--pl-color-navy) 40%,                  /* brand navy body         */
+      #2a2639 72%,                               /* dusty indigo transition */
+      #3d2a1a 100%                               /* warm horizon at bottom  */
+    );
   z-index: 0;
   pointer-events: none;
 }
 
-/* ── 3. z-index management ──────────────────────────────────────────────────── */
-/* Lift hero content and media above the ::before gradient overlay.              */
-/* .hero__content already has z-index: 1 in hero.css; these are belt-and-        */
-/* suspenders for container and media which do not.                              */
+/* ── 3. Horizon glow via ::after ───────────────────────────────────────────── */
+/* A thin, very soft amber band hugging the bottom edge — reads as a distant   */
+/* horizon or atmospheric scatter. Keeps the brand amber present without       */
+/* painting it across the whole surface.                                        */
+.hero.theme--primary::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 35%;
+  background: radial-gradient(
+    ellipse 70% 100% at 50% 100%,
+    color-mix(in oklch, var(--pl-color-amber) 28%, transparent) 0%,
+    transparent 70%
+  );
+  z-index: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* ── 4. z-index management ──────────────────────────────────────────────────── */
+/* Lift hero content and media above the ::before gradient + ::after horizon.   */
+/* .hero__content already has z-index: 1 in hero.css; these are belt-and-       */
+/* suspenders for container and media which do not.                             */
 .hero.theme--primary .hero__container,
 .hero.theme--primary .hero__media {
   position: relative;
   z-index: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Canvas / front-page-scoped geometry
+   Specificity: .canvas-page .hero.theme--primary  → (0,3,0)
+   Beats upstream .hero (0,1,0) and our own .hero.theme--primary (0,2,0).
+   Intentionally does NOT apply to theme--primary heroes on non-canvas pages.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 5. Generous vertical breathing room on the front-page hero ────────────── */
+.canvas-page .hero.theme--primary {
+  padding-block: clamp(5rem, 12vh, 9rem);
+}
+
+/* ── 6. Centre the content column ──────────────────────────────────────────── */
+/* Keytail-style: everything stacks in a narrow centred column regardless of   */
+/* the SDC's default two-column layout. We override just the front-page hero.  */
+.canvas-page .hero.theme--primary .hero__content {
+  margin-inline: auto;
+  max-width: 60rem;        /* ~960px — keeps the huge headline measure tight  */
+  text-align: center;
+}
+
+/* ── 7. Display-scale headline ─────────────────────────────────────────────── */
+/* DOM reality (verified against live front-page render 2026-04-20):           */
+/*   The headline is rendered by dripyard_base:title-cta as:                  */
+/*     <h2 class="heading h1 margin-top--0 margin-bottom--0">…</h2>           */
+/*   — the h1 is a utility class, not the tag. So selectors target            */
+/*   .heading.h1 inside the hero (plus h1/h2.heading as belt-and-suspenders   */
+/*   across SDC variants).                                                     */
+/*                                                                              */
+/* clamp() scales the headline with the viewport — 2.75rem on narrow screens  */
+/* up to ~6.5rem on very wide viewports. line-height near 1 for Keytail-style */
+/* tight stacked lines. letter-spacing nudge compensates for the optical      */
+/* loosening at very large sizes.                                             */
+/* Specificity: (0,4,0) — .canvas-page .hero.theme--primary .heading.h1 ✅    */
+.canvas-page .hero.theme--primary :is(.heading.h1, h1.heading, h2.heading, h1) {
+  font-size: clamp(2.75rem, 8.5vw, 6.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  margin-block-end: 1.25rem;
+  text-wrap: balance;
+}
+
+/* ── 8. Subtitle / description ─────────────────────────────────────────────── */
+/* DOM reality: subtitle is rendered as                                        */
+/*   <div class="text text-content text--centered body-l color--soft">…</div> */
+/* — not a <p>. Target .text.body-l within the hero.                          */
+/* Soft, high-readable body on dark. Token chain already supplies the colour  */
+/* via --theme-text-color-medium in the .theme--primary zone (base.css).      */
+/* Specificity: (0,4,0) beats dripyard_base text.css defaults. ✅             */
+.canvas-page .hero.theme--primary :is(.text.body-l, .hero__description, p) {
+  font-size: clamp(1rem, 1.3vw, 1.125rem);
+  line-height: 1.55;
+  max-width: 38rem;
+  margin-inline: auto;
+  margin-block-end: 0;
+  margin-block-start: 0.5rem;
+}
+
+/* ── 9. Floating media panel ───────────────────────────────────────────────── */
+/* The neonbyte hero's media slot renders an image/embed. Keytail places a    */
+/* product-screenshot device that "floats" into the content below. We can't   */
+/* break out of the hero box without template changes, but we can emulate the */
+/* floating-elevated feel: rounded corners, deep navy-hued shadow, and a soft */
+/* translate that gives it lift.                                               */
+.canvas-page .hero.theme--primary .hero__media {
+  margin-block-start: clamp(3rem, 6vh, 5rem);
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+  box-shadow:
+    0 30px 60px -20px color-mix(in oklch, var(--pl-color-navy) 60%, transparent),
+    0 12px 24px -12px color-mix(in oklch, var(--pl-color-navy) 40%, transparent);
+  @media (prefers-reduced-motion: no-preference) {
+    transform: translateZ(0);
+    transition: transform 0.4s ease;
+  }
+}
+
+/* ── 9a. Ensure any image inside the media slot fills the rounded frame ─── */
+.canvas-page .hero.theme--primary .hero__media :is(img, picture, video) {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ── 10. hero__block-content — Keytail-style vertical stack with breathing  */
+/* DOM reality: .hero__block-content contains the title-cta, an inline button,*/
+/* and the .text body — rendered as flow children. We convert it to a         */
+/* centred flex column so the buttons line up in a neat group and the         */
+/* subtitle has consistent spacing.                                           */
+.canvas-page .hero.theme--primary .hero__block-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ── 10a. Pill button grouping ────────────────────────────────────────────── */
+/* Place the two front-page CTA buttons on the same row. The title-cta        */
+/* already renders one button inline; the second (.button--light) is a       */
+/* sibling. We use margin-block-start to gap them and keep the flex column    */
+/* natural spacing for non-button children.                                    */
+.canvas-page .hero.theme--primary .hero__block-content > .button {
+  margin-block-start: 0;
 }

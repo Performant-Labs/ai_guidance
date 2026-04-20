@@ -30,10 +30,11 @@ Check the `docs/pl2` directory briefly. Ensure you are familiar with the specifi
 The PL2 stack and Dripyard Canvas component pipeline rely on several critical modules being enabled. Before committing to component assembly or theme previews, verify they are active:
 ```bash
 # Check the status of required modules:
-ddev drush pm:list --status=enabled --no-core | grep -iE 'canvas|pl_theme_preview|metatag|sdc_styleguide|asset_injector'
+ddev drush pm:list --status=enabled --no-core | grep -iE 'canvas|pl_theme_preview|metatag|sdc_styleguide'
 ```
-> [!TIP]
-> **Asset Injector** (`asset_injector`) is highly recommended for rapid prototyping. It allows you to inject CSS and JS directly through the Drupal admin UI without modifying files or clearing the cache, dramatically speeding up the visual verification process before committing to final SDC `.css` files.
+> [!NOTE]
+> **Rapid iteration is file-based, not Asset-Injector-based.** The prior workflow staged CSS inside Asset Injector entities and migrated to files at commit time, which created orphan-entity risk. The current approach writes CSS straight to the permanent subtheme file from the first keystroke and relies on a local watch task (Vite / browsersync) or `drush config:set system.performance css.preprocess 0 -y` for iteration speed. See [`theme-change--workflow.md`](theme-change--workflow.md) §Step 4.
+
 *(Note: If you encounter an "Unrecognized component" error later on, ensure the overarching `sdc` core module architecture is functioning correctly, or any specifically required component-library module for the active base theme is enabled.)*
 
 ---

@@ -1,5 +1,7 @@
 # CSS Override Strategy for `pl_neonbyte`
 
+> **Stance.** Per-page, per-symptom CSS is a failure mode. The fix for any styling issue is to climb upward — from the rendered component, to the theme token, to the config — and change the value at its point of origin, not at the point of noticing. This is the principle every rule in this document derives from.
+
 ## The Problem
 
 Previous subtheme implementations produced:
@@ -8,7 +10,7 @@ Previous subtheme implementations produced:
 - Cascade conflicts between Dripyard's inline `<html>` style and external CSS
 - Hard-to-maintain stylesheets where any change risked breaking something else
 
-The root cause is a **specificity escalation loop**: override fails → add higher specificity → override that higher specificity → add `!important` → cannot override `!important` → add more `!important`.
+The root cause is a **specificity escalation loop**: override fails → add higher specificity → override that higher specificity → add `!important` → cannot override `!important` → add more `!important`. The loop is fed by making changes at the *point of noticing* (the rendered page) rather than the *point of origin* (the variable or config driving the value). Every rule below exists to force the fix upward.
 
 ---
 
@@ -352,9 +354,9 @@ The `html .theme--white` selector has specificity (0, 1, 1) which beats the base
 
 1. **Never write a CSS property override** when a theme token (`--theme-*`) override achieves the same result.
 2. **Never use `:root` to override Dripyard color tokens.** Use `html .theme--white { }` instead.
-3. **Never write per-symptom CSS files.** All overrides go in `css/base.css` unless the override is genuinely component-scoped (and then use `libraries-extend`, not a new global file).
+3. **Never write per-symptom CSS files.** A new file is only justified when it carries a distinct concern (a component override via `libraries-extend`, or a page-context layout file like `layout/canvas.css`). Symptom-patching files belong at the layer above, not in a new file.
 4. **Never override `--theme-setting-*` variables in CSS.** These are only correctly set via Drupal config. CSS overrides of them fail silently.
-5. **No more than 2 CSS files** in the initial theme: `css/base.css` (global tokens) and optionally `css/[component].css` (scoped, per library-extend).
+5. **One concern per file, loaded deliberately.** `base.css` holds tokens, `@property` registrations, and `html .theme--*` zone overrides — nothing else. Component overrides live in `components/[name].css`, one per component, loaded via `libraries-extend`. Page-context layout rules (canvas, documentation, etc.) live in `layout/[context].css`, loaded as global libraries scoped by a body class. Keep each file narrow enough that a single git revert rolls back exactly one concern. *(The earlier "no more than 2 CSS files" formulation was a provisional guardrail for the seed of the theme; once the subtheme has components and page-contexts, it is outgrown.)*
 
 ---
 
@@ -362,9 +364,16 @@ The `html .theme--white` selector has specificity (0, 1, 1) which beats the base
 
 ```
 css/
-├── base.css          ← ONE file: fonts + html .theme--* overrides
-                         No !important. No per-component rules.
+├── base.css                ← tokens, @property registrations, html .theme--* overrides.
+│                             No !important. No component rules. No layout rules.
+├── layout/
+│   └── [context].css       ← page-context layout (canvas, docs, …), scoped by body class,
+│                             loaded as a global library.
+└── components/
+    └── [name].css          ← one file per component override, loaded via libraries-extend.
 ```
+
+The `pl_neonbyte` seed starts with just `base.css`; `layout/` and `components/` populate only when a concrete component or page context demands an override that a token change cannot express.
 
 ### `css/base.css` template
 
@@ -596,6 +605,8 @@ For `pl_neonbyte`, this means any custom tokens added to `css/base.css` should u
   --pl-spacing-section:    var(--spacing-xxxl);  /* Reuse Dripyard scale */
 }
 ```
+
+> **Do not pair `var()` with a hex fallback in component rules.** The pattern `color: var(--pl-color-amber, #F59E0B)` is redundant when the token is registered via `@property` with a static `initial-value` in `base.css`. The `@property` fallback is strictly stronger: it survives *successful-but-invalid* declarations (e.g., a downstream rule sets `--pl-color-amber: broken`), whereas the `var()` hex fallback only catches *missing* declarations. Duplicating the hex at every callsite costs real maintenance for a weaker safety net. Register the token with `@property` once; reference it as `var(--pl-color-amber)` everywhere.
 
 **Keep overrides at the highest sensible scope:**
 
