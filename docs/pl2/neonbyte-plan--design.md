@@ -15,11 +15,9 @@ Produce a set of image clips — crops from the original design snapshots — an
 
 | Item | Check |
 |---|---|
-| `docs/pl2/keytail-design/keytail-desktop.webp` exists | `ls docs/pl2/keytail-design/` |
-| `docs/pl2/keytail-design/keytail-mobile.webp` exists | same |
-| `magick` (ImageMagick 7) is available | `magick --version` |
+| Pre-cropped design JPEGs exist in `docs/pl2/keytail-design/` | `ls docs/pl2/keytail-design/*.jpg` |
 
-> If ImageMagick is not installed: `brew install imagemagick`
+> **Note:** The original plan assumed full-page `.webp` composites (`keytail-desktop.webp` / `keytail-mobile.webp`) for ImageMagick cropping. Those files were too large to commit. Instead, 7 pre-cropped JPEG slices are committed directly. No ImageMagick step is required — Phases 1 and 2 are satisfied by the existing files.
 
 ---
 
@@ -27,7 +25,7 @@ Produce a set of image clips — crops from the original design snapshots — an
 
 | Artifact | Location | Purpose |
 |---|---|---|
-| Clip image files | `docs/pl2/keytail-design/clips/` | One `.webp` per slice, per breakpoint |
+| Clip image files | `docs/pl2/keytail-design/` | Pre-cropped `.jpg` slices — one per page section (desktop only; no mobile source available) |
 | Design map | `docs/pl2/keytail-design/design-map.md` | Component → clip assignment, design intent notes |
 
 The `design-map.md` is the document Stages 1–3 reference for every visual decision. It is not a summary — it is a look-up table with embedded images.
@@ -36,19 +34,23 @@ The `design-map.md` is the document Stages 1–3 reference for every visual deci
 
 ## Clip Naming Convention
 
+The committed JPEG slices use the following naming scheme:
+
 ```
-{breakpoint}--s{NN}-{slug}.webp
+keytail-desktop-{slug}.jpg
 
-desktop--s00-header.webp
-desktop--s01-hero.webp
-mobile--s01-hero.webp
+keytail-desktop-homepage.jpg   ← hero + header (full above-fold)
+keytail-desktop-slice1.jpg     ← s01 — content-card section
+keytail-desktop-slice2.jpg     ← s02 — tabs section
+keytail-desktop-slice3.jpg     ← s03 — audience / icon-list section
+keytail-desktop-slice4.jpg     ← s04 — social proof / chart section
+keytail-desktop-slice5.jpg     ← s05 — FAQ / accordion section
+keytail-desktop-footer.jpg     ← s06 — footer
 ```
 
-- `{breakpoint}` — `desktop` or `mobile`
-- `s{NN}` — slice index, two digits, matching the slice IDs in `neonbyte-plan--component-audit.md`
-- `{slug}` — short lowercase label for the section
+**Mobile:** No mobile source was committed. Mobile behaviour is inferred from desktop slices and verified live at 375px viewport.
 
-When a component has no unique slice (a button that appears in every section, for example), the clip is taken from the **most canonical occurrence** — the one that shows the component most clearly and completely. The map records which slice it came from.
+When a component has no unique slice, it is assigned to the most canonical occurrence. The map records which slice it came from.
 
 ---
 
@@ -56,67 +58,25 @@ When a component has no unique slice (a button that appears in every section, fo
 
 ### Phase 1 — View and Decompose
 
-Read both design images directly. Claude can render `.webp` files natively — use the Read tool on each file.
+✅ **Complete.** Read all JPEG slices in `docs/pl2/keytail-design/` directly. The slice inventory is:
 
-```
-Read: docs/pl2/keytail-design/keytail-desktop.webp
-Read: docs/pl2/keytail-design/keytail-mobile.webp
-```
-
-For each image, record:
-
-1. **Total pixel dimensions** — run once, before any cropping:
-   ```bash
-   magick identify -format "%wx%h\n" \
-     docs/pl2/keytail-design/keytail-desktop.webp \
-     docs/pl2/keytail-design/keytail-mobile.webp
-   ```
-
-2. **Slice inventory** — scan top to bottom. For each horizontal band write down:
-
-   | Slice | Label | Desktop Y-start | Desktop Y-end | Mobile Y-start | Mobile Y-end |
-   |---|---|---|---|---|---|
-   | s00 | header | | | | |
-   | s01 | hero | | | | |
-   | … | … | | | | |
-
-   Record pixel rows, not percentages. Estimate from visual inspection — exact pixel-perfection is not required; the clip just needs to contain the relevant elements with a small margin.
-
-> **Phase 1 output:** a completed slice table. Do not proceed to Phase 2 until every row is filled.
+| File | Slice | Label | Contents |
+|---|---|---|---|
+| `keytail-desktop-homepage.jpg` | s00 | hero + header | Transparent header, full-viewport sky/hills hero, headline + search bar + CTAs + product screenshot |
+| `keytail-desktop-slice1.jpg` | s01 | content-cards | "Search has changed" — 3 elevated white cards on cream bg |
+| `keytail-desktop-slice2.jpg` | s02 | tabs | "Your always content engine" — white pill tabs, dark product screenshot |
+| `keytail-desktop-slice3.jpg` | s03 | audience / icon-list | Animated text list left, woman-at-laptop photo right, pill search bar overlay |
+| `keytail-desktop-slice4.jpg` | s04 | social proof | "Just like stocks" — analytics chart card on white bg |
+| `keytail-desktop-slice5.jpg` | s05 | accordion / FAQ | Minimal FAQ — thin rule rows, `+` icon, white bg |
+| `keytail-desktop-footer.jpg` | s06 | footer | Giant `K` watermark, sky gradient bg, footer nav + social icons |
 
 ---
 
 ### Phase 2 — Produce Clips
 
-Create the clips directory:
+✅ **Complete.** Pre-cropped JPEG slices are already committed to `docs/pl2/keytail-design/`. No ImageMagick step required.
 
-```bash
-mkdir -p docs/pl2/keytail-design/clips
-```
-
-For each row in the slice table, run two ImageMagick crops — desktop and mobile:
-
-```bash
-# Template — substitute WIDTH, HEIGHT, X, Y for each slice
-magick docs/pl2/keytail-design/keytail-desktop.webp \
-  -crop {WIDTH}x{HEIGHT}+{X}+{Y} +repage \
-  docs/pl2/keytail-design/clips/desktop--s{NN}-{slug}.webp
-
-magick docs/pl2/keytail-design/keytail-mobile.webp \
-  -crop {WIDTH}x{HEIGHT}+{X}+{Y} +repage \
-  docs/pl2/keytail-design/clips/mobile--s{NN}-{slug}.webp
-```
-
-**X is always 0.** Clips are full-width horizontal bands — never a partial column crop, because components span the full width of their section.
-
-After each crop pair, read the output file to confirm it contains the intended content before moving to the next slice. Do not batch all crops and verify at the end.
-
-```bash
-# Confirm dimensions match expectation
-magick identify -format "%wx%h\n" docs/pl2/keytail-design/clips/desktop--s{NN}-{slug}.webp
-```
-
-> **Phase 2 output:** a `clips/` directory containing two files per slice.
+**Mobile:** No mobile source was committed. Mobile behaviour must be verified live at 375px viewport using the `?theme=` shim.
 
 ---
 
