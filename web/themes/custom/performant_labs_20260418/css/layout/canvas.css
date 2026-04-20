@@ -1,0 +1,45 @@
+/**
+ * @file
+ * performant_labs_20260418 — canvas full-width page layout override.
+ *
+ * Layer: 5 (layout — loaded as a global library, not via libraries-extend)
+ * Scope: .canvas-page body class, added automatically by neonbyte/Canvas module
+ *
+ * Two-pass trace ruling (2026-04-19):
+ *
+ *   Property: max-width + padding-inline on .layout-container
+ *
+ *   L1: Cannot express layout geometry in Drupal config. OUT.
+ *
+ *   L2: neonbyte layout.css adds only padding-top (for fixed header).
+ *       dripyard layout.css adds margin: 0 only. Neither sets max-width or
+ *       padding-inline on .layout-container. The rule is structural protection.
+ *
+ *   L3: base.css is reserved for zone color tokens. Layout rules here
+ *       violate the separation of concerns documented in base.css file header.
+ *       OUT.
+ *
+ *   L5: .canvas-page .layout-container (0,2,0) beats any upstream (0,1,0)
+ *       declarations. Global library (not libraries-extend) so it loads on
+ *       every page — the .canvas-page scope ensures it only applies on
+ *       canvas pages. ✅
+ *
+ * Note on canvas section full-width mechanism:
+ *   Canvas sections use dy-section--section-edge-to-edge + .full-width
+ *   (100cqw width with negative margin-inline-start) to break out of
+ *   .container. This CSS is a guard that prevents any layout-container
+ *   padding from constraining that breakout calculation.
+ *
+ * Source: ported from performant_labs_20260411/css/base.css (canvas section)
+ * See: docs/pl2/css-change-log.md
+ * See: docs/pl2/keytail-design/design-map.md § 7. Page Layouts (canvas)
+ */
+
+/* ── Canvas full-width container ─────────────────────────────────────────────  */
+/* Removes inherited padding-inline and any potential max-width so edge-to-edge  */
+/* Canvas sections can bleed to true viewport edges.                             */
+/* Specificity (0,2,0) beats upstream layout rules at (0,1,0). ✅                */
+.canvas-page .layout-container {
+  max-width: none;
+  padding-inline: 0;
+}

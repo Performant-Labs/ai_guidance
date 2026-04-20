@@ -4,6 +4,15 @@ base:
     theme:
       css/base.css: {}
 
+# Canvas full-width layout — removes layout-container padding on canvas pages.
+# Global library (not libraries-extend) — layout guard, not component enhancement.
+# The .canvas-page scope (from neonbyte/Canvas module on body) limits its reach.
+# Layer 5: .canvas-page .layout-container (0,2,0).
+canvas-layout:
+  css:
+    layout:
+      css/layout/canvas.css: {}
+
 # Hero gradient — navy-to-amber radial gradient on .hero.theme--primary.
 # Layer 5: component local token override via libraries-extend.
 # Extends: core/components.neonbyte--hero (declared in .info.yml).
