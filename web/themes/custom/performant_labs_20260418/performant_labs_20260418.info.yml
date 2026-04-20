@@ -35,6 +35,11 @@ libraries-extend:
   # Trace: L3 ruled out (would amber-ify question text too).
   core/components.dripyard_base--accordion-item:
     - performant_labs_20260418/accordion-override
+  # tabs — amber filled-pill active indicator (replaces underline).
+  # Layer 5: .tabs token overrides (0,1,0) + sl-tab[active]::part(base) new rule.
+  # Trace: L3 too broad (affects all alt-color consumers). L5 via ::part() API. ✅
+  core/components.dripyard_base--tab-group:
+    - performant_labs_20260418/tabs-override
 
 regions:
   header_first: Header first (logo)

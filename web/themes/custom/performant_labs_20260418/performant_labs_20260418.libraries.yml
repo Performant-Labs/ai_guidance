@@ -41,6 +41,14 @@ accordion-override:
     component:
       css/components/accordion.css: {}
 
+# Tabs — amber filled-pill active indicator (replaces underline).
+# Layer 5: ::part(base) on sl-tab[active] + token overrides on .tabs.
+# Extends: core/components.dripyard_base--tab-group (declared in .info.yml).
+tabs-override:
+  css:
+    component:
+      css/components/tabs.css: {}
+
 # Example library definition (used in testtheme.info.yml). Note the CSS file
 # will need to be created.
 # @see https://www.drupal.org/docs/develop/theming-drupal/adding-assets-css-js-to-a-drupal-theme-via-librariesyml

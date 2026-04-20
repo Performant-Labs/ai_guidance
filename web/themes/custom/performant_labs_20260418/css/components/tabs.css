@@ -1,0 +1,66 @@
+/**
+ * @file
+ * performant_labs_20260418 — tab-group component brand overrides.
+ *
+ * Layer: 5
+ * Mechanism: libraries-extend on core/components.dripyard_base--tab-group
+ *
+ * Goal: Upgrade from underline-only active indicator to amber filled-pill.
+ *
+ * Two-pass trace ruling (2026-04-19):
+ *
+ *   Indicator/track removal — token chain vs ::part() choice:
+ *     The Shoelace shadow DOM bundle declares:
+ *       :host { --indicator-color: var(--sl-color-primary-600); --track-color: ... }
+ *     This is in an ADOPTED stylesheet (runtime JS). Although light-DOM rules win over
+ *     :host rules in the cascade for custom props, the adopted stylesheet injection timing
+ *     makes the token chain unreliable. The CSS spec guarantees that ::part() rules from
+ *     the outer document CANNOT be overridden by shadow-internal styles — ::part() wins.
+ *
+ *   L5 approach:
+ *     a) .sl-tab-group::part(active-tab-indicator) { ... hide ... }  — direct ::part().
+ *     b) .sl-tab-group::part(nav) remove bottom border — hides the track line.
+ *     c) .sl-tab[active]::part(base) { amber pill } — new property, no conflict. ✅
+ *     d) .tabs { --tab-active-icon-color: #1B2638 } — token override for icon colour. ✅
+ *
+ *   Active tab text color already correct:
+ *     --tab-active-text-color → var(--theme-text-color-loud) → #2D3E48 (from Layer 3).
+ *     Dark navy on amber pill. No override needed. ✅
+ *
+ * See: docs/pl2/css-change-log.md
+ * See: docs/pl2/keytail-design/design-map.md § tabs (component 6)
+ */
+
+/* ── 1a. Hide the underline indicator via ::part() ─────────────────────────── */
+/* ::part() from outer document WINS over shadow DOM internal styles. Spec.     */
+.sl-tab-group::part(active-tab-indicator) {
+  display: none;
+}
+
+/* ── 1b. Remove the track (border-block-end on .tab-group__tabs) ────────────── */
+/* Shoelace exposes .tab-group__tabs as part="tabs", not part="nav".            */
+/* The border-block-end on this element creates the full-width track line.      */
+.sl-tab-group::part(tabs) {
+  border-block-end: none;
+}
+
+/* ── 1c. Token fallback — suppress indicator colour via token chain too ──────  */
+/* Belt-and-suspenders for browsers where ::part() timing is deferred.          */
+.tabs {
+  --tab-active-border-color: transparent;
+  --tab-track-color: transparent;
+  --tab-active-icon-color: #1B2638;   /* navy icon on amber pill */
+}
+
+/* ── 2. Active tab: amber pill background ──────────────────────────────────── */
+/* No existing background-color rule on [active]::part(base). New at L5. ✅    */
+.sl-tab[active]::part(base) {
+  background-color: #F59E0B;
+  border-radius: 999px;
+}
+
+/* ── 3. Hover on inactive tabs — subtle amber tint hint ─────────────────────  */
+.sl-tab:not([active]):hover::part(base) {
+  background-color: color-mix(in oklch, #F59E0B 15%, transparent);
+  border-radius: 999px;
+}
