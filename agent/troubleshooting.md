@@ -55,6 +55,13 @@ This document catalogs every type of process hang encountered in DDEV/Drupal/Pla
 | 12 | `pkill` self-kill bug | Cleanup script kills itself | Use `pkill -f "node.*playwright"` |
 | 21 | Agent approval gate | Command sits forever, no output | Agent must use `SafeToAutoRun: true` for safe commands |
 
+### F. IDE / Tooling
+
+| # | Hang Type | Symptom | Fix |
+|---|-----------|---------|-----|
+| 28 | AntiGravity IDE hidden consent button | Approve/Reject buttons never appear after GFM alert block | Cancel session, restart, avoid `> [!...]` before tool calls |
+| 29 | AntiGravity IDE stuck / unresponsive | IDE freezes completely, no response to any input | `git config --local --unset extensions.worktreeConfig` |
+
 ---
 
 ## 1. Playwright `networkidle` Hang
@@ -1044,6 +1051,35 @@ Use standard **bold text** for emphasis instead of alert blocks when a tool call
 
 ---
 
+## 29. AntiGravity IDE Stuck / Stops Responding
+
+### Symptom
+The AntiGravity IDE freezes completely and stops responding. The UI is unresponsive — no commands execute, no chat messages are processed, and normal session recovery steps (cancel, restart agent) have no effect.
+
+### Root Cause
+A `git` repository in the workspace has a local config entry `extensions.worktreeConfig` set. This extension signals to Git that the repository uses per-worktree configuration, which can trigger unexpected behavior in tooling that runs `git` commands internally (such as the IDE's file-watching and workspace-indexing subsystems). When the IDE's internal `git` calls encounter this extension flag in combination with certain workspace states, it can cause the IDE process to deadlock or hang.
+
+### Detection
+The IDE is in a fully unresponsive state — not just a slow task or a hidden approval button (see Issue #28). Check if the extension is set:
+```bash
+git config --local --list | grep worktree
+```
+If the output includes `extensions.worktreeconfig=true`, this is the trigger.
+
+### Solution
+Run the following command from the root of the affected repository:
+```bash
+git config --local --unset extensions.worktreeConfig
+```
+Then restart the AntiGravity IDE. The IDE should recover normally after the extension is removed.
+
+### Prevention
+- Avoid using `git worktree` commands or enabling `extensions.worktreeConfig` in repositories that are actively open in the AntiGravity IDE.
+- If you must use Git worktrees, open the worktree directories as separate IDE workspaces rather than as subdirectories of the same workspace.
+- After any `git worktree add` or `git config` changes in an open workspace, restart the IDE to prevent stale state.
+
+---
+
 ## Diagnostic Checklist
 
 When something appears stuck, check in this order:
@@ -1090,3 +1126,6 @@ When something appears stuck, check in this order:
 20. **Subtree fetch missing recent files?** → Verify the source repository has been explicitly committed and pushed to the remote origin.
 21. **Agent hung on `git log`?** → The agent forgot to bypass the terminal pager. Cancel it and tell it to use `git --no-pager log`.
 22. **Multi-repo loop appears hung?** → Sequential SSH handshakes naturally take ~35 seconds. Wait 60s before intervening.
+
+### IDE / Tooling
+23. **AntiGravity IDE completely frozen / unresponsive?** → Run `git config --local --unset extensions.worktreeConfig` in the workspace repo, then restart the IDE. See Issue #29.
