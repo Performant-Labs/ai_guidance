@@ -654,3 +654,38 @@ body.canvas-page {
     padding-block: clamp(2rem, 6vw, 2.75rem);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* PASS 3 — Content region gutter                                              */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*                                                                              */
+/* PRINCIPLE: highest-level padding, inner components don't re-pad.             */
+/*                                                                              */
+/* The title band (.block-page-title-block) is a direct sibling of the content  */
+/* region, has its own padding-inline (Pass 2), and its ::before/::after use    */
+/* 100vw to escape the container and render full-bleed — those atmospheric      */
+/* layers are unaffected by any gutter applied here.                            */
+/*                                                                              */
+/* Everything else on a Canvas page (webforms, views blocks, custom blocks,     */
+/* system-main-block content) lives inside .region.region-content. Giving that  */
+/* region a gutter means every child gets a consistent inset for free without   */
+/* each block wrapper having to declare its own padding.                        */
+/*                                                                              */
+/* Values mirror the title band's padding-inline table so the h1 and the first  */
+/* content element below it land on the same left edge at every breakpoint.     */
+.canvas-page:not(.path-frontpage) main.site-main > .region.region-content {
+  padding-inline: var(--spacing-m, clamp(1.25rem, 4vw, 2.5rem));
+  box-sizing: border-box;
+}
+
+@container (width < 601px) {
+  .canvas-page:not(.path-frontpage) main.site-main > .region.region-content {
+    padding-inline: var(--spacing-xs, 1.25rem);
+  }
+}
+
+@media (max-width: 600px) {
+  .canvas-page:not(.path-frontpage) main.site-main > .region.region-content {
+    padding-inline: var(--spacing-xs, 1.25rem);
+  }
+}
