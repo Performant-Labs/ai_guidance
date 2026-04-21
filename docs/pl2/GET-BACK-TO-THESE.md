@@ -88,6 +88,19 @@ Created 2026-04-20 during the `articles-2` Canvas page work-stream.
 
 ## D. Site-wide visual issues
 
+### D.4 — Confirm all interior pages have breadcrumbs (2026-04-20)
+
+**Observed:** Pass 1.2 of the book-pages work-stream enabled the breadcrumb block on `/automated-testing-kit` and its interior children. Breadcrumb rendering was verified on book pages only. Other page types on the site (Canvas pages like `/contact` / `/articles-2` / `/open-source-projects`, article detail pages like `/articles/version-10-automated-testing-kit-ready`, Views pages like `/articles`, and any node types we haven't audited) have not been explicitly confirmed.
+
+**Why it matters:** Breadcrumbs are a site-wide wayfinding and WCAG 2.4.8 affordance. If the block is placed only in the region/theme path that renders for book pages, or only appears where Easy Breadcrumb's rules are satisfied, interior pages of other types may silently lack breadcrumbs.
+
+**When to revisit:** During the next a11y pass, or before shipping for external review. Cheapest check: a scripted curl across a representative URL per page type (book interior, Canvas page, article detail, Views page, user-facing account page, …) grep'ing for `<nav … aria-label="breadcrumb">` or the `.breadcrumb` DOM hook.
+
+**Scope if a page type is missing breadcrumbs:** One of:
+- a) Widen the breadcrumb block placement (block UI or `block.block.*.yml` config).
+- b) Adjust Easy Breadcrumb settings (`easy_breadcrumb.settings.yml`) if a rule is excluding the page.
+- c) Template-level fix if a page-level twig suppresses the region.
+
 ### D.3 — 6px title-vs-content horizontal misalignment on Canvas pages (2026-04-20)
 
 **Observed:** On every Canvas page (`/contact`, `/articles-2`, `/open-source-projects`, etc.) at mobile (375px) and on up, the page `<h1>` is inset **20px** from the viewport edge while the content below it — form, views block, card grid, prose — is inset **~14px** (a fractional value from auto-centering). Visible as a small leftward "tuck" between the title and the content stacked beneath it.
@@ -130,9 +143,11 @@ The two paddings are declared in different places with different semantics (auth
 
 **Scope if fixed:** Admin config change + re-export `captcha.*.yml` config + `drush cim` + T3 re-verify.
 
-### D.1 — Header logo not visible on any page (2026-04-20)
+### D.1 — Header logo not visible on any page (2026-04-20) — resolved, branding decision still open
 
-**Observed:** User reports the upper-left logo (intended to be the home link on every page) is not visible on any page. Not just `/articles-2` or `/open-source-projects` — everywhere.
+**Status:** Visibility fix shipped 2026-04-20 via explicit SVG dimensions (commit `10f033d`). The entry is retained only for the outstanding **branding decision**: current SVG is a generic "KEYTAIL" placeholder (navy square, amber K) rather than Performant Labs branding. Replace with the real Performant Labs mark when design provides it.
+
+**Original (resolved) bug — for audit trail:** User reported the upper-left logo (intended to be the home link on every page) was not visible on any page. Not just `/articles-2` or `/open-source-projects` — everywhere.
 
 **DOM/asset audit is clean:**
 - `<div data-component-id="dripyard_base:header-logo">` present in every page's `<header>` region
@@ -275,6 +290,20 @@ Only node 20 has the hand-authored hero body (the seven-block structure: eyebrow
 
 **See:** `neonbyte-plan--book-pages.md` Pass 3.A for the authored-content contract.
 
+### F.3 — Mobile T3 sign-off for `/automated-testing-kit` not captured (2026-04-20)
+
+**Observed:** Pass 3.A.3 closed out with desktop T3 (1440 viewport) verified in Chrome — primary CTA visible (white on amber), secondaries outlined, hero structure rendering correctly. Mobile T3 at 375 viewport could not be captured in-session because the Chrome-extension `resize_window` call succeeded at the browser-chrome layer but the rendering viewport stayed at the host window's width (`window.innerWidth` remained 1728 after a resize call that reported success).
+
+**Why deferred:** The mobile CSS path in `css/components/book-landing.css` is simple — `@media (min-width: 640px)` switches the features list to a 2-column grid; below that it's a 1-column stack. CTA row uses `flex-wrap: wrap`. No complex responsive behavior to regress.
+
+**When to revisit:** Next session, via Chrome DevTools device toolbar manually, or any tool that can genuinely emulate a 375px viewport. Verify:
+- Eyebrow / h2 / lede / CTA row stack cleanly and remain readable.
+- CTA row wraps to a column without awkward truncation.
+- "What's inside" features list renders as a single column.
+- No horizontal overflow from the value-prop h2 or any long anchor label.
+
+**Scope if a regression is found:** Narrow CSS tweak in `book-landing.css` media-query blocks.
+
 ---
 
 ## Triage notes
@@ -284,6 +313,7 @@ Items in section C are decisions, not bugs — they wait on product/content inpu
 Item D.1 is a site-wide visible-chrome bug — promote before next external review. (Resolved 2026-04-20 via `logo.svg` intrinsic-size fix; leaving entry for reference until branding/placeholder decision is final.)
 Item D.2 is a spam-protection concern on `/contact` — resolve before the form goes live for public traffic.
 Item D.3 is a small visual alignment issue revealed by Path 1 (Dripyard-owns-the-gutter). Pre-existing, low-stakes — resolve during a dedicated spacing reconciliation pass if at all.
+Item D.4 is a site-wide breadcrumb verification task — fold into the next a11y pass or run as a scripted check before external review.
 Section E items are deferred article-detail-page issues. E.1 and E.3 are editorial decisions; E.2 is a minor visual imperfection; E.4 is a naming/config mismatch that will bite later content editors; E.5 lists unperformed audits.
-Section F tracks book-pages polish that was intentionally deferred from the Pass 2 functional landing. See `neonbyte-plan--book-pages.md` for the active work-stream. **F.2** is an editorial follow-up from Pass 3.A.3: five book roots need hero bodies authored so they don't render oddly under the new `node--book--landing.html.twig` template.
+Section F tracks book-pages polish that was intentionally deferred from the Pass 2 functional landing. See `neonbyte-plan--book-pages.md` for the active work-stream. **F.2** is an editorial follow-up from Pass 3.A.3: five book roots need hero bodies authored so they don't render oddly under the new `node--book--landing.html.twig` template. **F.3** is the mobile T3 sign-off for `/automated-testing-kit` — low risk, worth knocking out at the start of the next session.
 Nothing here is blocking the merge of the `/articles-2` work-stream or the article-detail improvements landed this session.
