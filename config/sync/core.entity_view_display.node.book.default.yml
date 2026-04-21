@@ -6,6 +6,7 @@ dependencies:
     - field.field.node.book.body
     - node.type.book
   module:
+    - book
     - text
     - user
 id: node.book.default
@@ -19,6 +20,11 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 0
+    region: content
+  book_navigation_without_tree:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 110
     region: content
   links:
     settings: {  }

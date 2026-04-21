@@ -141,7 +141,9 @@ git commit -m "theme(book): hide submitted byline, enable breadcrumb, highlight 
 
 **Verification:** T3 on three interior pages — first chapter (no prev), middle chapter (prev + next + up), last chapter (no next). Prev/next links navigate correctly.
 
-**Status:** ⬜ Not started
+**Status:** ✅ Completed 2026-04-20 (functional) — took a different path from (a)/(b)/(c) once tracing revealed the book module's extra-field mechanism. Added `book_navigation_without_tree` to the `node.book.default` view display at `region: content, weight: 110`. This flips the book-module's `book_node_view` hook to inject the prev/next/up render array (was previously suppressed because neither `book_navigation` nor `book_navigation_without_tree` was present in the display config — see `BookHooks.php:183`). `_without_tree` variant chosen so we don't duplicate the full book TOC that the sidebar already renders. T1 confirmed `<nav aria-label="Book traversal links for ...">` with correct prev/up/next on interior pages. Drupal treats the book root as the predecessor of the first chapter — that's expected behavior, not a bug.
+
+**Visual state:** Currently browser-default styling (plain `<ul>`). User signed off at this stage. Amber pill/arrow-tile polish deferred to Pass 2b if/when desired.
 
 ### Pass 2 commit point
 
@@ -286,7 +288,7 @@ Follow [`visual-regression-strategy.md`](../ai_guidance/frameworks/drupal/themin
 ## Sign-off
 
 - [x] Pass 1 complete + committed (2026-04-20)
-- [ ] Pass 2 complete + committed
+- [x] Pass 2 complete + committed (2026-04-20, functional only — styling polish deferred)
 - [ ] Pass 3 path chosen + committed
 - [ ] Pass 4 items either landed or promoted to GET-BACK-TO-THESE
 - [ ] Re-audit pass: T1 → T2 → T3 on all four verification URLs

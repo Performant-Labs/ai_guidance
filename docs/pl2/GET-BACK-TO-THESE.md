@@ -229,6 +229,29 @@ Listed for audit trail; no further action needed.
 
 ---
 
+## F. Book pages deferrals (2026-04-20)
+
+From the `/automated-testing-kit` (title) + `/automated-testing-kit/introduction` (interior) audit and Pass 2 implementation. See [`neonbyte-plan--book-pages.md`](neonbyte-plan--book-pages.md) for the full work-stream.
+
+### F.1 — Book prev/next/up nav renders with browser-default styling
+
+**Observed:** After Pass 2 of the book-pages work (added `book_navigation_without_tree` to the `node.book.default` view display), interior book pages now render a `<nav aria-label="Book traversal links for ...">` below the body content, containing prev/up/next `<a>` elements wrapped in `<li class="book-traversal__item">`. Currently presents as a plain bulleted list with default link colors and no horizontal rhythm.
+
+**Why deferred:** Functional win landed; visual polish wasn't part of the Pass 2 scope and editorial/design direction isn't yet set. User signed off on the unstyled render at Pass 2.
+
+**Polish options when resumed, cheapest → richest:**
+- a) **Inline row + thin top border.** Hide `<li>` bullets, set the `<ul>` to `display: flex; justify-content: space-between`, top border separating the nav from the body. ~15 lines of CSS, matches the understated docs aesthetic.
+- b) **Arrow-tile treatment.** Prev on the left, Up centered, next on the right; amber hover; heavier weight for the chapter titles. The `rel="prev"` / `rel="next"` attributes make this selector-friendly.
+- c) **Full prev/next cards.** Two equal-width tiles below the body reading "← Previous: Introduction" and "Next: Frequently Asked Questions →", chapter titles bold; Up link as a small text link above or inline with the breadcrumb. Richest look; more CSS; may need a template tweak to get the "Previous:" / "Next:" labels added (currently just `<b>‹</b>` / `<b>›</b>` glyphs from the core template).
+
+**Scope if fixed via (a):** One new file `css/components/book-pager.css` + library entry + libraries-extend mapping (or add to `docs.css` if that's the shared home for docs-page polish).
+
+**Scope if fixed via (b) or (c):** Same structure, more CSS; (c) may also want a `node--book--full.html.twig` (or a `book-navigation.html.twig`) override for the prepended labels.
+
+**Verification:** T3 at desktop + mobile on first/middle/last chapter. Confirm prev/next links read clearly, don't collide with footer, match the "docs" visual vocabulary used elsewhere in this theme (amber accent, understated borders).
+
+---
+
 ## Triage notes
 
 Items in sections A and B are low-medium stakes, defer to pre-launch or a dedicated a11y/visual pass.
@@ -237,4 +260,5 @@ Item D.1 is a site-wide visible-chrome bug — promote before next external revi
 Item D.2 is a spam-protection concern on `/contact` — resolve before the form goes live for public traffic.
 Item D.3 is a small visual alignment issue revealed by Path 1 (Dripyard-owns-the-gutter). Pre-existing, low-stakes — resolve during a dedicated spacing reconciliation pass if at all.
 Section E items are deferred article-detail-page issues. E.1 and E.3 are editorial decisions; E.2 is a minor visual imperfection; E.4 is a naming/config mismatch that will bite later content editors; E.5 lists unperformed audits.
+Section F tracks book-pages polish that was intentionally deferred from the Pass 2 functional landing. See `neonbyte-plan--book-pages.md` for the active work-stream.
 Nothing here is blocking the merge of the `/articles-2` work-stream or the article-detail improvements landed this session.
