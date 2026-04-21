@@ -4,6 +4,34 @@ Running log of T3 findings, newest at top. Written from the subagent/worker that
 
 ---
 
+## 2026-04-21 — /automated-testing-kit mobile T3 sign-off (F.3)
+
+**User request:** Proceed with F.3 — mobile T3 at 375×667 for `/automated-testing-kit`, deferred from the 2026-04-20 Pass 3.A.3 session because the Chrome-extension `resize_window` call succeeded at the browser-chrome layer but the rendering viewport stayed at 1728px. Run via an alternative T3 path.
+
+**Method:**
+- Tier 1 curl (mobile UA) confirmed HTTP 200, `.book-landing` wrapper present (3 occurrences), `book-landing.css?tdtv8m` loaded, `<h1 class="page-title">` + value-prop h2 "End-to-end testing utilities…" + "What's inside" h2 all in markup, `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
+- Tier 3 via Playwright + chromium in-sandbox (headless) at `viewport: { width: 375, height: 667 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true` with iPhone UA. Full-page + element-scoped screenshots saved to workspace folder; layout metrics read via `page.evaluate()`.
+
+**Screenshots:**
+- `t3-automated-testing-kit-mobile375-2026-04-21.png` (full page)
+- `t3-automated-testing-kit-mobile375-hero-2026-04-21.png` (viewport only, above the fold)
+- `t3-atk-mobile375-book-landing-2026-04-21.png` (element-scoped crop of `.book-landing`)
+
+**Checklist (all pass):**
+
+| Check | Evidence |
+|---|---|
+| Eyebrow / h2 / lede / CTA row stack cleanly and readable | Value-prop h2 computed `font-size: 28px` (clamp min at 375px since 3.5vw ≈ 13px); wraps across 3 lines inside the viewport width. Eyebrow "DRUPAL MODULE" renders as small amber caps. Lede flows normally under the h2. |
+| CTA row wraps without awkward truncation | Primary "Read the Introduction →" (221×49) alone on row 1 at `top: 1583`; secondaries "Install" (85×51) + "Run your first test" (173×51) side-by-side on row 2 at `top: 1644`. Total row height 112px; gap 12px between rows. `flex-wrap: wrap` works as intended. |
+| "What's inside" features list renders as a single column | `grid-template-columns: 243.234px` (single track; matches the `<640px` CSS path). All 6 list items stack vertically. |
+| No horizontal overflow | `document.body.scrollWidth === window.innerWidth === 375`; `hasHorizontalScroll: false`. |
+
+**Artifact caveat:** Element-scoped screenshot of `.book-landing` shows the sticky site header compositing over the CTA row — an artifact of Playwright's `locator.screenshot()` (scrolls the element into view and captures full element height, so the sticky header that overlaps the element at that scroll position gets composited into the frame). In natural scrolling, the sticky header is at the top of the viewport and the CTA row is unoccluded when the user reaches it. Not a real regression. Full-page screenshot shows the primary CTA rendered cleanly (white text on amber fill).
+
+**Status:** ✅ Mobile T3 passes. Pass 3.A.3 is now fully signed off across desktop (1440, verified 2026-04-20) and mobile (375, verified 2026-04-21). Closes parking-lot item F.3.
+
+---
+
 ## 2026-04-20 — /services Pass 2: atmospheric page-title backdrop
 
 **User request:** After Pass 1 approval — "Pass 1 looks good. Proceed." The next item on the /services audit punch-list was P6 (atmospheric backdrop for the page-title band). Same mandate carried from Pass 1: use the 3-tier system, follow theme-change workflow, seek DRY opportunities across home + interior pages, cover mobile.

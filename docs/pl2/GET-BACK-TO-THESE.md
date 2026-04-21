@@ -290,20 +290,6 @@ Only node 20 has the hand-authored hero body (the seven-block structure: eyebrow
 
 **See:** `neonbyte-plan--book-pages.md` Pass 3.A for the authored-content contract.
 
-### F.3 — Mobile T3 sign-off for `/automated-testing-kit` not captured (2026-04-20)
-
-**Observed:** Pass 3.A.3 closed out with desktop T3 (1440 viewport) verified in Chrome — primary CTA visible (white on amber), secondaries outlined, hero structure rendering correctly. Mobile T3 at 375 viewport could not be captured in-session because the Chrome-extension `resize_window` call succeeded at the browser-chrome layer but the rendering viewport stayed at the host window's width (`window.innerWidth` remained 1728 after a resize call that reported success).
-
-**Why deferred:** The mobile CSS path in `css/components/book-landing.css` is simple — `@media (min-width: 640px)` switches the features list to a 2-column grid; below that it's a 1-column stack. CTA row uses `flex-wrap: wrap`. No complex responsive behavior to regress.
-
-**When to revisit:** Next session, via Chrome DevTools device toolbar manually, or any tool that can genuinely emulate a 375px viewport. Verify:
-- Eyebrow / h2 / lede / CTA row stack cleanly and remain readable.
-- CTA row wraps to a column without awkward truncation.
-- "What's inside" features list renders as a single column.
-- No horizontal overflow from the value-prop h2 or any long anchor label.
-
-**Scope if a regression is found:** Narrow CSS tweak in `book-landing.css` media-query blocks.
-
 ---
 
 ## Triage notes
@@ -315,5 +301,5 @@ Item D.2 is a spam-protection concern on `/contact` — resolve before the form 
 Item D.3 is a small visual alignment issue revealed by Path 1 (Dripyard-owns-the-gutter). Pre-existing, low-stakes — resolve during a dedicated spacing reconciliation pass if at all.
 Item D.4 is a site-wide breadcrumb verification task — fold into the next a11y pass or run as a scripted check before external review.
 Section E items are deferred article-detail-page issues. E.1 and E.3 are editorial decisions; E.2 is a minor visual imperfection; E.4 is a naming/config mismatch that will bite later content editors; E.5 lists unperformed audits.
-Section F tracks book-pages polish that was intentionally deferred from the Pass 2 functional landing. See `neonbyte-plan--book-pages.md` for the active work-stream. **F.2** is an editorial follow-up from Pass 3.A.3: five book roots need hero bodies authored so they don't render oddly under the new `node--book--landing.html.twig` template. **F.3** is the mobile T3 sign-off for `/automated-testing-kit` — low risk, worth knocking out at the start of the next session.
+Section F tracks book-pages polish that was intentionally deferred from the Pass 2 functional landing. See `neonbyte-plan--book-pages.md` for the active work-stream. **F.2** is an editorial follow-up from Pass 3.A.3: five book roots need hero bodies authored so they don't render oddly under the new `node--book--landing.html.twig` template. **F.3** was closed out 2026-04-21 — mobile T3 sign-off passed via Playwright at 375×667; see `visual-regression-report.md` for details.
 Nothing here is blocking the merge of the `/articles-2` work-stream or the article-detail improvements landed this session.
