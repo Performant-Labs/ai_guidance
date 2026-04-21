@@ -155,6 +155,80 @@ The SVG declares `width="100%" height="100%"` rather than a concrete size. Used 
 
 ---
 
+## E. Article detail page findings (2026-04-20)
+
+From the `/articles/version-10-automated-testing-kit-ready` audit. Three issues were resolved in this session and are listed at the bottom for reference. Remaining items below are deferred.
+
+### E.1 — Heading hierarchy inside the article body is all `<h3>`, no `<h2>`
+
+**Observed:** The article `/articles/version-10-automated-testing-kit-ready` contains 12 section headings, all `<h3>`. The only higher-level heading in reading order is the article `<h1>` (title). There is no `<h2>` anywhere in the body. The h3 chain continues with `<h5>` elements nested under them (the `@alters-db` / `@smoke` / … labels).
+
+**Cause:** Editorial, not template. The WYSIWYG editor is offering h2/h3/h4/h5 freely and content editors have consistently picked h3. Matches the pattern found in **A.1** (the `/articles-2` views block also emits h3 cards with no intervening h2).
+
+**Why deferred:** Editorial fix, not a plumbing change. Also: the "On this page" TOC implemented in this session works fine across a flat h3 list, and upgrading the first-level body headings from h3 → h2 will need an editorial review of every article at once so the TOC nesting stays sensible.
+
+**Before fixing:** Decide whether the Article content type should enforce h2 as the first body-level heading (via text-format filter or editorial guideline). Survey the other articles to see whether any are already using h2.
+
+**Scope if fixed:** Content-editor pass on every article node (batch find-and-replace across `node.*.body` might work if WYSIWYG is using consistent markup, otherwise per-article manual). No code change required.
+
+### E.2 — `.header-article` wrapper has `margin-inline: -14.4062px 0`
+
+**Observed:** The `.header-article` element (neonbyte SDC) renders with `margin-inline: -14.4062px 0` — a sub-pixel negative value pulling the hero to the left of its container.
+
+**Cause:** Neonbyte's header-article component sets `margin-inline-start: calc(50% - 50cqw)` or similar to break out of the content container. The fractional px is a layout-math byproduct, not an authored value. The right side is 0 (not balanced), which creates an asymmetric break-out.
+
+**Why deferred:** Visually minor — at most viewports the hero still fills the viewport width and the imbalance reads as "close enough". Not a regression; it's been there since the neonbyte install. Fixing it requires an override of the upstream break-out formula, which might ripple into other header-article consumers.
+
+**When to revisit:** If design surfaces the asymmetry as a visual complaint, or during a pass that addresses page-break-out math generally.
+
+**Scope if fixed:** Subtheme override of `.header-article` margin rule — set both sides explicitly (e.g. `margin-inline: auto`) or recompute the break-out with symmetric math. Small CSS, easy to reason about.
+
+### E.3 — No kicker/byline/date rendered in the article hero
+
+**Observed:** The article hero shows only the title and the hero image. There is no category pill/kicker, no byline, no publication date displayed to the reader.
+
+**Cause:** Two contributing factors:
+- `display_submitted` on the Article content type (or on the `full` view mode) is likely false, suppressing the `By {{ author_name }} on {{ date }}` block that the `header-article` embed would otherwise render (see the `meta_content` block in `node--article--full.html.twig` at lines 84–89).
+- `field_tags` are rendered into the hero as the `tags` slot but may be empty on individual articles.
+
+**Why deferred:** Editorial/design decision: does Performant Labs want a visible byline and date on articles? Some content strategies omit them deliberately (perceived-evergreen content); others consider them credibility signals. A kicker/category in the hero would also need a field decision (reuse `field_tags`? add a `field_category`?).
+
+**When to revisit:** During a content-model review or when the article page design gets a formal revisit. If enabled, the existing template slots will handle it — just toggle `display_submitted` and verify hero layout still holds.
+
+**Scope if enabled:** Config edit (`display_submitted: true` on `node.type.article` and/or `core.entity_view_display.node.article.full`) + `drush cim` + T3 re-verify that the hero meta band reads correctly against the dark gradient.
+
+### E.4 — Focal-point image styles named "16:9" actually render 5:3
+
+**Observed:** The Dripyard focal-point image style suite ships entries whose machine names / labels imply 16:9 (e.g. `focal_point_16_9_*`) but whose effect chain is configured for a 5:3 crop. When `field_image` on articles was originally displayed via a plain `image.style.large`, the upscaling issue in **Issue C** (fixed this session) was magnified by the square source image; the focal-point styles would have added a second layer of mismatch if they had been selected.
+
+**Cause:** Upstream Dripyard config — the style's crop action uses 1000×600 or 800×480 dimensions (5:3 = 1.67) rather than 1600×900 or 1280×720 (16:9 = 1.78). Either the labels are wrong or the crops are wrong; the two don't match.
+
+**Why deferred:** Not a live bug — the article full display was switched to a clean `16_9_wide` responsive image style this session, so no article currently consumes the mis-labeled focal-point styles. But future content editors who see a style named "focal_point_16_9" and expect 16:9 output will be confused.
+
+**When to revisit:** Either rename the styles (cheapest, editorial) or re-crop them to true 16:9 (more ripple — existing images referenced via these styles would re-render at new dimensions). Choice depends on whether any current image usage relies on the 5:3 actual output.
+
+**Scope if renamed:** `image.style.focal_point_16_9_*.yml` label edit + machine-name considerations + `drush cim`.
+
+### E.5 — Audits not yet performed on article detail pages
+
+These passes are valuable but scoped out of the current session. Listed here so they don't get forgotten.
+
+- **SEO meta.** `<title>`, `meta description`, canonical URL, Open Graph and Twitter card tags. Verify via curl/headless — confirm each article node emits a usable OG image (likely the `field_image` rendered through a dedicated OG-sized style), a description field (either `body` summary or a dedicated `field_seo_description`), and a canonical URL that resolves to the article's own path.
+- **Color contrast (WCAG 2.1 AA).** Body text, link color, code block fg/bg, TOC active-link amber against white sidebar, h5 amber-monospace against body. Spot check with a tool like axe or the contrast ratio math; flag anything below 4.5:1 for body or 3:1 for large text.
+- **Keyboard navigation.** Tab through the page — order should flow header → main content → TOC → footer; focus indicators visible on every interactive element; TOC links reachable and activating on Enter. Verify no keyboard trap in embedded code fences or any interactive widgets.
+- **Performance.** Lighthouse run at mobile/desktop on at least two articles. Watch for LCP (likely the hero image — verify the 16:9 derivative picked is the correct size for the viewport), CLS (hero `aspect-ratio` fix should resolve it but confirm), and JS bundle cost of the newly-added `article-toc.js`.
+- **Print stylesheet.** Browser print preview a long article. Current state will likely show the header/nav and footer in the printed output, which wastes paper. A `@media print` rule in the article-full library could hide nav/footer/TOC and widen the content column. Low priority but easy win.
+
+### E.6 — Resolved this session (reference)
+
+Listed for audit trail; no further action needed.
+
+- **(B)** `<h5>` tags inside `.article-full .node__content` now render as monospace amber code-identifier labels, restoring visual hierarchy for code-annotation terms (`@alters-db`, `@smoke`, `@skip`, …). `css/components/article-full.css` at (0,3,1) via `article-full-override` library.
+- **(C)** Hero image on article full display switched from `image.style.large` to `responsive_image_style.16_9_wide`, and a CSS guard (`.header-article__image img { aspect-ratio: 16/9; object-fit: cover; height: auto; }`) prevents 480×480 source uploads from rendering as 1800×1080 upscale squares. Desktop page height dropped ~1,620px; mobile picks a correct-sized derivative.
+- **"On this page" TOC.** `js/article-toc.js` scans h2/h3 in `.grid-area--content`, assigns slug IDs, builds a sticky right-column nav. `css/components/article-toc.css` overrides neonbyte's `.grid` at >=1024px so sidebar-second always renders; hidden below that breakpoint. IntersectionObserver drives active-link amber highlight.
+
+---
+
 ## Triage notes
 
 Items in sections A and B are low-medium stakes, defer to pre-launch or a dedicated a11y/visual pass.
@@ -162,4 +236,5 @@ Items in section C are decisions, not bugs — they wait on product/content inpu
 Item D.1 is a site-wide visible-chrome bug — promote before next external review. (Resolved 2026-04-20 via `logo.svg` intrinsic-size fix; leaving entry for reference until branding/placeholder decision is final.)
 Item D.2 is a spam-protection concern on `/contact` — resolve before the form goes live for public traffic.
 Item D.3 is a small visual alignment issue revealed by Path 1 (Dripyard-owns-the-gutter). Pre-existing, low-stakes — resolve during a dedicated spacing reconciliation pass if at all.
-Nothing here is blocking the merge of the `/articles-2` work-stream.
+Section E items are deferred article-detail-page issues. E.1 and E.3 are editorial decisions; E.2 is a minor visual imperfection; E.4 is a naming/config mismatch that will bite later content editors; E.5 lists unperformed audits.
+Nothing here is blocking the merge of the `/articles-2` work-stream or the article-detail improvements landed this session.
