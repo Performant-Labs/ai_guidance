@@ -10,6 +10,7 @@ libraries:
   - performant_labs_20260418/canvas-layout          # Layout 1: canvas full-width guard
   - performant_labs_20260418/docs-layout            # Layout 2: docs two-column sidebar grid
   - performant_labs_20260418/spacing-normalization  # Layout 3: header-clearance + title-margin normalization
+  - performant_labs_20260418/typography             # Layout 4: link colour (aqua) + whisper underline
 version: 1.0.0
 generator: 'performant_labs_20260418:unknown-version'
 

@@ -23,6 +23,18 @@ spacing-normalization:
     layout:
       css/layout/spacing-normalization.css: {}
 
+# Site-wide typography tuning — link color + whisper underline.
+# Layer 3: retunes --theme-link-color at :root (was navy-derived via
+#   dripyard_base/css/themes/theme-white.css; this site's brand is aqua).
+#   Colour: oklch(0.45 0.11 220) = 6.88:1 on white (passes WCAG AA).
+# Layer 4: scoped box-shadow override on .text-content a:not(.button) to
+#   soften dripyard's solid "glimmer" underline to a 40%-opacity whisper.
+# See file header for the full cascade trace.
+typography:
+  css:
+    layout:
+      css/layout/typography.css: {}
+
 # Docs two-column sidebar layout (book content type).
 # Global library — .docs-page scope limits reach to pages where
 # page--documentation.html.twig renders (Component #8 activates it).
