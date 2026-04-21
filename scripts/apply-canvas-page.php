@@ -29,9 +29,29 @@
  * array_merges the patch over the existing inputs (preserving untouched
  * keys), and re-encodes to match Canvas's on-disk format.
  *
- * Structural changes (add/remove/reorder components, change component_id,
- * slot, or parent_uuid) are out of scope for overlays — those require a
- * full YAML replace, which is a future extension.
+ * Structural additions are supported via `add_components` (append a block
+ * of one-or-more components after a named anchor in the stored array).
+ * Removals, reorders, and in-place component_id / slot / parent_uuid
+ * changes are still out of scope — those require a full YAML replace.
+ *
+ * `add_components` shape:
+ *
+ *   add_components:
+ *     after_uuid: <existing-component-uuid>   # insertion anchor
+ *     components:
+ *       - uuid: <new-uuid>
+ *         component_id: sdc.foo.bar
+ *         component_version: <hash>
+ *         parent_uuid: <uuid-or-omit-for-root>
+ *         slot: <slot-or-omit-for-root>
+ *         inputs: { ... raw object; script json_encodes it ... }
+ *
+ * The whole block is inserted as a contiguous run right after the anchor
+ * in the stored components array. Children must appear after their parent
+ * in the list (Canvas stores the tree flattened in traversal order).
+ *
+ * Idempotency: if the FIRST new uuid already exists on the page, the
+ * entire add block is skipped and reported — safe to re-run.
  *
  * Usage (from inside DDEV, CWD = /var/www/html/web for drush php:script):
  *   ddev drush php:script scripts/apply-canvas-page.php \
@@ -129,6 +149,90 @@ if (!empty($overlay['component_inputs'])) {
   }
 
   $entity->set('components', $components);
+}
+
+// Structural additions: append a contiguous block of new components after
+// a named anchor in the stored array.
+if (!empty($overlay['add_components'])) {
+  $add = $overlay['add_components'];
+  $anchor = $add['after_uuid'] ?? NULL;
+  $new_components = $add['components'] ?? [];
+
+  if (!$anchor) {
+    fwrite(STDERR, "add_components missing after_uuid — skipped.\n");
+  }
+  elseif (empty($new_components)) {
+    fwrite(STDERR, "add_components.components is empty — nothing to add.\n");
+  }
+  else {
+    // Reload components fresh so we layer cleanly on top of any
+    // component_inputs patches applied above.
+    $components = $entity->get('components')->getValue();
+    $existing_uuids = array_column($components, 'uuid');
+
+    // Idempotency: if the first new uuid already lives on the page, assume
+    // the whole block has been applied before and skip.
+    $first_new_uuid = $new_components[0]['uuid'] ?? NULL;
+    if ($first_new_uuid && in_array($first_new_uuid, $existing_uuids, TRUE)) {
+      $changes[] = "add_components: skipped (first new uuid {$first_new_uuid} already present — assumed previously applied)";
+    }
+    else {
+      // Locate anchor index.
+      $anchor_index = NULL;
+      foreach ($components as $i => $c) {
+        if (($c['uuid'] ?? NULL) === $anchor) {
+          $anchor_index = $i;
+          break;
+        }
+      }
+      if ($anchor_index === NULL) {
+        fwrite(STDERR, "add_components: anchor {$anchor} not found on the page — skipped.\n");
+      }
+      else {
+        // Build the normalized component records Canvas expects.
+        $built = [];
+        foreach ($new_components as $nc) {
+          if (empty($nc['uuid']) || empty($nc['component_id']) || empty($nc['component_version'])) {
+            fwrite(STDERR, "add_components: entry missing uuid/component_id/component_version — aborting add.\n");
+            $built = NULL;
+            break;
+          }
+          if (in_array($nc['uuid'], $existing_uuids, TRUE)) {
+            fwrite(STDERR, "add_components: uuid {$nc['uuid']} already on page — aborting add (partial prior apply?).\n");
+            $built = NULL;
+            break;
+          }
+          $record = [
+            'uuid' => $nc['uuid'],
+            'component_id' => $nc['component_id'],
+            'component_version' => $nc['component_version'],
+            // Canvas stores inputs as a JSON string on content entities.
+            'inputs' => json_encode($nc['inputs'] ?? (object) []),
+            'label' => $nc['label'] ?? NULL,
+          ];
+          if (!empty($nc['parent_uuid'])) {
+            $record['parent_uuid'] = $nc['parent_uuid'];
+          }
+          if (!empty($nc['slot'])) {
+            $record['slot'] = $nc['slot'];
+          }
+          $built[] = $record;
+        }
+
+        if ($built !== NULL) {
+          $before = array_slice($components, 0, $anchor_index + 1);
+          $after = array_slice($components, $anchor_index + 1);
+          $components = array_merge($before, $built, $after);
+          $entity->set('components', $components);
+          foreach ($built as $b) {
+            $parent_note = !empty($b['parent_uuid']) ? " (parent {$b['parent_uuid']}, slot {$b['slot']})" : ' (root)';
+            $changes[] = "+ component {$b['uuid']} {$b['component_id']}{$parent_note}";
+          }
+          $changes[] = "inserted " . count($built) . " components after anchor {$anchor} (position " . ($anchor_index + 1) . ")";
+        }
+      }
+    }
+  }
 }
 
 if (empty($changes)) {

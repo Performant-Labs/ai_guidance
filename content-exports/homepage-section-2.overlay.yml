@@ -1,0 +1,142 @@
+#
+# Homepage — Section 2 (Trust bar / client logos).
+#
+# From the approved Phase 3 homepage brief (docs/pl2/briefs/homepage.md §2).
+# Adds a white max-width section containing a centered logo-grid with 6
+# client logo-item-canvas entries, one per media entity seeded by
+# scripts/seed-client-logos.php.
+#
+# Per the brief: no copy, no overline, logos not clickable (trust bar
+# convention). Goldman omitted pending Prize/Sachs disambiguation.
+#
+# Inserted directly after the hero (root UUID
+# 1651496e-60ab-4ca8-893a-33fe15f89a43).
+#
+# Apply with (from project root inside DDEV):
+#   ddev drush php:script scripts/apply-canvas-page.php \
+#     ../content-exports/homepage-section-2.overlay.yml dry-run
+# (Drop `dry-run` to actually save.)
+#
+# Component versions verified against config/sync on 2026-04-21.
+# sdc.dripyard_base.section          → e6079b189d228dad
+# sdc.dripyard_base.logo-grid        → ce3f2429d9631143
+# sdc.dripyard_base.logo-item-canvas → 3c9e4bde3fcefeed  (drifted from
+#                                       recipe's db23bb5fe9afd12e — use the
+#                                       active_version from config/sync)
+#
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: bb5bbbb1-4a16-4b86-bbea-b215ab8096cf
+
+overlay:
+  add_components:
+    # Anchor: insert directly after the hero section root.
+    after_uuid: 1651496e-60ab-4ca8-893a-33fe15f89a43
+
+    components:
+
+      # --- Section wrapper (root-level) ---
+      - uuid: db4ecb86-bd54-4fdc-8f91-5f586043c4e2
+        component_id: sdc.dripyard_base.section
+        component_version: e6079b189d228dad
+        inputs:
+          theme: white
+          section_width: max-width
+          content_width: max-width
+          margin_top: zero
+          margin_bottom: zero
+          padding_top: medium
+          padding_bottom: medium
+
+      # --- Logo grid inside the section's `content` slot ---
+      - uuid: 3e957576-deb2-4584-adf1-eac362993aab
+        parent_uuid: db4ecb86-bd54-4fdc-8f91-5f586043c4e2
+        slot: content
+        component_id: sdc.dripyard_base.logo-grid
+        component_version: ce3f2429d9631143
+        inputs:
+          logo_size: medium
+          layout: center
+          logo_background: transparent
+          logo_border_radius: small
+
+      # --- Six logo-item-canvas, one per seeded media entity ---
+
+      # CBS Interactive
+      - uuid: 199e0674-b3fd-468a-bb45-1116fb79afe2
+        parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+        slot: logo_grid_content
+        component_id: sdc.dripyard_base.logo-item-canvas
+        component_version: 3c9e4bde3fcefeed
+        inputs:
+          href: null
+          image:
+            CANVAS_ENTITY_REFERENCE:
+              target_uuid: c67152a7-b5ab-45e2-afa1-57b0619a364e
+              target_type: media
+
+      # DocuSign
+      - uuid: f8c11102-6073-49d6-bfb0-ac3e4ca1100e
+        parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+        slot: logo_grid_content
+        component_id: sdc.dripyard_base.logo-item-canvas
+        component_version: 3c9e4bde3fcefeed
+        inputs:
+          href: null
+          image:
+            CANVAS_ENTITY_REFERENCE:
+              target_uuid: 09bcb4bd-bc1f-4df5-bd3d-5968b7718fb2
+              target_type: media
+
+      # Orange
+      - uuid: f3ee89e3-d288-4c61-9815-5c8c4596c55e
+        parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+        slot: logo_grid_content
+        component_id: sdc.dripyard_base.logo-item-canvas
+        component_version: 3c9e4bde3fcefeed
+        inputs:
+          href: null
+          image:
+            CANVAS_ENTITY_REFERENCE:
+              target_uuid: 888c4702-de32-400b-90bd-80a19088aeda
+              target_type: media
+
+      # Renesas Electronics
+      - uuid: 352be378-403a-4f6b-aff7-93be270d6607
+        parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+        slot: logo_grid_content
+        component_id: sdc.dripyard_base.logo-item-canvas
+        component_version: 3c9e4bde3fcefeed
+        inputs:
+          href: null
+          image:
+            CANVAS_ENTITY_REFERENCE:
+              target_uuid: 2616f0f1-3e3b-46cf-b087-b4f9081960f4
+              target_type: media
+
+      # Robert Half
+      - uuid: c4ea0954-5a80-436a-87d7-7757cf4dd678
+        parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+        slot: logo_grid_content
+        component_id: sdc.dripyard_base.logo-item-canvas
+        component_version: 3c9e4bde3fcefeed
+        inputs:
+          href: null
+          image:
+            CANVAS_ENTITY_REFERENCE:
+              target_uuid: b4470ad4-7741-4c3e-a5ed-9b88e1dbc46d
+              target_type: media
+
+      # Tesla
+      - uuid: dbc87634-c5f3-415d-8343-7e96069e2b01
+        parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+        slot: logo_grid_content
+        component_id: sdc.dripyard_base.logo-item-canvas
+        component_version: 3c9e4bde3fcefeed
+        inputs:
+          href: null
+          image:
+            CANVAS_ENTITY_REFERENCE:
+              target_uuid: 35b10ebb-5e7e-4b02-a957-dbe88a0c97ed
+              target_type: media
