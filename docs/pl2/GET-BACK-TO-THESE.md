@@ -88,6 +88,30 @@ Created 2026-04-20 during the `articles-2` Canvas page work-stream.
 
 ## D. Site-wide visual issues
 
+### D.3 — 6px title-vs-content horizontal misalignment on Canvas pages (2026-04-20)
+
+**Observed:** On every Canvas page (`/contact`, `/articles-2`, `/open-source-projects`, etc.) at mobile (375px) and on up, the page `<h1>` is inset **20px** from the viewport edge while the content below it — form, views block, card grid, prose — is inset **~14px** (a fractional value from auto-centering). Visible as a small leftward "tuck" between the title and the content stacked beneath it.
+
+**Cause — two different gutter owners:**
+
+- **Title band** (`.block-page-title-block`): padding-inline comes from Pass 2 in `css/layout/canvas.css` and resolves to `var(--spacing-xs, 1.25rem)` = **20px** at <601px viewport.
+- **Content** (`.dy-section__container.container` inside a Canvas-placed Basic Section): gutter comes from Dripyard's `.container` class (upstream) which sets a `max-width` and centers via `margin-inline: auto`. At 375px viewport the math works out to **~13–14px** auto-margin on each side — not a token, a byproduct.
+
+The two paddings are declared in different places with different semantics (authored spacing token vs. leftover viewport space from max-width centering), so they don't agree.
+
+**Why deferred:** Not a regression — this misalignment pre-existed the mobile-spacing work and was only made visible once we committed to the "single gutter owner per Canvas page" architecture (Path 1). A few possible reconciliations, each with trade-offs:
+
+- a) **Retune Pass 2** to match Dripyard's `.container` gutter — swap `var(--spacing-xs, 1.25rem)` for the same value `.container` produces. Risk: `.container` is a viewport-derived value, not a fixed token, so "matching" it means either computing or hardcoding. Hardcoding couples Pass 2 to an upstream value we don't own.
+- b) **Retune Dripyard's `.container`** (via subtheme override) to emit `padding-inline: var(--spacing-xs)` at mobile instead of auto-margins. Matches tokens exactly; pulls the gutter contract into our subtheme. Risk: `.container` is used in many places by Dripyard, and an override could ripple into non-Canvas contexts.
+- c) **Wrap the title in a Basic Section** in the same way content is, so h1 and body share one gutter owner. Matches Canvas composition theory; changes authoring workflow (h1 would need to live inside a section component rather than render from the Drupal page-title region).
+- d) **Accept the 6px discrepancy** as a minor visual imperfection; most visitors won't notice. Cheapest; trades pixel perfection for architectural calm.
+
+**When to revisit:** During a dedicated spacing/design-tokens reconciliation pass, or if the visual offset becomes a user-visible complaint. Verify by T3 at 375/1440 on at least `/contact`, `/articles-2`, `/open-source-projects` — confirm h1 x-offset equals content-first-element x-offset.
+
+**Scope if fixed via (a):** Single Pass 2 edit + `drush cr` + re-verify.
+**Scope if fixed via (b):** Subtheme CSS override of `.container` + re-verify every page that uses `.container` (more than just Canvas pages).
+**Scope if fixed via (c):** Editorial change on every Canvas page (one-time content edit per page) + verify title band visual chrome still reads correctly when emitted from a Basic Section wrapper instead of the theme region.
+
 ### D.2 — FriendlyCaptcha sitekey appears unresolved on `/contact` (2026-04-20)
 
 **Observed:** During T3 verification of the new `/contact` Canvas page, the rendered FriendlyCaptcha markup contains a literal `${site_uuid}` token rather than a real sitekey:
@@ -137,4 +161,5 @@ Items in sections A and B are low-medium stakes, defer to pre-launch or a dedica
 Items in section C are decisions, not bugs — they wait on product/content input.
 Item D.1 is a site-wide visible-chrome bug — promote before next external review. (Resolved 2026-04-20 via `logo.svg` intrinsic-size fix; leaving entry for reference until branding/placeholder decision is final.)
 Item D.2 is a spam-protection concern on `/contact` — resolve before the form goes live for public traffic.
+Item D.3 is a small visual alignment issue revealed by Path 1 (Dripyard-owns-the-gutter). Pre-existing, low-stakes — resolve during a dedicated spacing reconciliation pass if at all.
 Nothing here is blocking the merge of the `/articles-2` work-stream.
