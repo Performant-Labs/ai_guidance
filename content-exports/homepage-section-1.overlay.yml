@@ -1,0 +1,39 @@
+#
+# Homepage — Section 1 (Hero) content swap.
+#
+# From the approved Phase 3 homepage brief (docs/pl2/briefs/homepage.md §1).
+# Applies surgical changes to three component instances inside the existing
+# neonbyte/hero (root UUID 1651496e-60ab-4ca8-893a-33fe15f89a43).
+#
+# Apply with:
+#   ddev drush php:script scripts/apply-canvas-page.php \
+#     ../content-exports/homepage-section-1.overlay.yml --dry-run
+# (Drop --dry-run to actually save.)
+#
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: bb5bbbb1-4a16-4b86-bbea-b215ab8096cf
+
+overlay:
+  component_inputs:
+
+    # H1 + Primary CTA bundle (sdc.dripyard_base.title-cta).
+    # Was: "Expert Drupal engineering, when you need it most." / "Call today" → /contact
+    26a5ade6-f2ac-44d1-8145-ed4e27c2b7f9:
+      title: "Ship Drupal releases with confidence."
+      button_text: "Book a testing review"
+      button_href: "/contact-us?intent=testing-review"
+
+    # Secondary CTA button (sdc.dripyard_base.button).
+    # Was: "Book a call" → /contact
+    9f99aaed-3a12-4dfe-aa56-32bedc9106ba:
+      text: "See how we test this site"
+      href: "/how-we-built-this-site"
+
+    # Subhead (sdc.dripyard_base.text).
+    # Was: "Performant Labs helps organizations build faster, more reliable
+    #       Drupal sites — with expert engineering, automated testing, and
+    #       open source leadership."
+    8fdea902-b7d7-41c7-aff3-589df86c7802:
+      text: "Performant Labs built the Drupal testing stack the ecosystem already uses (ATK, Testor), extended it with AI workflows that heal broken tests on their own, and — when you need it — embeds senior testing engineers alongside your team."
