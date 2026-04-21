@@ -1,0 +1,99 @@
+/*
+ * @file
+ * article-toc — "On this page" sidebar TOC for article-full nodes.
+ *
+ * DOM: js/article-toc.js injects
+ *   <nav class="article-toc grid-area--sidebar-second">
+ * as a sibling of .grid-area--content inside
+ *   .article-full .node__content .grid
+ *
+ * Scope: ONLY .article-full — other .grid usage (Canvas pages, node teasers)
+ * is untouched.
+ *
+ * Layer 5 override strategy:
+ *   - Neonbyte's .grid (grid.css) defines a fallback 6-col layout where
+ *     sidebar-second lands awkwardly in row 2 cols 5-6 when the @container
+ *     query doesn't fire. To avoid that, we override .grid's columns/areas
+ *     for article-full at the desktop breakpoint and hide the TOC below it.
+ *   - Uses a media query (not a container query) so behavior is predictable
+ *     regardless of whether an ancestor has `container-type: inline-size`.
+ *
+ * Breakpoint: 1024px (matches docs.css). Below this, TOC is hidden and the
+ * article body gets full width as before.
+ */
+
+/* Always hidden below 1024px — no stacked TOC block above/below the body. */
+.article-full .node__content .article-toc {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  /* Override neonbyte's .grid for article-full: explicit two-column layout.
+   * Content column + 240px sidebar for the TOC. Align start so the sticky
+   * nav can climb along with the body. */
+  .article-full .node__content .grid {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    grid-template-areas: "content sidebar-second";
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .article-full .node__content .article-toc {
+    display: block;
+    position: sticky;
+    top: var(--space-for-fixed-header, 5rem);
+    max-height: calc(100vh - var(--space-for-fixed-header, 5rem) - 2rem);
+    overflow-y: auto;
+    padding-left: 1rem;
+    border-left: 1px solid var(--color-neutral-200, #e5e7eb);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .article-toc__title {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-neutral-500, #6b7280);
+  }
+
+  .article-toc__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .article-toc__item {
+    margin: 0 0 0.125rem 0;
+  }
+
+  .article-toc__link {
+    display: block;
+    color: var(--color-neutral-700, #374151);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    /* Pull the link left so its border aligns with the nav's own border. */
+    margin-left: -1rem;
+    padding: 0.25rem 0 0.25rem calc(1rem - 2px);
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .article-toc__item--h3 .article-toc__link {
+    padding-left: calc(1.75rem - 2px);
+    font-size: 0.8125rem;
+    color: var(--color-neutral-600, #4b5563);
+  }
+
+  .article-toc__link:hover,
+  .article-toc__link:focus {
+    color: var(--theme-text-color-accent, var(--color-primary-600, #b45309));
+  }
+
+  .article-toc__link.is-active {
+    color: var(--theme-text-color-accent, var(--color-primary-600, #b45309));
+    border-left-color: var(--theme-text-color-accent, var(--color-primary-600, #b45309));
+    font-weight: 500;
+  }
+}

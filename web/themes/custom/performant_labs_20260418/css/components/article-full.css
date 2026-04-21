@@ -1,0 +1,38 @@
+/*
+ * @file
+ * article-full — content-body typography polish for article nodes.
+ *
+ * Scope: .article-full .node__content — styles apply only inside the article
+ * body content region. Does not affect h5 usage elsewhere (Canvas pages,
+ * sidebars, menus, etc.).
+ *
+ * ---
+ *
+ * Fix 1: distinctive <h5> treatment for definition-style code annotations.
+ *
+ * Long-form articles like /articles/version-10-automated-testing-kit-ready
+ * use <h5> tags as definition-term labels for code annotations: @alters-db,
+ * @smoke, @skip, @regression, @functional, @integration, @api, @visual,
+ * @mobile, @performance, @flaky, @fprop. Each h5 is followed by a paragraph
+ * explaining what the annotation does (a classic <dt>/<dd> pattern, just
+ * expressed with heading markup because the WYSIWYG doesn't offer dl).
+ *
+ * The default h5 cascade (22px / weight 400 / Inter / no transform) makes
+ * these tags indistinguishable from body prose. Treating them as code
+ * identifiers (monospace, semi-bold, smaller, accent-tinted) matches what
+ * they ARE and restores visual hierarchy without touching the markup.
+ *
+ * Layer 5: new typography rules at (0,3,1). Scope is tight — article body
+ * only. Content editors can fix the semantic gap (use <dt> or <strong>) as
+ * a follow-up editorial pass; meanwhile this makes the existing markup
+ * render correctly.
+ */
+.article-full .node__content h5 {
+  font-family: var(--font-family-monospace, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--theme-text-color-accent, var(--color-primary-600, #b45309));
+  margin-block: var(--spacing-m, 1.5rem) var(--spacing-xs, 0.5rem);
+  line-height: 1.4;
+}

@@ -88,6 +88,44 @@ statistic-override:
     component:
       css/components/statistic.css: {}
 
+# header-article — 16:9 aspect-ratio + object-fit cover on hero image.
+# Trace: neonbyte sets only width: 100% + margin-top: -150px on
+# .header-article__image img; no aspect guard. Square source images
+# render as huge squares. Pairs with config-side switch to responsive
+# image style 16_9_wide on field_image.
+# Extends: core/components.neonbyte--header-article (declared in .info.yml).
+header-article-override:
+  css:
+    component:
+      css/components/header-article.css: {}
+
+# article-full — content-body polish for article nodes.
+# Currently: distinctive <h5> treatment for code-annotation definition
+# labels (@alters-db, @smoke, @skip, ...). Scope tight to .article-full
+# .node__content so other h5 usage is untouched.
+# Extends: neonbyte/article-full (declared in .info.yml).
+article-full-override:
+  css:
+    component:
+      css/components/article-full.css: {}
+
+# article-toc — "On this page" sidebar TOC for article-full nodes.
+# JS scans h2/h3 inside .article-full .node__content, assigns slug ids,
+# injects <nav class="article-toc grid-area--sidebar-second"> as a
+# sibling of .grid-area--content. CSS overrides the neonbyte .grid at
+# >=1024px so sidebar-second renders as a right sticky column.
+# Layer 5: new library; no upstream conflict.
+# Extends: neonbyte/article-full (declared in .info.yml).
+article-toc:
+  css:
+    component:
+      css/components/article-toc.css: {}
+  js:
+    js/article-toc.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+
 # Example library definition (used in testtheme.info.yml). Note the CSS file
 # will need to be created.
 # @see https://www.drupal.org/docs/develop/theming-drupal/adding-assets-css-js-to-a-drupal-theme-via-librariesyml

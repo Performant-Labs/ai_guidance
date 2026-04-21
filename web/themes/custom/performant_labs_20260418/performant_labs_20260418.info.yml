@@ -53,6 +53,21 @@ libraries-extend:
   # out (see css/components/statistic.css file header).
   core/components.dripyard_base--statistic:
     - performant_labs_20260418/statistic-override
+  # header-article — 16:9 aspect-ratio + object-fit cover on hero image.
+  # Layer 5: .header-article__image img { aspect-ratio; object-fit } at (0,2,1).
+  # Trace: neonbyte sets only width: 100% + margin-top: -150px — no shape guard.
+  # Pairs with config-side switch to responsive_image style 16_9_wide on
+  # field_image in node.article.full display.
+  core/components.neonbyte--header-article:
+    - performant_labs_20260418/header-article-override
+  # article-full — content-body typography polish for article nodes.
+  # - article-full-override: distinctive <h5> treatment (code-annotation labels).
+  # - article-toc: "On this page" sidebar nav, injected by JS, sticky right col
+  #   at >=1024px; hidden below.
+  # Layer 5: scoped to .article-full; no upstream conflict.
+  neonbyte/article-full:
+    - performant_labs_20260418/article-full-override
+    - performant_labs_20260418/article-toc
 
 regions:
   header_first: Header first (logo)

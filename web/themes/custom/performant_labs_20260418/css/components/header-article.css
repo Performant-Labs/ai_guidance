@@ -1,0 +1,32 @@
+/*
+ * @file
+ * header-article — constrain hero image to a 16:9 banner slot.
+ *
+ * Neonbyte's header-article.css sets `.header-article__image img { width: 100%;
+ * margin-top: -150px }` with no height/aspect-ratio/object-fit guard. So the
+ * image renders at natural aspect ratio. A square (1:1) field_image source
+ * then produces a square hero — 1311×1311 at desktop — which is visually wrong
+ * for a banner slot and pushes all body content ~1000px down the page.
+ *
+ * Fix: enforce a 16:9 banner aspect on .header-article__image img with
+ * object-fit: cover. Pairs with the config-side switch of field_image formatter
+ * to `responsive_image` + `16_9_wide` (see core.entity_view_display.node.article.full.yml)
+ * so the served derivatives already match a 16:9 focal-point crop — CSS cover
+ * is a belt-and-braces guard rather than a crop tool.
+ *
+ * The -150px negative top margin (neonbyte default) is preserved; it pulls the
+ * image up to visually overlap the title band's gradient fade.
+ *
+ * Layer 5: new aspect-ratio + object-fit rules at
+ * .header-article__image img (0,2,1). Scope is tight — only affects the
+ * article hero image slot.
+ *
+ * Trace: L1 (contrib CSS) ruled out — would require editing neonbyte.
+ *        L3 (variant class) ruled out — no existing variant covers this.
+ *        L5 (subtheme override via libraries-extend) ✅.
+ */
+.header-article__image img {
+  aspect-ratio: 16 / 9;
+  height: auto;
+  object-fit: cover;
+}
