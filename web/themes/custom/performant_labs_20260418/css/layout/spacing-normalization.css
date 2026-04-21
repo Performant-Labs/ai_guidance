@@ -47,17 +47,23 @@
  *   padding-bottom: var(--spacing-m)            → 40px
  *   margin-bottom:  var(--spacing-component-internal) → 64px mobile / 80px desktop
  *
- * On this site the highlighted region is visually transparent (only holds
- * the page-title + breadcrumb blocks), so that padding + trailing margin is
- * pure empty space between the breadcrumb and the content below. Gap trace
- * on book pages (2026-04-21) showed 104px (mobile) / 120px (desktop) of the
- * crumb→main whitespace coming from this one selector.
+ * On this site the highlighted region IS tinted — computed background is
+ * oklch(0.97 0.008 260.021), a light surface-alt fill — and it holds the
+ * page-title + breadcrumb blocks. Earlier pass zeroed padding-bottom to kill
+ * excess trailing space; audit 2026-04-21 showed that left the title flush
+ * to the top edge and the breadcrumb flush to the bottom edge of the tint
+ * on every interior page (slack=0px both ends).
  *
- * Layer 4 override: keep a small rhythmic gap, kill the rest. No upstream
- * conflict — we're explicitly re-tuning neonbyte's L2 rule at L4.
+ * Restore symmetric breathing room inside the tint so the title + crumb
+ * don't kiss the colored edges. 20px top/bottom keeps the tint visible as
+ * a surface without reintroducing neonbyte's 40px/64-80px excess, and the
+ * trailing 20px margin keeps the rhythmic gap to content below.
+ *
+ * Layer 4 override. No upstream conflict — we're re-tuning neonbyte's
+ * L2 rule at L4.
  */
 .region-highlighted {
-  padding-bottom: 0;
+  padding-block: var(--spacing-xs, 20px);
   margin-bottom: var(--spacing-xs, 20px);
 }
 
