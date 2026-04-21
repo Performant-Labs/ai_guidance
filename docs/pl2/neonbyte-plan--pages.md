@@ -22,14 +22,92 @@ Place verified, branded SDC components into actual Drupal pages. Components are 
 
 ## Page Inventory
 
-Define which pages need to be assembled or verified before declaring Stage 3 complete. Update this table as pages are confirmed:
+Refreshed 2026-04-21 from `/sitemap.xml` + `config/sync/views.view.*.yml`.
+Classification by path pattern; confirm content-type column against:
 
-| Page | Path | Status | Notes |
+```bash
+ddev drush sqlq "SELECT n.nid, n.type, n.title, u.alias
+  FROM node_field_data n
+  LEFT JOIN path_alias u ON u.path = CONCAT('/node/', n.nid)
+  WHERE n.status=1 ORDER BY n.type, u.alias"
+```
+
+### Standalone pages (basic / Canvas)
+
+Single-path items — no book hierarchy. `/` and pages listed in primary nav
+are Canvas; long-form marketing pages like `/how-we-do-it` are also Canvas.
+Utility pages (`/privacy-policy`, `/terms-service`, `/contact-us-thank-you`,
+`/newsletter-signup`) are basic `page` nodes.
+
+| Path | Status | Notes |
+|---|---|---|
+| `/` | ⬜ | Homepage — Canvas front page |
+| `/home` | ⬜ | Likely duplicate of `/` — confirm + prune |
+| `/services` | ⬜ | |
+| `/how-we-do-it` | ⬜ | Canvas interior |
+| `/how-we-do-it-0` | ⬜ | `-0` suffix = stale duplicate alias, prune |
+| `/open-source-projects` | ⬜ | |
+| `/open-source-projects-0` | ⬜ | `-0` suffix = stale duplicate alias, prune |
+| `/introduction-to-atk` | ⬜ | |
+| `/articles-2` | ⬜ | Looks like a view or duplicate — investigate |
+| `/automated-testing` | ⬜ | |
+| `/cypress-drupal` | ⬜ | |
+| `/how-we-built-site` | ⬜ | |
+| `/configuration` | ⬜ | Ambiguous — confirm content type |
+| `/contact` | ⬜ | Webform page |
+| `/contact-us-thank-you` | ⬜ | Webform confirmation |
+| `/newsletter-signup` | ⬜ | Webform page |
+| `/privacy-policy` | ⬜ | |
+| `/terms-service` | ⬜ | |
+
+### View listings
+
+Defined in `config/sync/views.view.*.yml`. Not emitted in sitemap.
+
+| Path | View machine name | Display | Status |
 |---|---|---|---|
-| Home | `/` | ⬜ Pending | Canvas page — front page |
-| Introduction to ATK | `/introduction-to-atk` | ⬜ Pending | Canvas page |
-| Contact | `/contact` | ⬜ Pending | |
-| Documentation (book nodes) | `/docs/*` | ⬜ Pending | Uses `page--documentation` template |
+| `/articles` | `articles` | `page_1` | ✅ Row-gap fix applied 2026-04-21 |
+| (admin) `/admin/content/canvas-pages` | `canvas_pages` | admin | n/a |
+
+### Article nodes (10)
+
+Under `/articles/*` — `node.type.article`.
+
+- `/articles/badcamp-2020-talk`
+- `/articles/cypress-drupal-cheat-sheet`
+- `/articles/introducing-automated-testing-kit`
+- `/articles/introducing-layout-builder-kit-beta-1`
+- `/articles/layout-builder-can-break-your-site-part-1`
+- `/articles/our-talk-drupalcon-layout-builder-components-can-break-your-site-heres-how`
+- `/articles/version-10-automated-testing-kit-ready`
+- `/articles/we-all-benefit-open-source`
+- `/articles/why-drupal`
+
+### Book nodes (~85 across 5 books)
+
+All under `node.type.book`. Each book has a root page (listed) plus its
+children. Children follow `page--documentation.html.twig` rendering.
+
+| Book root | Children | Notes |
+|---|---|---|
+| `/automated-testing-kit` | 22 | Primary ATK docs — main book |
+| `/automated-testing-kit-d7` | 10 | Drupal 7 legacy docs |
+| `/campaign-kit` | 30+ | Campaign Kit module docs |
+| `/layout-builder-kit` | 13 | Layout Builder Kit docs |
+| `/testor` | 5 | Testor docs |
+
+Full child path list in `/sitemap.xml`.
+
+### Summary
+
+| Type | Count | Verification strategy |
+|---|---|---|
+| Standalone pages | 18 | Page-by-page T3 screenshots |
+| View listings | 1 public (`/articles`) | Row-gap + uniform-card sanity check |
+| Article nodes | 10 | Sample 2–3 for article-full layout |
+| Book nodes | ~85 across 5 books | Sample 1 root + 1 child per book (10 total) |
+
+**Total: ~115 public-facing pages.**
 
 ---
 
