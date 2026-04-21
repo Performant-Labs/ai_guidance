@@ -250,6 +250,31 @@ From the `/automated-testing-kit` (title) + `/automated-testing-kit/introduction
 
 **Verification:** T3 at desktop + mobile on first/middle/last chapter. Confirm prev/next links read clearly, don't collide with footer, match the "docs" visual vocabulary used elsewhere in this theme (amber accent, understated borders).
 
+### F.2 — Hero body not yet authored on 5 of 6 book roots
+
+**Observed:** Pass 3.A.3 wired `hook_theme_suggestions_node_alter()` to apply `node--book--landing.html.twig` to **every** book root (any node where `bid === nid`). The site currently has six book roots:
+
+| nid | Title                    | Path                                  |
+| --- | ------------------------ | ------------------------------------- |
+| 18  | Layout Builder Kit       | `/layout-builder-kit` (or alias)      |
+| 19  | Campaign Kit             | `/campaign-kit` (or alias)            |
+| 20  | Automated Testing Kit    | `/automated-testing-kit`              |
+| 21  | Automated Testing Kit D7 | `/automated-testing-kit-d7` (or alias)|
+| 22  | Configuration            | `/configuration` (or alias)           |
+| 23  | Testor                   | `/testor` (or alias)                  |
+
+Only node 20 has the hand-authored hero body (the seven-block structure: eyebrow `<p><strong>…</strong></p>` → value-prop `<h2>` → lede `<p>` → CTA row `<p>` with 2–3 `<a>` → "What's inside" `<h2>` → features `<ul>` → trailing caveat `<p><em>…</em></p>`). The other five will now also get wrapped in `.book-landing` and hit the positional CSS in `css/components/book-landing.css`, but their bodies won't match the expected structure so selectors will miss their targets — likely rendering a random oversized first-paragraph treatment and no styled CTAs.
+
+**Why deferred:** Option #3 (author matching hero bodies for all five) is an editorial task, not a plumbing one — copy for each kit needs product input. User explicitly parked this to come back and fill in the five pages.
+
+**When to revisit:** Before the book-pages work-stream is considered shippable for external review. Until then, either:
+- Accept that nodes 18, 19, 21, 22, 23 will render oddly (acceptable if they're not being linked-to yet), or
+- Temporarily narrow the hook to nid 20 only as a stop-gap (hard-codes a nid into the theme — fragile).
+
+**Scope when resumed:** Editorial — paste a hero body matching the seven-block structure into each of the five remaining book roots via the node edit UI. No code change required. Copy template available on node 20 as a reference. Verify T3 on each URL after populating.
+
+**See:** `neonbyte-plan--book-pages.md` Pass 3.A for the authored-content contract.
+
 ---
 
 ## Triage notes
@@ -260,5 +285,5 @@ Item D.1 is a site-wide visible-chrome bug — promote before next external revi
 Item D.2 is a spam-protection concern on `/contact` — resolve before the form goes live for public traffic.
 Item D.3 is a small visual alignment issue revealed by Path 1 (Dripyard-owns-the-gutter). Pre-existing, low-stakes — resolve during a dedicated spacing reconciliation pass if at all.
 Section E items are deferred article-detail-page issues. E.1 and E.3 are editorial decisions; E.2 is a minor visual imperfection; E.4 is a naming/config mismatch that will bite later content editors; E.5 lists unperformed audits.
-Section F tracks book-pages polish that was intentionally deferred from the Pass 2 functional landing. See `neonbyte-plan--book-pages.md` for the active work-stream.
+Section F tracks book-pages polish that was intentionally deferred from the Pass 2 functional landing. See `neonbyte-plan--book-pages.md` for the active work-stream. **F.2** is an editorial follow-up from Pass 3.A.3: five book roots need hero bodies authored so they don't render oddly under the new `node--book--landing.html.twig` template.
 Nothing here is blocking the merge of the `/articles-2` work-stream or the article-detail improvements landed this session.

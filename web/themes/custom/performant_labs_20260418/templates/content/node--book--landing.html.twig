@@ -1,0 +1,57 @@
+{#
+/**
+ * @file
+ * Theme override for the book root node (book landing page).
+ *
+ * Activated via hook_theme_suggestions_node_alter() in
+ * performant_labs_20260418.theme when the current node is the book root
+ * (i.e. `node.book.bid === node.id()`). Every other book node falls through
+ * to node--type-book / node.html.twig.
+ *
+ * The override wraps the body field in a `.book-landing` container so the
+ * CSS in `css/components/book-landing.css` has a hook it can target. The
+ * site-wide `content_format` filter strips `<div>` and most `class` attrs
+ * from authored body HTML, so CSS hooks must be theme-emitted, not authored.
+ * See `docs/pl2/neonbyte-plan--book-pages.md` — Pass 3.A (Option A').
+ *
+ * @see template_preprocess_node()
+ */
+#}
+{{ attach_library('performant_labs_20260418/book-landing') }}
+{%
+  set classes = [
+    'node',
+    'container',
+    'node--type-' ~ node.bundle|clean_class,
+    node.isPromoted() ? 'node--promoted',
+    node.isSticky() ? 'node--sticky',
+    not node.isPublished() ? 'node--unpublished',
+    view_mode ? 'node--view-mode-' ~ view_mode|clean_class,
+    'node--book-landing',
+  ]
+%}
+<article{{ attributes.addClass(classes) }}>
+
+  {{ title_prefix }}
+  {% if label and not page %}
+    <h2{{ title_attributes }}>
+      <a href="{{ url }}" rel="bookmark">{{ label }}</a>
+    </h2>
+  {% endif %}
+  {{ title_suffix }}
+
+  <div{{ content_attributes.addClass('node__content') }}>
+    {% if not node.isPublished() %}
+      {{ include('dripyard_base:unpublished-badge', with_context = false) }}
+    {% endif %}
+
+    {# Hero wrapper around the body field only. Other renderable children of
+       `content` (e.g. the `book_navigation_without_tree` prev/next from Pass 2)
+       render outside the wrapper below. #}
+    <div class="book-landing">
+      {{ content.body }}
+    </div>
+    {{ content|without('body') }}
+  </div>
+
+</article>

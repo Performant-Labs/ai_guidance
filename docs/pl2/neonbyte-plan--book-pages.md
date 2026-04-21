@@ -157,19 +157,15 @@ git commit -m "theme(book): add prev/next chapter pager below book node body"
 
 ## Pass 3 — Title page treatment (F4)
 
-**Why:** `/automated-testing-kit` is currently an empty node — just the h1 hero, the "Submitted by" line (gone after Pass 1), and the sidebar. User asked for "a title or something nice". Three directions, cheapest first:
+**Why:** `/automated-testing-kit` is currently an empty node — just the h1 hero, the "Submitted by" line (gone after Pass 1), and the sidebar. User asked for "a title or something nice". Original three directions (3a / 3b / 3c) recapped below for the record, then the 2026-04-20 architectural decision + sub-passes.
 
-### 3a — Editorial welcome paragraph + CTA
+### 3a — Editorial welcome paragraph + CTA (superseded)
 
 Simplest. A content-editor pass: populate the node body with a short welcome paragraph and a "Start reading: Introduction →" link. Zero theme code. ~5 minutes of work in the Drupal UI.
 
-**Scope:** Single node edit. No deployment.
+**Status:** ⬜ Superseded by 3.A — retained as a fallback if the hero treatment is judged too heavy.
 
-**Verification:** T3 on title page — content visible; CTA works.
-
-**Status:** ⬜ Not started
-
-### 3b — Auto-rendered table of contents in the content column
+### 3b — Auto-rendered table of contents in the content column (deferred)
 
 Canonical docs-home pattern. Render the book's chapter list as a card grid or numbered list in the main content column. Duplicates the sidebar TOC but promotes it to primary content on the title page.
 
@@ -179,26 +175,124 @@ Canonical docs-home pattern. Render the book's chapter list as a card grid or nu
 
 **Risk:** Title-page-only logic needs a clean scope guard (only render when viewing the top-level book node, not on children). Easy to get wrong — could accidentally duplicate the TOC on every page.
 
-**Verification:** T3 title page — chapter grid renders; T3 on three interior pages — no chapter grid (confirms scope guard).
+**Status:** ⬜ Deferred — a good Pass 3b follow-up once 3.A ships, for readers who want a visible chapter map alongside the hero.
 
-**Status:** ⬜ Not started
+### 3c — Hero-style overview with feature bullets + CTAs (chosen)
 
-### 3c — Hero-style overview with feature bullets + CTAs
+User-chosen direction (2026-04-20). Treat the book title page as a landing page: short value-prop, 3–5 feature bullets, CTAs to Introduction / Quickstart / Contributing.
 
-Biggest lift, most polish. Treat the book title page as a landing page: short value-prop, 3–5 feature bullets, CTAs to Introduction / Quickstart / Contributing. Could be built as a Canvas page that replaces the book-node title page (alias `/automated-testing-kit` points to a Canvas page, and the sidebar still renders via the book structure).
+**Status:** ✅ Direction accepted — implementation via the 3.A sub-passes below.
 
-**Scope:** Content-design work + Canvas page assembly (see [`neonbyte-plan--pages.md`](neonbyte-plan--pages.md) Phase 2 for the scripting protocol) + routing decision (replace book title node, or add a new Canvas landing in front).
+### 3 — Architectural decision (2026-04-20)
 
-**Risk:** Architectural — if we swap the title-page route, the book hierarchy in the sidebar may need to be rebuilt to point at the new Canvas page. Defer unless the simpler options are ruled out.
+The plan's original 3c wording ("Canvas page that replaces the book-node title page") was scoped on 2026-04-20. Three naive approaches were ruled out:
 
-**Verification:** T3 title page at 1440 + 390; compare to reference docs landing pages (Drupal Cms, Storybook, etc.).
+| Approach | Verdict |
+|---|---|
+| **α — Replace book root with a `page` (Canvas) node at `/automated-testing-kit`** | **Blocker.** Book hierarchy requires the root to be a book node; swapping the URL alias to a `page` node orphans the 18 chapters' book-nav sidebar, breadcrumb, and prev/next. |
+| **β — Point the URL to a Canvas page while keeping the book node at a new path** | **Blocker.** `block_book_navigation` only renders on book-node routes; sidebar would disappear at the landing URL. Same for the Pass 1.2 breadcrumb and Pass 2 prev/next. |
+| **γ — Canvas page at a new URL + redirect from the book root** | **Blocker (same reason as β).** The landing URL ends up on a non-book route, losing all three things we just shipped. |
 
-**Status:** ⬜ Not started (awaiting product direction)
+Three viable approaches were surfaced from config inspection:
 
-### Pass 3 decision checkpoint
+| Approach | Verdict |
+|---|---|
+| **A — Rich-HTML body + `.book-landing-hero` CSS class** | **Chosen.** Node stays a book node (sidebar/breadcrumb/prev-next intact). Hero markup lives in the body field via `content_format` (allows `<h2>`–`<h6>`, `<a>`, alignment classes, `<drupal-media>`, etc.). Light CSS in the subtheme styles the hero band. Editor-tweakable. Low architectural risk. |
+| **B — Theme template override + preprocess detecting book root** | Deferred alternative. Landing layout lives in `node--book.html.twig` with a `$node->book['bid'] == $node->id()` branch. Dev-controlled; copy lives in Twig. Consider if A proves insufficient. |
+| **C — Canvas content template for `node.book.full`** | Deferred / rejected for this pass. Creates `core.entity_view_display.node.book.full.yml` + `canvas.content_template.node.book.full.yml`, applies to all 19 book pages, and would re-do Pass 2's `book_navigation_without_tree` wiring. Too much blast radius for a single-landing-page need. |
 
-- [ ] Discuss a / b / c with product/content owner
-- [ ] Pick one; close the other two or move to GET-BACK-TO-THESE
+**Chosen path: Option A.** Rich-HTML body + `.book-landing-hero` CSS class.
+
+Rationale (why not B or C):
+- A keeps everything Passes 1 + 2 just shipped working — zero re-wiring.
+- Editor can tweak copy post-launch without a deploy.
+- Upgrade path to B or C remains open if the hero-in-body approach hits limits (e.g. needs Mercury components).
+
+### Pass 3.A — Hero-style landing (body HTML + CSS class)
+
+Broken into three sub-steps. Each pauses for explicit go-ahead, per workflow memory.
+
+#### 3.A.1 — Draft hero copy + markup for review
+
+**Deliverable:** Proposed HTML snippet for the `/automated-testing-kit` node body, using `content_format`-allowed tags. Pattern:
+
+```html
+<div class="book-landing-hero">
+  <p class="book-landing-hero__eyebrow">Automated Testing Kit</p>
+  <h2 class="book-landing-hero__title">{{ one-line value prop }}</h2>
+  <p class="book-landing-hero__lede">{{ two-sentence description }}</p>
+  <p class="book-landing-hero__ctas">
+    <a class="button button--primary" href="/automated-testing-kit/introduction">Start with Introduction →</a>
+    <a class="button button--secondary" href="/automated-testing-kit/quickstart">Quickstart</a>
+    <a class="button button--tertiary" href="/automated-testing-kit/contributing">Contributing</a>
+  </p>
+</div>
+<h2>What you'll find inside</h2>
+<ul class="book-landing-features">
+  <li>{{ feature bullet 1 }}</li>
+  <li>{{ feature bullet 2 }}</li>
+  <li>{{ feature bullet 3 }}</li>
+</ul>
+```
+
+Copy draft blocks: value prop (1 line), lede (2 sentences), 3–5 feature bullets. User to approve / rewrite before 3.A.2 lands.
+
+**Verification:** User reads the draft, approves or edits.
+
+**Status:** ⬜ Not started — awaiting user copy direction.
+
+#### 3.A.2 — Populate book root node body
+
+Paste the 3.A.1-approved markup into `/node/<nid-of-automated-testing-kit>/edit` body field via the Drupal admin UI. Select the "Content" text format. Save.
+
+**Why admin UI and not a drush snippet:** Content should live in the admin UI's revision history where editors can see and tweak it. No hidden DB mutations from scripts — see memory `feedback_editor_owned_content.md`.
+
+**Scope:** One node edit. No code / config change.
+
+**Verification:** T1 curl on `/automated-testing-kit` — new markup present; T3 screenshot desktop + mobile (will look unstyled until 3.A.3 lands, that's expected).
+
+**Status:** ✅ Completed 2026-04-20. Discovered mid-step that the Body field row was disabled on the book form display (no `core.entity_form_display.node.book.default.yml` in `config/sync`; Drupal's auto-generated fallback had been overridden via admin UI previously). User enabled the Body row at `/admin/structure/types/manage/book/form-display` and pasted the markup with "Content" format. T1 confirmed: 1× "End-to-end testing utilities", 6× "Cypress", 1× "What's inside", 2× "Read the Introduction". **But:** 0× `book-landing-hero`, 0× `book-landing-features` — confirming the `content_format` filter strips `<div>` and `class=` attributes from authored body HTML on render. Pivots 3.A.3 from "plain CSS against authored BEM classes" to Option A' (theme-emitted wrapper + positional CSS).
+
+**Follow-up:** The form-display change (enabling Body) lives in the DB active store, not in `config/sync`. Run `ddev drush cex --diff`, review the resulting `core.entity_form_display.node.book.default.yml`, and commit it with the Pass 3.A artifacts so it survives a future `drush cim`.
+
+#### 3.A.3 — Theme-emitted wrapper + positional CSS (Option A')
+
+Because `content_format`'s `filter_html` strips `<div>` and `class=` attrs from authored body HTML, we can't depend on BEM hooks in the pasted markup. Instead, the theme emits the container hook, and CSS targets the body's surviving DOM positionally.
+
+**Files created 2026-04-20:**
+
+1. `web/themes/custom/performant_labs_20260418/performant_labs_20260418.theme` — new `hook_theme_suggestions_node_alter` adds a `node__book__landing` suggestion only when the viewed node is the book root (`node.book.bid === node.id()`). Interior chapters fall through to `node.html.twig`.
+
+2. `web/themes/custom/performant_labs_20260418/templates/content/node--book--landing.html.twig` — copy of the base `node.html.twig` with one change: wraps `{{ content.body }}` in `<div class="book-landing">`. Other content children (e.g. the Pass 2 `book_navigation_without_tree` prev/next) render after the wrapper via `{{ content|without('body') }}`.
+
+3. `web/themes/custom/performant_labs_20260418/css/components/book-landing.css` — positional CSS targeting `.book-landing > .field--name-body > *:nth-of-type(…)`: eyebrow, value-prop title, lede, CTA row with primary/secondary button treatment, features heading, 2-col feature grid with "›" markers, trailing caveat paragraph with top border.
+
+4. `web/themes/custom/performant_labs_20260418/performant_labs_20260418.libraries.yml` — registered `book-landing` library, attached from the twig template via `{{ attach_library(...) }}`.
+
+**Known tradeoff:** reordering/inserting paragraphs in the body via the admin UI will shift the `:nth-of-type` selectors. Documented inline in `book-landing.css`. Promote to Option A'' (loosen `content_format`) or add a dedicated field if editorial drift bites.
+
+**Verification:** after `ddev drush cr`, T1 expects `class="node--book-landing"` on the `<article>`, `<div class="book-landing">` wrapping the body field; T3 at 1440 + 390 should show the hero band, eyebrow, value-prop title, lede, two CTA styles (primary solid amber + secondary outline), 2-column feature grid with amber chevrons, and a bordered caveat paragraph.
+
+**Status:** 🟡 Files written; awaiting cache clear + user T3.
+
+### Pass 3.A commit point
+
+After 3.A.3 verifies:
+
+```
+# Theme changes (Option A' — wrapper + CSS):
+git add web/themes/custom/performant_labs_20260418/performant_labs_20260418.theme
+git add web/themes/custom/performant_labs_20260418/templates/content/node--book--landing.html.twig
+git add web/themes/custom/performant_labs_20260418/css/components/book-landing.css
+git add web/themes/custom/performant_labs_20260418/performant_labs_20260418.libraries.yml
+# Config (the form-display export from the 3.A.2 follow-up):
+git add config/sync/core.entity_form_display.node.book.default.yml
+# Plan doc update:
+git add docs/pl2/neonbyte-plan--book-pages.md
+git commit -m "theme(book): hero-style landing on /automated-testing-kit via theme-emitted wrapper (Pass 3.A)"
+```
+
+The body-field edit (3.A.2) is data — authored through the admin UI and lives in the DB with Drupal's revision history as the audit trail. Not committed to git; that's Option A's intended separation of content from code.
 
 ---
 
@@ -299,3 +393,7 @@ Follow [`visual-regression-strategy.md`](../ai_guidance/frameworks/drupal/themin
 ## Change Log
 
 - 2026-04-20 — plan created from the `/automated-testing-kit` + `/automated-testing-kit/introduction` audit
+- 2026-04-20 — Pass 1 committed (`f1aebda`); Pass 2 committed (`9dbaca7`)
+- 2026-04-20 — Pass 3 architectural decision: user chose 3c direction; investigation ruled out α/β/γ (Canvas page swap) as blockers because they break sidebar/breadcrumb/prev-next; adopted Option A (rich-HTML body + `.book-landing-hero` CSS). Broken into sub-passes 3.A.1 / 3.A.2 / 3.A.3.
+- 2026-04-20 — Pass 3.A.2 completed: Body field was disabled on book form display; user enabled it and pasted approved markup. T1 curl confirmed `content_format` strips `<div>` + `class=` (predicted) — authored BEM hooks do not survive to render. Pivoted 3.A.3 to Option A' (theme-emitted `.book-landing` wrapper + positional CSS).
+- 2026-04-20 — Pass 3.A.3 files written: `hook_theme_suggestions_node_alter` in the `.theme` (adds `node__book__landing` suggestion for book root), new `templates/content/node--book--landing.html.twig` (wraps `content.body` in `.book-landing`), new `css/components/book-landing.css` (positional selectors; hero band + eyebrow + CTAs + 2-col feature grid + bordered caveat), library registered in `libraries.yml`. Awaiting `drush cr` + T1/T3 verification.

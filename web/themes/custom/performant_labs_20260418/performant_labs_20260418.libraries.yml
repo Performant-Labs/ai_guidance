@@ -109,6 +109,18 @@ article-full-override:
     component:
       css/components/article-full.css: {}
 
+# book-landing — hero treatment on the book root node (/automated-testing-kit).
+# Attached from templates/content/node--book--landing.html.twig via
+# attach_library(); the template is itself activated by the
+# hook_theme_suggestions_node_alter() hook in the .theme file when the
+# current node is a book root (node.book.bid === node.id()).
+# Layer 5: new library scoped under `.book-landing` (theme-emitted wrapper).
+# No upstream conflict; no libraries-extend.
+book-landing:
+  css:
+    component:
+      css/components/book-landing.css: {}
+
 # article-toc — "On this page" sidebar TOC for article-full nodes.
 # JS scans h2/h3 inside .article-full .node__content, assigns slug ids,
 # injects <nav class="article-toc grid-area--sidebar-second"> as a

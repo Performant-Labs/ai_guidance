@@ -1,0 +1,187 @@
+/**
+ * @file
+ * Book landing-page hero treatment — Pass 3.A (Option A').
+ *
+ * The site's `content_format` text filter strips custom classes from
+ * authored body HTML, so this stylesheet targets the body's rendered
+ * DOM positionally inside the theme-emitted `.book-landing` wrapper
+ * (see templates/content/node--book--landing.html.twig).
+ *
+ * Expected editor-authored structure inside the body field:
+ *   1. <p><strong>Drupal Module</strong></p>     — eyebrow
+ *   2. <h2>{value prop}</h2>                     — title
+ *   3. <p>{lede}</p>                             — lede
+ *   4. <p><a>...</a> <a>...</a> <a>...</a></p>   — CTA row (primary first)
+ *   5. <h2>What's inside</h2>                    — features heading
+ *   6. <ul>...</ul>                              — feature bullets
+ *   7. <p><em>{caveat}</em></p>                  — trailing caveat
+ *
+ * Reordering or inserting paragraphs in the body will shift the selectors.
+ * Known tradeoff of Option A'; acceptable for now. Promote to Option A''
+ * (loosen `content_format`) or add a dedicated field if editorial drift
+ * becomes a problem.
+ *
+ * See: docs/pl2/neonbyte-plan--book-pages.md — Pass 3.A.3.
+ */
+
+/* ── Container ──────────────────────────────────────────────────────────── */
+.book-landing {
+  margin-block: clamp(1rem, 3vw, 2.5rem) clamp(1.5rem, 4vw, 3rem);
+}
+
+/* Strip the default body field wrapper spacing so padding/margins are
+   managed from this file only. */
+.book-landing > .field--name-body {
+  margin: 0;
+}
+
+/* ── 1. Eyebrow (first <p> containing <strong>) ────────────────────────── */
+.book-landing > .field--name-body > p:first-child {
+  margin-block: 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary-600, #b45309);
+}
+
+.book-landing > .field--name-body > p:first-child strong {
+  font-weight: 500;
+}
+
+/* ── 2. Value-prop title (first <h2>) ──────────────────────────────────── */
+.book-landing > .field--name-body > h2:first-of-type {
+  margin-block: 0 1rem;
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  max-width: 40ch;
+}
+
+/* ── 3. Lede (second <p>) ──────────────────────────────────────────────── */
+.book-landing > .field--name-body > p:nth-of-type(2) {
+  margin-block: 0 1.75rem;
+  font-size: 1.125rem;
+  line-height: 1.55;
+  color: var(--color-text-muted, #52525b);
+  max-width: 60ch;
+}
+
+/* ── 4. CTA row (third <p>, contains 2-3 <a>) ──────────────────────────── */
+.book-landing > .field--name-body > p:nth-of-type(3) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block: 0 2.5rem;
+}
+
+.book-landing > .field--name-body > p:nth-of-type(3) > a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: transform 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+
+  /* Reset dripyard_base/text-content.css "glimmer" gradient-text effect.
+     Dripyard applies `background-clip: text` + transparent color +
+     `-webkit-text-fill-color: white` + an inset box-shadow underline to any
+     anchor not marked `.button`. Our `content_format` filter strips classes
+     from authored HTML, so we can't add `.button` — we have to neutralize
+     the inherited styles here. Without this, the amber background is clipped
+     to the text glyphs and the text itself is painted white, producing a
+     white-on-white invisible primary CTA. */
+  background-image: none;
+  background-clip: border-box;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  box-shadow: none;
+}
+
+/* Primary CTA: first link in the row */
+.book-landing > .field--name-body > p:nth-of-type(3) > a:first-child {
+  background-color: var(--color-primary-600, #b45309);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.book-landing > .field--name-body > p:nth-of-type(3) > a:first-child:hover {
+  background-color: var(--color-primary-700, #92400e);
+  transform: translateY(-1px);
+}
+
+/* Secondary CTAs: all subsequent links in the row */
+.book-landing > .field--name-body > p:nth-of-type(3) > a:not(:first-child) {
+  background-color: transparent;
+  color: var(--color-primary-700, #92400e);
+  border: 1px solid var(--color-primary-200, #fcd9a8);
+}
+
+.book-landing > .field--name-body > p:nth-of-type(3) > a:not(:first-child):hover {
+  background-color: var(--color-primary-50, #fff7ed);
+  transform: translateY(-1px);
+}
+
+/* ── 5. "What's inside" heading (second <h2>) ──────────────────────────── */
+.book-landing > .field--name-body > h2:nth-of-type(2) {
+  margin-block: 2rem 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* ── 6. Features list ──────────────────────────────────────────────────── */
+.book-landing > .field--name-body > ul {
+  margin-block: 0 2rem;
+  padding-inline-start: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .book-landing > .field--name-body > ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.5rem;
+  }
+}
+
+.book-landing > .field--name-body > ul > li {
+  position: relative;
+  padding-inline-start: 1.5rem;
+  line-height: 1.55;
+}
+
+.book-landing > .field--name-body > ul > li::before {
+  content: "›";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  color: var(--color-primary-600, #b45309);
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1.55;
+}
+
+.book-landing > .field--name-body > ul > li strong {
+  display: inline-block;
+  margin-inline-end: 0.25rem;
+  color: var(--color-text, #18181b);
+}
+
+/* ── 7. Trailing caveat paragraph ──────────────────────────────────────── */
+.book-landing > .field--name-body > p:last-of-type {
+  margin-block: 1.5rem 0;
+  padding-block-start: 1.25rem;
+  border-block-start: 1px solid var(--color-border-subtle, #e5e7eb);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-text-muted, #52525b);
+}
+
+.book-landing > .field--name-body > p:last-of-type em {
+  font-style: italic;
+}
