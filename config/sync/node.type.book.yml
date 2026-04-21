@@ -8,4 +8,4 @@ description: 'A book page is a page of content, organized into a collection of r
 help: null
 new_revision: true
 preview_mode: 1
-display_submitted: true
+display_submitted: false

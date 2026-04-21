@@ -59,7 +59,18 @@
   overflow-y: auto;
 }
 
-/* ── 3. Responsive: single column below 900px ──────────────────────────────── */
+/* ── 3. Book-nav active item ──────────────────────────────────────────────── */
+/* Drupal's book_navigation block emits class="is-active" on the current page's */
+/* <a>. No upstream CSS targets this class on .menu-tree (verified: no matches  */
+/* in neonbyte or dripyard_base), so this Layer 5 rule is new — amber accent +  */
+/* semi-bold weight, matching the article-toc active-link treatment for visual  */
+/* consistency between the left (book) and right (article) nav columns.         */
+.docs-page .docs-sidebar .block-book-navigation a.is-active {
+  color: var(--theme-text-color-accent, var(--color-primary-600, #b45309));
+  font-weight: 500;
+}
+
+/* ── 4. Responsive: single column below 900px ──────────────────────────────── */
 /* The sidebar collapses above the content on mobile. No hidden sidebar —       */
 /* book navigation on mobile is inline, not a separate drawer.                  */
 @media (max-width: 900px) {
