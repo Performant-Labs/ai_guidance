@@ -1,0 +1,27 @@
+/**
+ * @file
+ * performant_labs_20260418 — Views listing tuning.
+ *
+ * Layer: 5 — scoped to a specific view display.
+ *
+ * Currently tunes only `.view-articles` (the /articles listing). Other views
+ * (search results, taxonomy listings, etc.) don't need this yet; add per-view
+ * rules below as they come up rather than broadening the selector.
+ *
+ * Why this exists (2026-04-21):
+ *   Audit on /articles showed `.view-content` with `display: block` and
+ *   `.views-row` with `margin: 0` — so card teasers stacked flush at 0px
+ *   row-gap. Images themselves are already uniform (635×476 desktop /
+ *   343×257 mobile, 4:3, object-fit: cover) via dripyard's `card` component
+ *   and our node--article--teaser.html.twig. The visual "different sizes"
+ *   complaint resolves once cards are spatially separated.
+ *
+ * No upstream conflict — dripyard/neonbyte ship no rule on .view-articles.
+ */
+
+/* ── Articles listing: space the rows ─────────────────────────────────── */
+.view-articles > .view-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m, 32px);
+}

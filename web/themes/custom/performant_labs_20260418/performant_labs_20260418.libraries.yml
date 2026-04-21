@@ -45,6 +45,17 @@ docs-layout:
     layout:
       css/layout/docs.css: {}
 
+# Views listing tuning — per-view display rules.
+# Currently: spaces the rows in the /articles view. Images are already
+# uniform via dripyard's card + node--article--teaser template; this only
+# adds row-gap between card teasers so they don't stack flush.
+# Layer 5: scoped to .view-articles > .view-content (0,2,1). No upstream
+# conflict — dripyard/neonbyte don't target .view-articles.
+views:
+  css:
+    component:
+      css/components/views.css: {}
+
 # Hero gradient — navy-to-amber radial gradient on .hero.theme--primary.
 # Layer 5: component local token override via libraries-extend.
 # Extends: core/components.neonbyte--hero (declared in .info.yml).
