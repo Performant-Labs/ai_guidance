@@ -13,6 +13,16 @@ canvas-layout:
     layout:
       css/layout/canvas.css: {}
 
+# Site-wide vertical spacing normalization.
+# Layer 3: retunes --space-for-fixed-header at :root (was 160px; real header
+# is ~90px). The .path-frontpage override in canvas.css still resolves to 0.
+# Layer 4 companion: zeros top margin on .block-page-title-block h1 so the
+# page title isn't pushed down twice. See file header for the full trace.
+spacing-normalization:
+  css:
+    layout:
+      css/layout/spacing-normalization.css: {}
+
 # Docs two-column sidebar layout (book content type).
 # Global library — .docs-page scope limits reach to pages where
 # page--documentation.html.twig renders (Component #8 activates it).

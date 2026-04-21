@@ -25,8 +25,16 @@
  */
 
 /* ── Container ──────────────────────────────────────────────────────────── */
+/* Top spacing is owned by the outer layout (.docs-layout padding-block) plus
+   the .region-highlighted margin-bottom in spacing-normalization.css — they
+   sit above every page type, so keeping .book-landing flush to them avoids
+   a double gap. The container-type: inline-size on .region-content creates
+   a block-formatting context, so a margin-top here *cannot* collapse up; it
+   would render as literal empty pixels between the breadcrumb and the hero.
+   Bottom margin remains component-owned — it separates the hero block from
+   whatever interior content comes after. */
 .book-landing {
-  margin-block: clamp(1rem, 3vw, 2.5rem) clamp(1.5rem, 4vw, 3rem);
+  margin-block: 0 clamp(1.5rem, 4vw, 3rem);
 }
 
 /* Strip the default body field wrapper spacing so padding/margins are

@@ -1,0 +1,79 @@
+/**
+ * Site-wide vertical spacing normalization.
+ *
+ * Dripyard/neonbyte ship `--space-for-fixed-header: 160px` assuming a much
+ * taller sticky header than this site uses (real header = 70px content,
+ * ~90px with padding). That leaves ~70px of dead space under the header on
+ * every interior page. Canvas.css already normalizes this to 80px but only
+ * inside `.canvas-page` — a class Canvas applies to the homepage only on
+ * this site, which is then excluded again by `:not(.path-frontpage)`. So
+ * canvas.css's interior override is dead code; every interior page inherits
+ * the 160px default.
+ *
+ * Dripyard additionally sets --title-margin-block first value = 80px, which
+ * stacks on top of the layout-container padding and produces a 150px
+ * header→title gap on every non-Canvas page.
+ *
+ * Layer 3 fix per docs/pl2/theme-change.md: retune the token at :root so
+ * every page benefits. The `.path-frontpage` override in canvas.css still
+ * resolves to 0 (proximity wins the specificity tie).
+ *
+ * Layer 4 companion: scope a zero-top-margin rule to .block-page-title-block
+ * h1 only. Do NOT retune --title-margin-block at :root — that would flatten
+ * content h1s inside article bodies.
+ */
+
+:root {
+  /* 90px header bottom + 30px breathing room = 120px clearance. */
+  --space-for-fixed-header: 120px;
+}
+
+/**
+ * Page-title block sits first inside .layout-container and already receives
+ * the header-clearance padding above. Zero the h1 top margin so the title
+ * is not pushed down twice; keep a restrained bottom margin so the title
+ * separates from the breadcrumb / body without the default 80px gap.
+ */
+.block-page-title-block > .page-title,
+.block-page-title-block h1 {
+  margin-block: 0 var(--spacing-s);
+}
+
+/**
+ * .region-highlighted tuning.
+ *
+ * Neonbyte's css/layout/region.css assumes this region is a tinted banner
+ * (background: var(--theme-surface-alt)) and gives it:
+ *   padding-bottom: var(--spacing-m)            → 40px
+ *   margin-bottom:  var(--spacing-component-internal) → 64px mobile / 80px desktop
+ *
+ * On this site the highlighted region is visually transparent (only holds
+ * the page-title + breadcrumb blocks), so that padding + trailing margin is
+ * pure empty space between the breadcrumb and the content below. Gap trace
+ * on book pages (2026-04-21) showed 104px (mobile) / 120px (desktop) of the
+ * crumb→main whitespace coming from this one selector.
+ *
+ * Layer 4 override: keep a small rhythmic gap, kill the rest. No upstream
+ * conflict — we're explicitly re-tuning neonbyte's L2 rule at L4.
+ */
+.region-highlighted {
+  padding-bottom: 0;
+  margin-bottom: var(--spacing-xs, 20px);
+}
+
+/**
+ * Book / docs layout top padding.
+ *
+ * docs.css sets padding-block: 2rem (desktop) / 1rem (mobile) on
+ * .docs-page .docs-layout. Combined with the region-highlighted margin
+ * below, it added 32/16px to the crumb→content gap. Trim now that the
+ * highlighted region already contributes breathing room.
+ */
+.docs-page .docs-layout {
+  padding-block: 1rem 2rem;
+}
+@media (max-width: 900px) {
+  .docs-page .docs-layout {
+    padding-block: 0.5rem 1rem;
+  }
+}

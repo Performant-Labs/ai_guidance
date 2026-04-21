@@ -40,9 +40,13 @@
 /* ── 1. Two-column CSS Grid ────────────────────────────────────────────────── */
 /* Left: fixed 260px sidebar (book navigation / TOC).                          */
 /* Right: 1fr — content column, grows to fill remaining width.                 */
+/* Named grid areas decouple visual order from DOM order so we can put the     */
+/* content column FIRST visually on mobile (see §4) without touching the       */
+/* page--documentation.html.twig template. DOM order stays sidebar-first.      */
 .docs-page .docs-layout {
   display: grid;
   grid-template-columns: 260px 1fr;
+  grid-template-areas: "sidebar content";
   gap: 2rem;
   align-items: start;
   padding-block: 2rem;
@@ -53,10 +57,15 @@
 /* top uses the neonbyte token for the fixed header height so the sidebar       */
 /* sticks just below the header regardless of header size changes.              */
 .docs-page .docs-sidebar {
+  grid-area: sidebar;
   position: sticky;
   top: var(--space-for-fixed-header, 5rem);
   max-height: calc(100vh - var(--space-for-fixed-header, 5rem) - 2rem);
   overflow-y: auto;
+}
+
+.docs-page .docs-content {
+  grid-area: content;
 }
 
 /* ── 3. Book-nav active item ──────────────────────────────────────────────── */
@@ -71,11 +80,18 @@
 }
 
 /* ── 4. Responsive: single column below 900px ──────────────────────────────── */
-/* The sidebar collapses above the content on mobile. No hidden sidebar —       */
-/* book navigation on mobile is inline, not a separate drawer.                  */
+/* On mobile the docs-layout stacks to one column. Content is placed FIRST      */
+/* visually (via named grid areas) so the reader reaches the chapter/hero       */
+/* immediately; the full book TOC follows below for browse-out context. The     */
+/* sibling breadcrumb block lives in the .highlighted region above <main>, so   */
+/* it is unaffected by this grid-area swap.                                     */
 @media (max-width: 900px) {
   .docs-page .docs-layout {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "content"
+      "sidebar";
+    padding-block: 1rem;
   }
 
   .docs-page .docs-sidebar {
