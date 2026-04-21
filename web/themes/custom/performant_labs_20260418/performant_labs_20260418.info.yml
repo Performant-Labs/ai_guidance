@@ -46,6 +46,13 @@ libraries-extend:
   # + custom classes from page--front.html.twig. Nav links already white via token.
   core/components.neonbyte--footer:
     - performant_labs_20260418/footer-override
+  # Statistic — fix zero-width collapse inside flex-wrapper layouts.
+  # Layer 5: .flex-wrapper__layout > .stat { min-width: 180px } at (0,2,1).
+  # Trace: Dripyard container-type: inline-size on .stat with no flex-basis hint
+  # → 0-width collapse in flex parent; children overflow and overlap. L1+L3 ruled
+  # out (see css/components/statistic.css file header).
+  core/components.dripyard_base--statistic:
+    - performant_labs_20260418/statistic-override
 
 regions:
   header_first: Header first (logo)

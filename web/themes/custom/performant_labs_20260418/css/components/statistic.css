@@ -1,0 +1,30 @@
+/*
+ * @file
+ * Statistic — fix zero-width collapse inside Flex Wrapper layouts.
+ *
+ * Dripyard's statistic.css sets `container-type: inline-size` on .stat so the
+ * container query at line 26 can shrink the big number under 300px. But
+ * container-type: inline-size imposes inline-size containment: children no
+ * longer contribute to the element's intrinsic width. Inside a flex context
+ * (.flex-wrapper__layout has display: flex; flex-wrap: wrap) the flex
+ * algorithm then assigns width: 0 to each .stat because there is no
+ * flex-basis, width, or min-width to go on. Children (.stat__stat at 5.5rem,
+ * .stat__first-line at h3-size) overflow the zero-width box and paint at the
+ * same x-coordinate — all three stats render on top of each other.
+ *
+ * Fix: give .stat a reasonable min-width when it is a direct child of a
+ * .flex-wrapper__layout. This re-enables flex layout without removing the
+ * container query.
+ *
+ * Layer 5: new rule at specificity (0,2,1) via .flex-wrapper__layout > .stat.
+ * Scope is tight — only affects stats that sit directly under a flex-wrapper
+ * layout. Stats used in other contexts (grids, bespoke layouts) are
+ * untouched.
+ *
+ * Trace: L1 (contrib CSS) ruled out — would require editing contrib theme.
+ *        L3 (variant class) ruled out — no existing variant covers this.
+ *        L5 (subtheme override via libraries-extend) ✅.
+ */
+.flex-wrapper__layout > .stat {
+  min-width: 180px;
+}

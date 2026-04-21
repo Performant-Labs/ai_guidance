@@ -77,6 +77,17 @@ tabs-override:
     component:
       css/components/tabs.css: {}
 
+# Statistic — fix zero-width collapse inside flex-wrapper layouts.
+# Trace: Dripyard sets container-type: inline-size on .stat (for @container
+# query in statistic.css). Without explicit flex-basis/min-width, the flex
+# algorithm assigns width: 0 to each .stat → children overflow and overlap.
+# Layer 5: new min-width rule at .flex-wrapper__layout > .stat (0,2,1).
+# Extends: core/components.dripyard_base--statistic (declared in .info.yml).
+statistic-override:
+  css:
+    component:
+      css/components/statistic.css: {}
+
 # Example library definition (used in testtheme.info.yml). Note the CSS file
 # will need to be created.
 # @see https://www.drupal.org/docs/develop/theming-drupal/adding-assets-css-js-to-a-drupal-theme-via-librariesyml
