@@ -1,0 +1,303 @@
+---
+5237d787-a287-4324-a42a-09158844cf12:
+  _meta:
+    version: "1.0"
+    entity_type: canvas_page
+    uuid: 5237d787-a287-4324-a42a-09158844cf12
+    bundle: canvas_page
+    default_langcode: en
+  default:
+    langcode:
+    - value: en
+    label:
+    - value: Automated testing
+    components:
+    - parent_uuid: ~
+      slot: ~
+      uuid: f0aec992-8afd-46a6-9c54-d7de81c87569
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: ~
+    - parent_uuid: f0aec992-8afd-46a6-9c54-d7de81c87569
+      slot: content
+      uuid: f51f54b5-4b4f-4a2a-b074-b5d104c16ba6
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Autonomous test-healing for Drupal teams.","html_element":"h1","style":"h1","color":"loud","margin_top":"zero","margin_bottom":"small","center":true,"text_max_width":"800px"}'
+      label: ~
+    - parent_uuid: f0aec992-8afd-46a6-9c54-d7de81c87569
+      slot: content
+      uuid: 77d08e3a-62a0-4eb5-b0bf-d5561667f03b
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EWhen a Playwright test breaks overnight, a Claude
+        agent diagnoses the failure, classifies it as test-issue or website-issue,
+        and \u2014 if it\u0027s a fix the agent is allowed to make \u2014 opens a
+        pull request before anyone gets to their desk. The workflow is in our public
+        repo.\u003C\/p\u003E","style":"body_l","color":"soft"}'
+      label: ~
+    - parent_uuid: f0aec992-8afd-46a6-9c54-d7de81c87569
+      slot: content
+      uuid: 88505ed2-a925-44e2-86eb-23cf4774972b
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Pilot autonomous healing on your suite","href":"\/contact-us?intent=healing-pilot","style":"primary","size":"large","suffix_icon":"arrow-right"}'
+      label: ~
+    - parent_uuid: f0aec992-8afd-46a6-9c54-d7de81c87569
+      slot: content
+      uuid: a6782339-3004-4a03-a285-7cb85f934f6a
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Book a testing review","href":"\/contact-us?intent=testing-review","style":"secondary","size":"large","suffix_icon":"arrow-right"}'
+      label: ~
+    - parent_uuid: ~
+      slot: ~
+      uuid: 9e764fb3-062e-4256-bd97-820ee9317cb3
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"light"}'
+      label: ~
+    - parent_uuid: 9e764fb3-062e-4256-bd97-820ee9317cb3
+      slot: header
+      uuid: 19b6e21a-eafd-4124-8392-6010efb09545
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Four things that happen when a test fails.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"medium"}'
+      label: ~
+    - parent_uuid: 9e764fb3-062e-4256-bd97-820ee9317cb3
+      slot: header
+      uuid: 6f5da07a-7838-4a8b-af3e-170470f9310d
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EThe agent doesn\u0027t \u201cfix your tests.\u201d
+        It reads the failure, decides what kind of failure it is, and takes the action
+        its operating mode allows. Sometimes that\u0027s a PR. Sometimes it\u0027s
+        an issue with a diagnosis. Sometimes it\u0027s nothing.\u003C\/p\u003E","style":"body_l","color":"soft"}'
+      label: ~
+    - parent_uuid: 9e764fb3-062e-4256-bd97-820ee9317cb3
+      slot: content
+      uuid: 2245c29b-b3b3-469a-90fc-97ca552b2b2b
+      component_id: sdc.dripyard_base.grid-wrapper
+      component_version: ba954a2accbc0f5c
+      inputs: '{"column_gutter":"large","row_gutter":"large"}'
+      label: ~
+    - parent_uuid: 2245c29b-b3b3-469a-90fc-97ca552b2b2b
+      slot: grid_cells
+      uuid: 0e4530ba-b425-4404-ac80-108e4db4fb73
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"A contrib module renames a class.","body":"A module update
+        ships a CSS-class rename. Your ATK smoke test fails overnight on a .field-name-field-foo
+        selector that\u0027s now .field-foo. The agent reads the stack trace, checks
+        the rendered DOM, classifies as test-fix, opens a PR updating the selector,
+        labels it test-fix. Green by morning.","theme":"light"}'
+      label: ~
+    - parent_uuid: 2245c29b-b3b3-469a-90fc-97ca552b2b2b
+      slot: grid_cells
+      uuid: 82b2e290-c353-4052-bd26-ff1a808b9076
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"A Views block label changes.","body":"Someone renames \u201cLatest
+        articles\u201d to \u201cRecent articles\u201d in the Views UI and commits
+        the config export. Your Playwright assertion on getByRole(\u0027heading\u0027,
+        { name: \u0027Latest articles\u0027 }) fails. The agent reads the config diff,
+        sees the coordinated rename, updates the assertion, opens a PR. Not a site
+        bug \u2014 a config update the test hadn\u0027t caught up to.","theme":"light"}'
+      label: ~
+    - parent_uuid: 2245c29b-b3b3-469a-90fc-97ca552b2b2b
+      slot: grid_cells
+      uuid: 2d8e1407-0336-4586-805c-c6efd76730e3
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"The site is actually broken.","body":"A recent commit to
+        a custom module nulls out a form field on edit. The test correctly fails.
+        The agent diagnoses it as a website-side issue, files an issue with the stack
+        trace + hypothesis + suggested fix, and tags the last commit\u0027s author.
+        No PR. No auto-merge. A human decides.","theme":"light"}'
+      label: ~
+    - parent_uuid: 2245c29b-b3b3-469a-90fc-97ca552b2b2b
+      slot: grid_cells
+      uuid: ae768e91-47a8-4bd4-bfc5-5e479aba6df6
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"It\u0027s just flake.","body":"One nightly run, a test fails
+        on a transient network blip against Pantheon. The agent retries, the test
+        passes, the agent classifies as transient, closes the investigation. No PR.
+        No issue. No noise. One line in the run log.","theme":"light"}'
+      label: ~
+    - parent_uuid: ~
+      slot: ~
+      uuid: 1fe50b82-c0ea-4a31-ae9d-27a8d446456b
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: ~
+    - parent_uuid: 1fe50b82-c0ea-4a31-ae9d-27a8d446456b
+      slot: header
+      uuid: bebc7c64-e543-480a-b186-d2d6d16ce67b
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"The guardrails are in the repo.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"medium"}'
+      label: ~
+    - parent_uuid: 1fe50b82-c0ea-4a31-ae9d-27a8d446456b
+      slot: header
+      uuid: 907323ed-7948-407f-a45f-c42abdd18934
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EEvery night, Playwright tests run against this
+        site in CI. When one fails, a GitHub Action invokes a Claude agent with the
+        failure artifacts and the constraints it\u0027s allowed to operate under.
+        Here\u0027s the top of \u003Ccode\u003Eheal-tests-claude.yml\u003C\/code\u003E
+        \u0026mdash; the file that decides what the AI is permitted to touch:\u003C\/p\u003E\n\u003Cpre\u003E\u003Ccode\u003E#
+        Only fix test code in CI. Site-code changes require a human.\noperating_mode:
+        ci\npermissions:\n  modify_test_code: true       # selectors, assertions,
+        waits\n  modify_site_code: false      # PHP, Twig, JS, CSS - never in CI\n  open_pull_request:
+        true\n  auto_merge: false            # a human reviews every PR\nclassification:\n  test_issue:   [selector_outdated,
+        assertion_outdated, timing, url_change]\n  website_issue:[element_missing,
+        server_error, broken_form, empty_content]\n\u003C\/code\u003E\u003C\/pre\u003E\n\u003Cp\u003ELocally,
+        the same agent runs with \u003Ccode\u003Eoperating_mode: local\u003C\/code\u003E
+        \u0026mdash; the engineer at the terminal can let it fix site code too, because
+        changes can be verified against a running DDEV instance before commit. The
+        mode is explicit. The permission flags are explicit. Nothing is implicit.\u003C\/p\u003E","style":"body_l","color":"soft"}'
+      label: ~
+    - parent_uuid: 1fe50b82-c0ea-4a31-ae9d-27a8d446456b
+      slot: content
+      uuid: 38efdbd2-c747-4d9c-b6a7-d6da8037ef57
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Read the full workflow on GitHub","href":"https:\/\/github.com\/Performant-Labs\/pl-performantlabs.com\/blob\/main\/.github\/workflows\/heal-tests-claude.yml","style":"bare","size":"large","suffix_icon":"arrow-right"}'
+      label: ~
+    - parent_uuid: ~
+      slot: ~
+      uuid: 8e8659a8-61c3-4cd6-bf10-0a3db8068055
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"light"}'
+      label: ~
+    - parent_uuid: 8e8659a8-61c3-4cd6-bf10-0a3db8068055
+      slot: header
+      uuid: ae7246eb-67c0-4344-9cb7-e2804874343c
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"The toolkit we run AI on top of.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"medium"}'
+      label: ~
+    - parent_uuid: 8e8659a8-61c3-4cd6-bf10-0a3db8068055
+      slot: header
+      uuid: 37a91417-6253-4f64-a7f8-ebd0be3e4987
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EThe agent isn\u0027t a testing framework. It\u0027s
+        a layer that sits on top of the frameworks your team already runs \u2014 or
+        should be running.\u003C\/p\u003E","style":"body_l","color":"soft"}'
+      label: ~
+    - parent_uuid: 8e8659a8-61c3-4cd6-bf10-0a3db8068055
+      slot: content
+      uuid: 893afa5c-d1e6-4b43-88b1-29e760d21acf
+      component_id: sdc.dripyard_base.grid-wrapper
+      component_version: ba954a2accbc0f5c
+      inputs: '{"column_gutter":"large","row_gutter":"large"}'
+      label: ~
+    - parent_uuid: 893afa5c-d1e6-4b43-88b1-29e760d21acf
+      slot: grid_cells
+      uuid: 84e72247-ed93-4cbe-b06f-8785458bf7a2
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Playwright.","body":"The primary framework we write and maintain
+        tests in. Every healing vignette above plays out against a Playwright suite.
+        If you\u0027re already on Playwright, the agent wires in on day one.","theme":"light"}'
+      label: ~
+    - parent_uuid: 893afa5c-d1e6-4b43-88b1-29e760d21acf
+      slot: grid_cells
+      uuid: 97003324-910e-4daa-876f-8196b6872fb0
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Cypress.","body":"Legacy-supported. If your suite is Cypress,
+        the agent reads failure output and opens PRs the same way \u2014 fewer success
+        cases than Playwright today, but the classification logic is framework-agnostic.","theme":"light"}'
+      label: ~
+    - parent_uuid: 893afa5c-d1e6-4b43-88b1-29e760d21acf
+      slot: grid_cells
+      uuid: dfd0e9c5-981a-42d1-a327-de8bd2203f74
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"ATK \u2014 Automated Testing Kit.","body":"Our open-source
+        Drupal-specific test toolkit (Playwright-first, Cypress-supported). The selector
+        patterns in the vignettes above come from ATK. It\u0027s on the site\u0027s
+        \/open-source-projects page and in the public repo.","theme":"light"}'
+      label: ~
+    - parent_uuid: 893afa5c-d1e6-4b43-88b1-29e760d21acf
+      slot: grid_cells
+      uuid: 1304079f-0ade-4c9b-bc4c-1d066eacb825
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Testor.","body":"The Drupal module that wires test-run reporting
+        into the site\u0027s admin UI \u2014 because \u201cthe tests are green\u201d
+        is more useful when a content editor can see it without opening GitHub Actions.","theme":"light"}'
+      label: ~
+    - parent_uuid: ~
+      slot: ~
+      uuid: 4be5654c-8e77-4b84-beb6-e4628506d1d3
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: ~
+    - parent_uuid: 4be5654c-8e77-4b84-beb6-e4628506d1d3
+      slot: header
+      uuid: f7e924b7-fea4-4366-87b3-edf2b6e59edb
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"This site is the first dogfood.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"medium"}'
+      label: ~
+    - parent_uuid: 4be5654c-8e77-4b84-beb6-e4628506d1d3
+      slot: header
+      uuid: 427d1573-d939-4993-a285-527729d67aff
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EEvery night, Playwright tests run against the
+        very site you\u0027re reading. When a test breaks, the workflow above fires.
+        For the full narrative \u0026mdash; architecture choices, rasterization strategy,
+        mobile-spacing reconciliation, and every other decision that shaped this site
+        \u0026mdash; read \u003Ca href=\u0022\/how-we-built-this-site\u0022\u003Ehow
+        we built this site\u003C\/a\u003E.\u003C\/p\u003E\n\u003Cpre\u003E\u003Ccode\u003E-  await
+        expect(page.getByRole(\u0027heading\u0027, { name: \u0027Latest articles\u0027
+        })).toBeVisible();\n+  await expect(page.getByRole(\u0027heading\u0027, {
+        name: \u0027Recent articles\u0027 })).toBeVisible();\n\u003C\/code\u003E\u003C\/pre\u003E\n\u003Cp\u003EOne
+        of the commits the agent opened on this repo. A config-rename ripple \u0026mdash;
+        Views UI changed the block label; the Playwright assertion had to catch up.
+        The agent read the failure output, read the \u003Ccode\u003Eviews.view.*.yml\u003C\/code\u003E
+        diff, decided it was a coordinated rename, and shipped the PR. Closed the
+        loop in about eleven minutes, start to merge.\u003C\/p\u003E\n\u003Cp\u003EOver
+        the last 90 days, \u003Cstrong\u003E[N]\u003C\/strong\u003E tests have been
+        auto-healed on this site without human intervention.\u003C\/p\u003E","style":"body_l","color":"soft"}'
+      label: ~
+    - parent_uuid: 4be5654c-8e77-4b84-beb6-e4628506d1d3
+      slot: content
+      uuid: 23e1081c-e62a-4b2c-bd33-9028cdef603c
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Read the full story","href":"\/how-we-built-this-site","style":"bare","size":"large","suffix_icon":"arrow-right"}'
+      label: ~
+    - parent_uuid: ~
+      slot: ~
+      uuid: 84b62f0b-3c91-4e27-a5a0-1ae81ad1bcd8
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"primary"}'
+      label: ~
+    - parent_uuid: 84b62f0b-3c91-4e27-a5a0-1ae81ad1bcd8
+      slot: content
+      uuid: 5c4eab78-011e-4fd5-bd47-91fe1383706a
+      component_id: sdc.dripyard_base.title-cta
+      component_version: fd6bbffa9b05aa5a
+      inputs: '{"title":"Ready to let your tests heal themselves?","button_text":"Start
+        a healing pilot","button_href":"\/contact-us?intent=healing-pilot","button_style":"primary"}'
+      label: ~
+    path:
+    - alias: /automated-testing
+      langcode: en
+      status: "1"
+    - alias: /automated-testing-v2
+      langcode: en
+      status: "1"
+...
