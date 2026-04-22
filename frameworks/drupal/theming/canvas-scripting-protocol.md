@@ -6,7 +6,9 @@ This document defines the mandatory pre-flight checklist that must pass before a
 > **Before verifying any page built or modified by this document**: Read [`verification-cookbook.md`](verification-cookbook.md). It defines the Three-Tier Hierarchy (Headless → ARIA → Visual) that must govern all verification. Do NOT call `browser_subagent` (screenshots) until a Tier 2 ARIA audit passes.
 
 > [!IMPORTANT]
-> Updated 2026-04-17 with lessons from the Services page migration. See new sections: **Media Image References**, **Enum Value Ceilings**, **Canvas Page Internal Path**, **Adding Props to Canvas Config Entities**, and **Canvas Page Title Field**.
+> Updated 2026-04-17 with lessons from the Services page migration. See sections: **Media Image References**, **Enum Value Ceilings**, **Canvas Page Internal Path**, **Adding Props to Canvas Config Entities**, and **Canvas Page Title Field**.
+>
+> Updated 2026-04-21 with lessons from overlay-based section passes. See: **On-entity storage vs. submit-time shape** (expanded under Rule A), **Rule F — Unrecognized image-prop shapes fail silently**, **Canonical Prop Shape Lookup** (Pre-Flight item 8), and new top-level section **Overlay-Based Content Passes**.
 
 ---
 
@@ -107,6 +109,28 @@ Base themes ship demo copy in Canvas components. Before any visual regression sc
 
 If any matches appear, update them via the entity API (see **Keyed replacement pattern** in Script Writing Rules below).
 
+### 8. Canonical Prop Shape Lookup (required before writing envelope-shaped inputs via overlay or direct entity set)
+
+For component props typed as `entity_reference` (media, nodes, etc.) or any prop where a dump shows a full `sourceType` / `expression` / `sourceTypeSettings` envelope, the canonical source for the `expression` string and `sourceTypeSettings` block is the active component config — never retype either from documentation.
+
+```bash
+ddev drush cget canvas.component.sdc.<theme>.<component-name>
+# Look under: versioned_properties.active.settings.prop_field_definitions.<prop>
+# Copy `expression` and `field_instance_settings` byte-exact.
+```
+
+The `expression` string contains Unicode separator characters (ℹ︎ ␟ ␜ ␝ ␞ ↠) that are easy to mangle when retyped. A single wrong codepoint produces a silent save-time coercion (see Rule F).
+
+A working, canonical `StaticPropSource` assembly lives in the canvas test fixtures:
+
+```
+web/modules/contrib/canvas/tests/src/TestSite/CanvasTestSetup.php
+```
+
+Search for `$static_image_prop_source`. Adapt the `target_bundles` in `sourceTypeSettings.instance.handler_settings` to match whichever media bundles the target component's prop declaration accepts (a component may support `image` only, or both `image` and `svg_image`, etc.).
+
+**Why this matters:** When writing directly via the content entity's `components` field (overlay-apply scripts, bulk migrations), the prop value goes through Canvas's `uncollapse()` coercion pipeline. If the shape is unrecognized — including through a mangled `expression` — the value is silently dropped. See Rule F for the mechanism and diagnosis.
+
 ---
 
 ## Lessons From the Services Page Migration
@@ -136,6 +160,40 @@ foreach (\$entities as \$mid => \$m) {
 }
 "
 ```
+
+#### On-entity storage vs. submit-time shape
+
+Canvas accepts **two equivalent forms** for an `entity_reference` prop when writing directly via the `components` field, and normalizes both to the same canonical on-entity shape at save time:
+
+| Form | When to use | What gets stored |
+|---|---|---|
+| **Shortcut:** `['target_id' => N]` | Drush `ev` / `scr` scripts that build a page from scratch in one pass, tests, small one-off mutations. Terse. | `{"target_id": N}` |
+| **Full StaticPropSource envelope:** `sourceType` + `value.target_id` + `expression` + `sourceTypeSettings` | Overlay-apply scripts that patch `inputs` by merging into an existing, dumped JSON blob; bulk migration tools that must be robust against partial dumps; any context where you want the submit shape to match what the Canvas editor UI POSTs. | `{"target_id": N}` — Canvas **collapses on save** |
+
+Both produce identical on-entity storage (`{"target_id": N}`) and identical render output. Canvas reconstructs the full `StaticPropSource` at render time from `prop_field_definitions`, which is why the collapsed form is sufficient.
+
+**Full-envelope YAML template** (adapt per component — get the `expression` and `sourceTypeSettings` from Pre-Flight item 8, never retype):
+
+```yaml
+image:
+  sourceType: 'static:field_item:entity_reference'
+  value:
+    target_id: <media entity id>
+  expression: '<paste byte-exact from prop_field_definitions.<prop>.expression>'
+  sourceTypeSettings:
+    storage:
+      target_type: media
+    instance:
+      handler: 'default:media'
+      handler_settings:
+        target_bundles:
+          image: image
+          # ...plus any other bundles the prop declares support for
+```
+
+**Rule of thumb:** If you are writing the component tree fresh, use the `{'target_id' => N}` shortcut. If you are patching one key inside an already-dumped inputs blob (overlay workflow), mirror the envelope shape that was in the dump — which after any prior save will be the bare `{"target_id": N}` collapse. If a dump shows full-envelope inputs, the page has not been re-saved since that shape was last applied; that is a useful forensic signal.
+
+**Do not invent a third form.** See Rule F for the silent-failure mechanism that catches unrecognized shapes.
 
 ### Rule B — Enum values for padding/margin have a ceiling of `large`
 
@@ -220,6 +278,42 @@ $page->set('title', 'Services');
 ```
 
 The page label shown in the admin UI comes from the `title` field. This also populates the `<title>` tag in the HTML via Drupal's entity label system.
+
+### Rule F — Unrecognized image-prop shapes fail silently (no watchdog, no save-time error)
+
+When writing a value into an `entity_reference` prop via the content entity API, Canvas runs the input through `GeneratedFieldExplicitInputUxComponentSourceBase::uncollapse()` (in the canvas module, around line 1475 at time of writing). Any value whose top-level shape lacks a `sourceType` key is handed to `getDefaultStaticPropSource(...)->withValue($value, allow_empty: TRUE)`. The `allow_empty: TRUE` argument means: if the shape doesn't match the prop's expected field-item structure, the value **coerces to empty** instead of throwing.
+
+Canvas then falls back to a `DefaultRelativeUrlPropSource` at render time. That is a render-time fallback only — it is **not** a valid on-entity storage shape. If no fallback asset exists for the component, the image simply doesn't render: the consumer Twig (e.g. `dripyard_base/components/image-or-media/image-or-media.twig`) guards with `{% if image.src %}`, and a coerced-empty value emits no `<img>` at all.
+
+**Symptoms of a silent coercion:**
+- `->save()` returns without throwing.
+- No error in `ddev drush watchdog:show`.
+- A subsequent `drush content:export` or a direct SQL query on `canvas_page__components.components_inputs` shows the prop as an empty object or `null`, not the value you wrote.
+- The rendered page has no `<img>` tag for that component (and no placeholder either).
+
+**Known bad shapes that trigger this coercion:**
+
+| Shape | Why it fails |
+|---|---|
+| `{src, alt, width, height}` (flat) | Has no `sourceType` key. `uncollapse()` hands it to `withValue(allow_empty: TRUE)` with a field-item schema expecting `target_id`. Coerces to empty. |
+| `{CANVAS_ENTITY_REFERENCE: {target_uuid, target_type}}` | This is the recipe-YAML *import-time* wrapper resolved by `DefaultContentSubscriber`; it is never a valid *on-entity* shape. On canvas v1.3.2 it trips a TypeError in `ReferenceFieldTypePropExpression::{closure}` during `calculateDependencies`. |
+| A full envelope with a mangled `expression` string (one wrong Unicode separator) | The coercion pipeline can't resolve the expression to a real prop shape. Coerces to empty. |
+
+**Valid shapes** (both covered under Rule A's "On-entity storage vs. submit-time shape"):
+1. `{'target_id' => N}` shortcut.
+2. Full `StaticPropSource` envelope with a byte-exact `expression` and matching `sourceTypeSettings`.
+
+**Diagnosis recipe** when a component is missing its image with no error signal:
+
+```bash
+# 1. Dump the current inputs for the suspect component:
+ddev drush sql-query \
+  "SELECT components_inputs FROM canvas_page__components \
+   WHERE entity_id=<id> AND components_uuid='<uuid>'"
+# 2. Parse the JSON. If the prop is `{}` or missing when you wrote a value, it was coerced.
+# 3. Cross-check Pre-Flight item 8: is your `expression` byte-identical to the active config?
+# 4. Re-apply with either the `{target_id: N}` shortcut or a freshly-copied envelope.
+```
 
 ---
 
@@ -332,6 +426,85 @@ cat web/themes/contrib/neonbyte/components/header/header/header.twig | grep head
 ```
 
 Only then write the Twig `set` injection.
+
+---
+
+## Overlay-Based Content Passes
+
+For iterative editing of a `canvas_page` (multi-section builds, partial fixes, section-by-section reviews), the `ev`/`scr` one-shot pattern becomes painful: each pass has to reconstruct the whole inputs blob or risk clobbering unrelated keys. The alternative is an **overlay** workflow — a small pair of scripts (`dump-canvas-page.php`, `apply-canvas-page.php`) that operate on the live entity via sparse YAML patches.
+
+### When to use
+
+- Patching one or more props on an **existing** component without rewriting the whole component tree.
+- Inserting new components after an anchor in an existing tree.
+- Removing a component (and its descendants) from an existing tree.
+- Any pass the user expects to review as a `git diff` before applying.
+
+### When NOT to use
+
+- Building a page from scratch — use a one-shot `drush scr build_page.php` instead. Overlay is optimized for patches, not greenfield construction.
+- Anything that would be cleaner as a config-sync change (e.g., adding a prop declaration to `canvas.component.sdc.<theme>.<component>` — that's a YAML in `config/sync/`, not an overlay).
+- Editorial body copy the site owner expects to maintain through the admin UI. Overlay edits show up as mystery diffs to anyone reviewing git history; prefer the admin UI for content that has a clear "editor owns this" story.
+
+### The pattern
+
+```
+dump → write/edit overlay → dry-run → apply → verify (Tier 1 curl → Tier 2 ARIA if UI-visible) → snapshot
+```
+
+1. **Dump current state** so the overlay is built against a known baseline:
+   ```bash
+   ddev drush php:script scripts/dump-canvas-page.php <page-uuid>
+   # Output: content-exports/<uuid>.yml (path may be relative to drush CWD)
+   ```
+2. **Author the overlay** as a sparse YAML file. Keep one overlay per logical change (one section, one fix) — never bundle unrelated passes in a single overlay. Example layout:
+   ```yaml
+   # content-exports/homepage-section-N.overlay.yml
+   component_inputs:
+     '<component-uuid>':
+       # keys here are merged INTO the existing inputs via array_replace (not array_merge)
+       href: 'https://example.com'
+       image:
+         # ...see Rule A for valid shapes
+   add_components:
+     - after_uuid: '<anchor-uuid>'
+       component:
+         uuid: '<new-uuid>'
+         component_id: 'sdc.<theme>.<component-name>'
+         parent_uuid: '<parent-uuid-or-null>'
+         slot: '<slot-or-null>'
+         inputs: { ... }
+   remove_components:
+     - '<uuid-to-remove>'  # descendants cascade automatically
+   ```
+3. **Dry run first.** Every apply-script must support a dry-run mode that logs the diff it would apply without calling `->save()`. Always run dry-run before apply on any overlay that touches more than one component.
+4. **Apply**, then **verify** per the Three-Tier Verification Hierarchy:
+   - Tier 1 (curl the rendered page) is non-negotiable — confirms the component actually rendered and key markers (`data-component-id`, expected `<img>` count, `srcset`) are present.
+   - Tier 2 (ARIA audit) only if the change affects semantic/interactive structure.
+   - Tier 3 (screenshots) only after Tiers 1 & 2 pass.
+5. **Rollback pairing.** Before applying the overlay, pause to create a code + DB rollback point with a shared tag:
+   ```
+   <slug>-YYYYMMDD-HHMM
+   ```
+   Use the tag in both the git commit message on the current branch and the DDEV snapshot name (`ddev snapshot --name=<slug>-YYYYMMDD-HHMM`). Matching names sort together in `git log` and `ddev snapshot --list`.
+
+### Apply-script semantic requirements
+
+Any reusable `apply-canvas-page.php` implementation (the Phase 3 / PL2 one is a working reference) should guarantee:
+
+| Behavior | Requirement |
+|---|---|
+| `component_inputs` merge strategy | `array_replace` (overwrite at top level only), **never** `array_merge`. `array_merge` reindexes numeric-keyed arrays and will silently reorder nested lists. |
+| `inputs` encoding | Always re-`json_encode` after patching — the field stores a JSON string, not a PHP array. |
+| Dry-run mode | Loads and patches in memory, prints a diff-friendly representation, does NOT call `->save()`. Triggered by a CLI flag. |
+| `add_components` idempotency | If a component with the same UUID already exists, skip (warn) rather than insert a duplicate. This makes re-runs safe. |
+| `remove_components` cascade | Descendants of a removed component must also be removed, in post-order, to avoid orphan references. |
+| Exit status | Non-zero on any validation failure, UUID-not-found, or partial apply. Zero ONLY on clean success. |
+
+### Gotchas
+
+- **Drush CWD surprise.** `drush php:script` runs with CWD = `web/` inside the DDEV container, not the repo root. Pathing in `dump-canvas-page.php` and `apply-canvas-page.php` must account for this — either pass absolute paths or resolve relative paths against `__DIR__`. Outputs written to a relative path will land inside `web/`, not at the repo root.
+- **Dumped files are a gitignored artifact, not a source of truth.** Add `web/content-exports/` (or whatever path the dump script resolves to) to `.gitignore`. Commit the overlay YAML if it represents a reviewable change; do not commit the raw full-tree dumps.
 
 ---
 
