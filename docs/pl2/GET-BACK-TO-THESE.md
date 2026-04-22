@@ -331,6 +331,32 @@ The visual inconsistency is because Tesla is the only source that's a balanced m
 
 ---
 
+## H. /automated-testing deferrals (2026-04-22)
+
+### H.1 — /automated-testing §5 autonomous-healing metric: no number currently available
+
+**Observed:** The /automated-testing brief (`docs/pl2/briefs/automated-testing.md` v1, decision D10) §5 *"See it running on this site"* is designed around a concrete dogfooding metric — ideally a count or time-to-green statistic in the form *"Over the last 90 days, [N] tests have been auto-healed on this site without human intervention."* As of 2026-04-22, no such metric is instrumented, logged, or otherwise derivable without a one-off retrospective pass. The brief ships the full sentence-shape locked; only the number is TBD. Overlay will emit `<strong>[N]</strong>` as a literal token.
+
+**Why deferred:** The metric requires either (a) a retroactive count from GitHub (closed PRs authored by the Claude healing workflow on `Performant-Labs/pl-performantlabs.com` within the last 90 days), or (b) a new emit-on-heal step added to `.github/workflows/heal-tests-claude.yml` that writes a persistent log line, plus a rollup and a render path. (a) is cheap and retrospective-only; (b) is durable.
+
+**Fix options, cheapest → richest:**
+
+- a) **Retroactive GitHub API count.** `gh pr list --state closed --author <claude-actor> --search 'workflow:heal-tests-claude created:>=…'` over the trailing 90 days. One-line command + manual paste into a `component_inputs` overlay patch. *Tradeoff:* requires the healing agent to be committing under a distinguishable GitHub actor (verify first — if it commits as the repo owner, this count is impossible to distinguish from human PRs without a label convention). Number goes stale unless re-run on a schedule.
+- b) **Instrument the workflow.** Add a step to `heal-tests-claude.yml` that appends a JSON line (timestamp, classification, framework, PR URL) to `metrics/healing-log.jsonl` in the repo (or to a GitHub Gist, or to an analytics endpoint) on every successful healing PR. A scheduled GitHub Action (or the same workflow's post-run step) rolls up the log into a single counter written to a site setting or a static JSON file served from the site. The /automated-testing page reads the counter at render time (Twig → config get, or a small block that fetches the JSON). *Durable, accurate, self-updating.* Cost: workflow YAML edit + storage decision + site-render path + first rollup + overlay patch. 1–2 days.
+- c) **Hand-authored periodic update.** Treat the number as an editorial field. Someone (product lead, engineering lead) updates it monthly from manual PR triage. Cheapest; most prone to drift or getting forgotten.
+
+**Sentence-shape in brief (locked):** *"Over the last 90 days, [N] tests have been auto-healed on this site without human intervention."* Overlay emits the token; visual design can style `.metric-tbd` if the placeholder needs to stand out.
+
+**When to revisit:** Before /automated-testing goes live externally. The page is shippable internally with `[N]` literal, but a literal `[N]` on a public-facing marketing page is not acceptable. The deadline is the first external link to the page (sales collateral, social post, nav-launch announcement — whichever lands first). Until then, the placeholder is explicit and tracked.
+
+**Scope if (a):** ~15-min `gh` query + overlay `component_inputs` patch. No code change.
+**Scope if (b):** Workflow YAML edit + storage decision + site-render path (Twig/block) + first rollup + overlay patch. 1–2 days.
+**Scope if (c):** One-line editorial convention + calendar reminder. Trivial, but invites staleness.
+
+**Related:** [/automated-testing brief §5](briefs/automated-testing.md), decision D10.
+
+---
+
 ## Triage notes
 
 Items in sections A and B are low-medium stakes, defer to pre-launch or a dedicated a11y/visual pass.
@@ -342,4 +368,5 @@ Item D.4 is a site-wide breadcrumb verification task — fold into the next a11y
 Section E items are deferred article-detail-page issues. E.1 and E.3 are editorial decisions; E.2 is a minor visual imperfection; E.4 is a naming/config mismatch that will bite later content editors; E.5 lists unperformed audits.
 Section F tracks book-pages polish that was intentionally deferred from the Pass 2 functional landing. See `neonbyte-plan--book-pages.md` for the active work-stream. **F.2** is an editorial follow-up from Pass 3.A.3: five book roots need hero bodies authored so they don't render oddly under the new `node--book--landing.html.twig` template. **F.3** was closed out 2026-04-21 — mobile T3 sign-off passed via Playwright at 375×667; see `visual-regression-report.md` for details.
 Section G tracks Phase 3 homepage deferrals. **G.1** is the trust-bar logo-sizing inconsistency from 2026-04-21: only Tesla renders at the intended size because it's the only balanced lockup; the five wordmark-only sources sprawl horizontally. Promote before homepage goes live for external review.
+Section H tracks Phase 3 /automated-testing deferrals. **H.1** is the §5 autonomous-healing metric: no number is instrumented as of 2026-04-22. Brief ships `[N]` literal; external launch requires the metric to land or the sentence to be rewritten. Cheapest path is a retroactive `gh` query; durable answer is a workflow-instrumented rollup.
 Nothing here is blocking the merge of the `/articles-2` work-stream or the article-detail improvements landed this session.
