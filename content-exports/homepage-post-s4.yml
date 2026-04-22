@@ -1,0 +1,607 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: bb5bbbb1-4a16-4b86-bbea-b215ab8096cf
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  title:
+    -
+      value: Home
+  components:
+    -
+      parent_uuid: null
+      slot: null
+      uuid: 1651496e-60ab-4ca8-893a-33fe15f89a43
+      component_id: sdc.neonbyte.hero
+      component_version: fd16917fc8f81fbc
+      inputs: '{"theme":"primary","height":"full-screen","position_behind_against_screen_top":true,"align_x":"center","align_y":"center","text_color":"white"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: db4ecb86-bd54-4fdc-8f91-5f586043c4e2
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"theme":"white","section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"medium","padding_bottom":"medium"}'
+      label: null
+    -
+      parent_uuid: db4ecb86-bd54-4fdc-8f91-5f586043c4e2
+      slot: content
+      uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      component_id: sdc.dripyard_base.logo-grid
+      component_version: ce3f2429d9631143
+      inputs: '{"logo_size":"medium","layout":"center","logo_background":"transparent","logo_border_radius":"small"}'
+      label: null
+    -
+      parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      slot: logo_grid_content
+      uuid: 199e0674-b3fd-468a-bb45-1116fb79afe2
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"href":null,"image":{"target_id":53}}'
+      label: null
+    -
+      parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      slot: logo_grid_content
+      uuid: f8c11102-6073-49d6-bfb0-ac3e4ca1100e
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"href":null,"image":{"target_id":54}}'
+      label: null
+    -
+      parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      slot: logo_grid_content
+      uuid: f3ee89e3-d288-4c61-9815-5c8c4596c55e
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"href":null,"image":{"target_id":55}}'
+      label: null
+    -
+      parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      slot: logo_grid_content
+      uuid: 352be378-403a-4f6b-aff7-93be270d6607
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"href":null,"image":{"target_id":56}}'
+      label: null
+    -
+      parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      slot: logo_grid_content
+      uuid: c4ea0954-5a80-436a-87d7-7757cf4dd678
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"href":null,"image":{"target_id":57}}'
+      label: null
+    -
+      parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      slot: logo_grid_content
+      uuid: dbc87634-c5f3-415d-8343-7e96069e2b01
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"href":null,"image":{"target_id":58}}'
+      label: null
+    -
+      parent_uuid: 1651496e-60ab-4ca8-893a-33fe15f89a43
+      slot: hero_content
+      uuid: 26a5ade6-f2ac-44d1-8145-ed4e27c2b7f9
+      component_id: sdc.dripyard_base.title-cta
+      component_version: fd6bbffa9b05aa5a
+      inputs: '{"title":"Ship Drupal releases with confidence.","heading_style":"h1","button_text":"Book a testing review","button_href":"\/contact-us?intent=testing-review","button_style":"secondary","layout":"center"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: d87022b5-64e7-4d27-8b80-873c800256ae
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: d87022b5-64e7-4d27-8b80-873c800256ae
+      slot: content
+      uuid: 0f11d4f2-5715-4180-b73b-fce91ceda2c0
+      component_id: sdc.dripyard_base.grid-wrapper
+      component_version: ba954a2accbc0f5c
+      inputs: '{"column_gutter":"large","row_gutter":"medium"}'
+      label: null
+    -
+      parent_uuid: f5a4a12d-87e6-4f60-8f41-69248f431e29
+      slot: content
+      uuid: d261e1c0-9857-4fda-a836-fa4c9e72f756
+      component_id: sdc.dripyard_base.content-card
+      component_version: 7afc561cf35c01e5
+      inputs: '{"title":"Tools the Drupal community uses","link_href":"\/open-source-projects","body_text":"ATK (Automated Testing Kit) and Testor are ours. Open source, actively maintained, adopted across the ecosystem. Download them, read the source, ask questions.","background":true}'
+      label: null
+    -
+      parent_uuid: 817542f6-4063-4ca8-a252-5e57a07480be
+      slot: content
+      uuid: 5138cbe4-6f75-4efc-a608-5ce08e6b4222
+      component_id: sdc.dripyard_base.content-card
+      component_version: 7afc561cf35c01e5
+      inputs: '{"title":"Tests that heal themselves","link_href":"\/how-we-built-this-site","body_text":"AI agents diagnose and fix broken Playwright tests in CI \u2014 nightly, on this very site. Not a demo. A shipped workflow, running right now.","background":true}'
+      label: null
+    -
+      parent_uuid: b0c096ed-41d5-4039-9928-33e01c69d6ac
+      slot: content
+      uuid: 08dbda27-103f-428e-900b-9b143e3a0ea3
+      component_id: sdc.dripyard_base.content-card
+      component_version: 7afc561cf35c01e5
+      inputs: '{"title":"Experts alongside your team","link_href":"\/services","body_text":"When you need hands, we embed senior testing engineers. North American project leads, nearshore delivery options. Fully billable or fractional.","background":true}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: c23a78ae-5474-43b8-9695-7800f8eceb7d
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"edge-to-edge","content_width":"edge-to-edge","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"light"}'
+      label: null
+    -
+      parent_uuid: c23a78ae-5474-43b8-9695-7800f8eceb7d
+      slot: header
+      uuid: bcc12718-2c3a-48cd-a87b-d1d968b1caa1
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"We heal our own tests nightly.","html_element":"h2","style":"h2","margin_top":"zero","margin_bottom":"medium","center":true}'
+      label: null
+    -
+      parent_uuid: c23a78ae-5474-43b8-9695-7800f8eceb7d
+      slot: content
+      uuid: 62780469-d75e-4c13-8b3b-c7f1e7b2cb42
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EEvery night, Playwright tests run against this site in CI. When a test breaks, a Claude agent diagnoses the failure, classifies it (test issue or website issue), and \u2014 when appropriate \u2014 opens a pull request with the fix. No Monday-morning flake triage. No staging calls with a QA engineer. The workflow is in our public repo; you can read \u003Ccode\u003Eheal-tests-claude.yml\u003C\/code\u003E \u2014 the code that decides what our AI is allowed to touch. \u003Ca href=\u0022https:\/\/github.com\/Performant-Labs\/pl-performantlabs.com\/blob\/main\/.github\/workflows\/heal-tests-claude.yml\u0022\u003ESee the workflow \u2192\u003C\/a\u003E\u003C\/p\u003E","style":"body_m","color":"inherit"}'
+      label: null
+    -
+      parent_uuid: c23a78ae-5474-43b8-9695-7800f8eceb7d
+      slot: content
+      uuid: 12e2bf25-d499-447b-be9a-04dd8d47f0c0
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Read the full story","href":"\/how-we-built-this-site","style":"bare","size":"small","suffix_icon":"arrow-right"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: bfd059e2-a952-485e-a37e-840587c852e2
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"light","additional_classes":"tabs--underline"}'
+      label: null
+    -
+      parent_uuid: bfd059e2-a952-485e-a37e-840587c852e2
+      slot: header
+      uuid: dc89ba6b-b4f1-4f90-813a-40c9687e896a
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"One partner, every layer of the stack.","html_element":"h2","style":"h2","margin_top":"zero","margin_bottom":"medium","center":false}'
+      label: null
+    -
+      parent_uuid: bfd059e2-a952-485e-a37e-840587c852e2
+      slot: content
+      uuid: b981d3bc-e3e5-4db0-a6f2-164c7a7b8760
+      component_id: sdc.dripyard_base.tab-group
+      component_version: 912d35db4fbdbf16
+      inputs: '{"placement":"top","centered":false}'
+      label: null
+    -
+      parent_uuid: b981d3bc-e3e5-4db0-a6f2-164c7a7b8760
+      slot: tabs
+      uuid: fbc59e35-9040-4299-b67a-dca5a6054a37
+      component_id: sdc.dripyard_base.tab
+      component_version: db84e92a77f252cb
+      inputs: '{"title":"Testing"}'
+      label: null
+    -
+      parent_uuid: fbc59e35-9040-4299-b67a-dca5a6054a37
+      slot: tab_panel_content
+      uuid: b34f7961-2fd3-46c9-a709-672a0c15b10b
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EATK gives your team a structured, maintainable test suite from day one. Functional, accessibility, and regression tests run in CI so regressions never reach production.\u003C\/p\u003E","style":"body_m","color":"soft"}'
+      label: null
+    -
+      parent_uuid: b981d3bc-e3e5-4db0-a6f2-164c7a7b8760
+      slot: tabs
+      uuid: e1a8ed3d-dfb0-46f2-9cff-6493b4e505df
+      component_id: sdc.dripyard_base.tab
+      component_version: db84e92a77f252cb
+      inputs: '{"title":"Engineering"}'
+      label: null
+    -
+      parent_uuid: e1a8ed3d-dfb0-46f2-9cff-6493b4e505df
+      slot: tab_panel_content
+      uuid: 0bdceed6-fe24-4d68-9614-77dacbbde3a9
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003ESenior Drupal engineers embedded with your team or working to a fixed-scope spec. We cover custom module development, migrations, performance, and architecture reviews.\u003C\/p\u003E","style":"body_m","color":"soft"}'
+      label: null
+    -
+      parent_uuid: b981d3bc-e3e5-4db0-a6f2-164c7a7b8760
+      slot: tabs
+      uuid: fae58a6c-0b36-4b5a-b419-8090f2a38abb
+      component_id: sdc.dripyard_base.tab
+      component_version: db84e92a77f252cb
+      inputs: '{"title":"Strategy"}'
+      label: null
+    -
+      parent_uuid: fae58a6c-0b36-4b5a-b419-8090f2a38abb
+      slot: tab_panel_content
+      uuid: 27272da9-c699-4e4e-8e36-2ce63b07dedc
+      component_id: sdc.dripyard_base.canvas-image
+      component_version: 432a6a71fe725929
+      inputs: '{"loading":"lazy","aspect_ratio":"wide","border_radius":"medium","image":{"src":"\/sites\/default\/files\/pl-images\/pl-dashboard.png","alt":"Drupal dashboard showing test results and code metrics","width":1024,"height":576}}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: da8bf04c-e52c-4dc3-b537-8d747cda45bc
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: da8bf04c-e52c-4dc3-b537-8d747cda45bc
+      slot: header
+      uuid: 2a5f1687-91a2-4715-bd67-56bd9f95c02f
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Built for the whole Drupal team.","html_element":"h2","style":"h2","margin_top":"zero","margin_bottom":"medium","center":false}'
+      label: null
+    -
+      parent_uuid: da8bf04c-e52c-4dc3-b537-8d747cda45bc
+      slot: content
+      uuid: c4e4f131-c5c2-4c0b-950b-322bfd4f6f3f
+      component_id: sdc.dripyard_base.icon-list
+      component_version: 5249c68ce17cfc73
+      inputs: '{"size":"medium","icon_color":"primary","column_width":"full-width"}'
+      label: null
+    -
+      parent_uuid: c4e4f131-c5c2-4c0b-950b-322bfd4f6f3f
+      slot: content
+      uuid: c4577897-3c7c-4b2e-a98f-9b3368988edb
+      component_id: sdc.dripyard_base.icon-list-item
+      component_version: 22d7d3a101bbb54a
+      inputs: '{"icon":"check","text":"Dev teams catch regressions before users do"}'
+      label: null
+    -
+      parent_uuid: c4e4f131-c5c2-4c0b-950b-322bfd4f6f3f
+      slot: content
+      uuid: ba97c8d2-9ac5-45d3-85cb-0d384fce5dfc
+      component_id: sdc.dripyard_base.icon-list-item
+      component_version: 22d7d3a101bbb54a
+      inputs: '{"icon":"check","text":"Engineers deploy with confidence, not anxiety"}'
+      label: null
+    -
+      parent_uuid: c4e4f131-c5c2-4c0b-950b-322bfd4f6f3f
+      slot: content
+      uuid: 808de8e8-c2c2-457d-b7b7-b07b120ba2c0
+      component_id: sdc.dripyard_base.icon-list-item
+      component_version: 22d7d3a101bbb54a
+      inputs: '{"icon":"check","text":"QA time drops as automated test runs replace manual checks"}'
+      label: null
+    -
+      parent_uuid: c4e4f131-c5c2-4c0b-950b-322bfd4f6f3f
+      slot: content
+      uuid: 90206fba-3c78-4171-a05c-edce8651ef95
+      component_id: sdc.dripyard_base.icon-list-item
+      component_version: 22d7d3a101bbb54a
+      inputs: '{"icon":"check","text":"Leadership ships on schedule and on budget"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: 509ba95e-0ea5-4dfa-945c-72b3423e30ac
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"narrow","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 509ba95e-0ea5-4dfa-945c-72b3423e30ac
+      slot: header
+      uuid: 8d74390b-22f5-455b-abee-d9a4b8b21688
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Frequently asked questions.","html_element":"h2","style":"h2","margin_top":"zero","margin_bottom":"medium","center":true}'
+      label: null
+    -
+      parent_uuid: 509ba95e-0ea5-4dfa-945c-72b3423e30ac
+      slot: content
+      uuid: 38307be3-31e3-43e9-9796-73267d45660c
+      component_id: sdc.dripyard_base.accordion-group
+      component_version: 49bc5013723b2167
+      inputs: '{"variation":"borders"}'
+      label: null
+    -
+      parent_uuid: 38307be3-31e3-43e9-9796-73267d45660c
+      slot: accordion_group_content
+      uuid: f0b93789-5a7d-4a20-8f73-304a53290550
+      component_id: sdc.dripyard_base.accordion-item
+      component_version: bf19381a421e6f8c
+      inputs: '{"title":"What is the Automated Testing Kit (ATK)?","open":false}'
+      label: null
+    -
+      parent_uuid: f0b93789-5a7d-4a20-8f73-304a53290550
+      slot: accordion_item_content
+      uuid: 5ed89061-c5d5-43f2-83b2-f75ac045c8d9
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"ATK is Performant Labs\u0027 open-source functional testing framework for Drupal, available on Drupal.org. It provides a structured Cypress and PHPUnit test suite that works out of the box with standard Drupal installations - covering forms, roles, content types, and accessibility.","style":"body_m","color":"inherit"}'
+      label: null
+    -
+      parent_uuid: 38307be3-31e3-43e9-9796-73267d45660c
+      slot: accordion_group_content
+      uuid: 05d56dd9-69f0-484a-8a71-6db6eb882543
+      component_id: sdc.dripyard_base.accordion-item
+      component_version: bf19381a421e6f8c
+      inputs: '{"title":"Do you work with Drupal CMS and contributed distributions?","open":false}'
+      label: null
+    -
+      parent_uuid: 05d56dd9-69f0-484a-8a71-6db6eb882543
+      slot: accordion_item_content
+      uuid: cb21876f-dc46-40b3-9e10-2f09cc3c012a
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"Yes. We actively contribute to Drupal CMS and a wide range of contributed modules. Our engineers understand how distributions are composed and how to extend them without breaking upstream update paths.","style":"body_m","color":"inherit"}'
+      label: null
+    -
+      parent_uuid: 38307be3-31e3-43e9-9796-73267d45660c
+      slot: accordion_group_content
+      uuid: 9dbd9b8e-9424-429a-860a-b571f7b268ac
+      component_id: sdc.dripyard_base.accordion-item
+      component_version: bf19381a421e6f8c
+      inputs: '{"title":"How does an engineering engagement work?","open":false}'
+      label: null
+    -
+      parent_uuid: 9dbd9b8e-9424-429a-860a-b571f7b268ac
+      slot: accordion_item_content
+      uuid: 5bcb2116-b4f7-4627-83d1-a8e6416fbed3
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"We offer staff augmentation (embed our engineers with your team), fixed-scope project delivery, and advisory retainers. Engagements can typically begin within one to two weeks of scoping.","style":"body_m","color":"inherit"}'
+      label: null
+    -
+      parent_uuid: 38307be3-31e3-43e9-9796-73267d45660c
+      slot: accordion_group_content
+      uuid: 617c985f-df5f-4788-997e-7ac73c19dfc8
+      component_id: sdc.dripyard_base.accordion-item
+      component_version: bf19381a421e6f8c
+      inputs: '{"title":"Can you help with a legacy Drupal 7 or Drupal 9 migration?","open":false}'
+      label: null
+    -
+      parent_uuid: 617c985f-df5f-4788-997e-7ac73c19dfc8
+      slot: accordion_item_content
+      uuid: 34a2bec3-99cf-4d6b-abef-20edf553bf81
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"Absolutely. We have migrated dozens of legacy Drupal sites to current major versions. Our process covers content, configuration, and custom module refactoring \u2014 with automated tests validating each migration stage.","style":"body_m","color":"inherit"}'
+      label: null
+    -
+      parent_uuid: 0f11d4f2-5715-4180-b73b-fce91ceda2c0
+      slot: grid_cells
+      uuid: f5a4a12d-87e6-4f60-8f41-69248f431e29
+      component_id: sdc.dripyard_base.grid-cell
+      component_version: 54ebe916bdb35c0b
+      inputs: '{"padding":"small","columns_small":12,"columns_medium":6,"columns_large":4,"rows_small":1,"rows_medium":1,"rows_large":1}'
+      label: ''
+    -
+      parent_uuid: 0f11d4f2-5715-4180-b73b-fce91ceda2c0
+      slot: grid_cells
+      uuid: 817542f6-4063-4ca8-a252-5e57a07480be
+      component_id: sdc.dripyard_base.grid-cell
+      component_version: 54ebe916bdb35c0b
+      inputs: '{"padding":"small","columns_small":12,"columns_medium":6,"columns_large":4,"rows_small":1,"rows_medium":1,"rows_large":1}'
+      label: ''
+    -
+      parent_uuid: 0f11d4f2-5715-4180-b73b-fce91ceda2c0
+      slot: grid_cells
+      uuid: b0c096ed-41d5-4039-9928-33e01c69d6ac
+      component_id: sdc.dripyard_base.grid-cell
+      component_version: 54ebe916bdb35c0b
+      inputs: '{"padding":"small","columns_small":12,"columns_medium":6,"columns_large":4,"rows_small":1,"rows_medium":1,"rows_large":1}'
+      label: ''
+    -
+      parent_uuid: f5a4a12d-87e6-4f60-8f41-69248f431e29
+      slot: content
+      uuid: dae09299-79a9-40d3-a218-7b4ed96ff1db
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Explore the tools","href":"\/open-source-projects","style":"bare","size":"small","suffix_icon":"arrow-right"}'
+      label: null
+    -
+      parent_uuid: 817542f6-4063-4ca8-a252-5e57a07480be
+      slot: content
+      uuid: 22257828-3b8f-41ab-97b4-2b810c5cff7a
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"See it in action","href":"\/how-we-built-this-site","style":"bare","size":"small","suffix_icon":"arrow-right"}'
+      label: null
+    -
+      parent_uuid: b0c096ed-41d5-4039-9928-33e01c69d6ac
+      slot: content
+      uuid: 5ad06e4d-45d0-4434-8d4c-4e0381df9578
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Talk to an engineer","href":"\/services","style":"bare","size":"small","suffix_icon":"arrow-right"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: 0ea6dab8-7124-474d-b84d-82d5c8922700
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 0ea6dab8-7124-474d-b84d-82d5c8922700
+      slot: content
+      uuid: c8aec9ce-9b43-4fdf-9aa4-e9f2ad8cacf8
+      component_id: sdc.dripyard_base.flex-wrapper
+      component_version: 647154c4adbb1587
+      inputs: '{"margin_top":"zero","margin_bottom":"zero","padding_top":"zero","padding_bottom":"zero","column_gutter":"large","row_gutter":"medium","align_x":"space-between","align_y":"center"}'
+      label: null
+    -
+      parent_uuid: c8aec9ce-9b43-4fdf-9aa4-e9f2ad8cacf8
+      slot: content
+      uuid: 8d5cb51e-b6bd-41c7-a58b-1f718cd199b7
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Designed for teams that rely on Drupal to scale.","html_element":"p","style":"body_m","margin_top":"zero","margin_bottom":"small","color":"soft"}'
+      label: null
+    -
+      parent_uuid: c8aec9ce-9b43-4fdf-9aa4-e9f2ad8cacf8
+      slot: content
+      uuid: cdcf92d7-6c39-4bf4-89d8-edea7c64282b
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Enterprise Teams","html_element":"h2","style":"h2","margin_top":"zero","margin_bottom":"small"}'
+      label: null
+    -
+      parent_uuid: c8aec9ce-9b43-4fdf-9aa4-e9f2ad8cacf8
+      slot: content
+      uuid: 9ffaa3e9-8bb3-464e-ae44-2e9587b0b8cf
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"You\u0027re running a large-scale Drupal platform and can\u0027t afford downtime, regressions, or stalled migrations. Performant Labs embeds senior engineers with your team or takes full ownership of critical workstreams - so your internal team stays focused on product.","style":"body_m","color":"medium"}'
+      label: null
+    -
+      parent_uuid: c8aec9ce-9b43-4fdf-9aa4-e9f2ad8cacf8
+      slot: content
+      uuid: 4a77e7a2-8fa4-4f84-9eec-33ab67086733
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Get in touch","href":"\/contact"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: d6f6a1e6-fd58-4043-a59d-d5d3f659f95e
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"narrow","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: d6f6a1e6-fd58-4043-a59d-d5d3f659f95e
+      slot: header
+      uuid: ee3b2948-ae4c-457f-ad47-2c880a84397f
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"The engineering debt compounds. Start before it does.","html_element":"h2","style":"h2","margin_top":"zero","margin_bottom":"small","center":true}'
+      label: null
+    -
+      parent_uuid: d6f6a1e6-fd58-4043-a59d-d5d3f659f95e
+      slot: header
+      uuid: 2b22c521-4235-4cd9-a8aa-bf5a1c8fe518
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"Every test you skip is debt. The teams that win long-term are the ones investing in quality now.","style":"body_l","color":"medium","center":true}'
+      label: null
+    -
+      parent_uuid: d6f6a1e6-fd58-4043-a59d-d5d3f659f95e
+      slot: content
+      uuid: 6df8aa17-0614-4e65-a673-2fa541b7f543
+      component_id: sdc.dripyard_base.flex-wrapper
+      component_version: 647154c4adbb1587
+      inputs: '{"margin_top":"medium","margin_bottom":"medium","padding_top":"zero","padding_bottom":"zero","column_gutter":"large","row_gutter":"medium","align_x":"center","align_y":"center","wrap":true}'
+      label: null
+    -
+      parent_uuid: 6df8aa17-0614-4e65-a673-2fa541b7f543
+      slot: content
+      uuid: ded2d746-b3d1-476e-8a2e-6fa98d3a74b8
+      component_id: sdc.dripyard_base.statistic
+      component_version: 9743427112a0a222
+      inputs: '{"statistic":"10+","first_line":"Years of Drupal"}'
+      label: null
+    -
+      parent_uuid: 6df8aa17-0614-4e65-a673-2fa541b7f543
+      slot: content
+      uuid: 1151866f-4eae-4805-b49a-deb3a1d2b1c0
+      component_id: sdc.dripyard_base.statistic
+      component_version: 9743427112a0a222
+      inputs: '{"statistic":"100%","first_line":"Open source"}'
+      label: null
+    -
+      parent_uuid: 6df8aa17-0614-4e65-a673-2fa541b7f543
+      slot: content
+      uuid: ded075f0-fb86-4143-9494-1bf788d3234f
+      component_id: sdc.dripyard_base.statistic
+      component_version: 9743427112a0a222
+      inputs: '{"statistic":"50+","first_line":"Modules contributed"}'
+      label: null
+    -
+      parent_uuid: d6f6a1e6-fd58-4043-a59d-d5d3f659f95e
+      slot: content
+      uuid: 20618334-e2fd-46f3-aa5d-4157fcbdbcb9
+      component_id: sdc.dripyard_base.tab-group
+      component_version: 912d35db4fbdbf16
+      inputs: '{"centered":true,"placement":"top"}'
+      label: null
+    -
+      parent_uuid: 20618334-e2fd-46f3-aa5d-4157fcbdbcb9
+      slot: tabs
+      uuid: 43c7a60d-ef07-4550-ac01-ae478b1a6564
+      component_id: sdc.dripyard_base.tab
+      component_version: db84e92a77f252cb
+      inputs: '{"title":"With ATK"}'
+      label: null
+    -
+      parent_uuid: 43c7a60d-ef07-4550-ac01-ae478b1a6564
+      slot: tab_panel_content
+      uuid: 257dac2e-978f-4569-ae7c-caa5b49bf7d6
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EAutomated test suite catches regressions in CI - no surprises in production.\u003C\/p\u003E","style":"body_m","color":"inherit","center":true}'
+      label: null
+    -
+      parent_uuid: 20618334-e2fd-46f3-aa5d-4157fcbdbcb9
+      slot: tabs
+      uuid: 95dde595-e392-48ac-9e6f-291adb53baf4
+      component_id: sdc.dripyard_base.tab
+      component_version: db84e92a77f252cb
+      inputs: '{"title":"Without ATK"}'
+      label: null
+    -
+      parent_uuid: 95dde595-e392-48ac-9e6f-291adb53baf4
+      slot: tab_panel_content
+      uuid: 70618749-a56c-4dd4-85c7-a0528c4e620a
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EManual QA misses edge cases - production bugs are found by your clients, not your team.\u003C\/p\u003E","style":"body_m","color":"inherit","center":true}'
+      label: null
+    -
+      parent_uuid: 1651496e-60ab-4ca8-893a-33fe15f89a43
+      slot: hero_content
+      uuid: 9f99aaed-3a12-4dfe-aa56-32bedc9106ba
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"See how we test this site","href":"\/how-we-built-this-site","style":"light","size":"medium"}'
+      label: null
+    -
+      parent_uuid: c8aec9ce-9b43-4fdf-9aa4-e9f2ad8cacf8
+      slot: content
+      uuid: cffe4d63-6c55-4948-9c1d-2ca1ba2c9507
+      component_id: sdc.dripyard_base.canvas-image
+      component_version: 432a6a71fe725929
+      inputs: '{"loading":"lazy","border_radius":"large","aspect_ratio":"portrait","width":480,"image":{"src":"https:\/\/images.unsplash.com\/photo-1553877522-43269d4ea984?w=800\u0026q=80","alt":"Team working on SEO strategy at laptops","width":800,"height":1067}}'
+      label: null
+    -
+      parent_uuid: 1651496e-60ab-4ca8-893a-33fe15f89a43
+      slot: hero_content
+      uuid: 8fdea902-b7d7-41c7-aff3-589df86c7802
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"Performant Labs built the Drupal testing stack the ecosystem already uses (ATK, Testor), extended it with AI workflows that heal broken tests on their own, and \u2014 when you need it \u2014 embeds senior testing engineers alongside your team.","style":"body_l","color":"soft","center":true}'
+      label: null
+  owner:
+    -
+      target_id: 1
+  created:
+    -
+      value: 1775927002
+  path:
+    -
+      alias: /home
+      langcode: en

@@ -61,7 +61,7 @@ Strict order. Each page completes fully (draft → review → apply → verify �
 ### 4.1 Homepage `/`
 - [ ] Draft new hero + sections per brief
 - [ ] Review and approve copy
-- [ ] Apply via admin UI paste (editor-owned content)
+- [ ] Apply via overlay YAML (`scripts/apply-canvas-page.php`)
 - [ ] T1 curl → T2 ARIA → T3 screenshot verification
 - [ ] Update meta title, meta description, OG tags
 - [ ] Commit on host

@@ -1,0 +1,77 @@
+# Homepage — Section 4 (Dogfooding proof: "We heal our own tests nightly").
+#
+# From the approved Phase 3 homepage brief (docs/pl2/briefs/homepage.md §4).
+#
+# Replace-in-place strategy: reuse the existing §4 section wrapper
+# (c23a78ae) and patch its heading; drop the four industry-use-case cards
+# (they're off-brand under the new positioning); replace with a single
+# credibility paragraph + a "Read the full story" CTA.
+#
+# Three actions:
+#   1. component_inputs: rewrite the §4 H2 from "Built for every type of
+#      Drupal project." to "We heal our own tests nightly."
+#   2. add_components: insert (a) a text body paragraph with an inline
+#      <code>heal-tests-claude.yml</code> token and a "See the workflow →"
+#      anchor to the public GitHub file, and (b) a bare-style "Read the
+#      full story" button CTA to /how-we-built-this-site. Both are
+#      siblings of the heading under the section wrapper, slot=content.
+#   3. remove_components: drop the carousel a0182564 — the descendant rule
+#      in apply-canvas-page.php cascades to the four child card-canvas
+#      components (Government / Higher Ed / Healthcare / Media & Pub).
+#
+# Insertion anchor: bcc12718 (the §4 heading). Because add_components
+# runs BEFORE remove_components in the apply script, the carousel is
+# still on the page at insertion time — but anchoring on the heading
+# means our new components land at the correct position (right after
+# the heading, before the carousel) regardless of what comes after.
+#
+# Apply with:
+#   cd ~/Sites/pl-performantlabs.com.2/web
+#   ddev drush php:script ../scripts/apply-canvas-page.php \
+#     ../content-exports/homepage-section-4.overlay.yml dry-run
+# (Drop `dry-run` to actually save.)
+
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: bb5bbbb1-4a16-4b86-bbea-b215ab8096cf
+
+overlay:
+
+  # 1. Rewrite the §4 H2.
+  component_inputs:
+    bcc12718-2c3a-48cd-a87b-d1d968b1caa1:
+      text: "We heal our own tests nightly."
+
+  # 2. Insert body text + "Read the full story" CTA button.
+  add_components:
+    after_uuid: bcc12718-2c3a-48cd-a87b-d1d968b1caa1
+    components:
+
+      # Dogfooding body paragraph (text SDC, inline <code> + anchor).
+      - uuid: 62780469-d75e-4c13-8b3b-c7f1e7b2cb42
+        component_id: sdc.dripyard_base.text
+        component_version: 05732cb45a35eac6
+        parent_uuid: c23a78ae-5474-43b8-9695-7800f8eceb7d
+        slot: content
+        inputs:
+          text: "<p>Every night, Playwright tests run against this site in CI. When a test breaks, a Claude agent diagnoses the failure, classifies it (test issue or website issue), and — when appropriate — opens a pull request with the fix. No Monday-morning flake triage. No staging calls with a QA engineer. The workflow is in our public repo; you can read <code>heal-tests-claude.yml</code> — the code that decides what our AI is allowed to touch. <a href=\"https://github.com/Performant-Labs/pl-performantlabs.com/blob/main/.github/workflows/heal-tests-claude.yml\">See the workflow →</a></p>"
+          style: body_m
+          color: inherit
+
+      # Section CTA: "Read the full story" → /how-we-built-this-site.
+      - uuid: 12e2bf25-d499-447b-be9a-04dd8d47f0c0
+        component_id: sdc.dripyard_base.button
+        component_version: 3155d0acceef4faf
+        parent_uuid: c23a78ae-5474-43b8-9695-7800f8eceb7d
+        slot: content
+        inputs:
+          text: "Read the full story"
+          href: "/how-we-built-this-site"
+          style: bare
+          size: small
+          suffix_icon: arrow-right
+
+  # 3. Drop the industry-use-cases carousel (cascades to its 4 card children).
+  remove_components:
+    - a0182564-40dc-4b55-b6b7-ea374cbb9217
