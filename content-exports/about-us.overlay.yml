@@ -1,0 +1,425 @@
+# /about-us — Phase 3 v1 build.
+#
+# Translates the approved brief (docs/pl2/briefs/about-us.md, v1 locked
+# 2026-04-22) into component-level inserts on a canvas_page uuid that
+# André creates via admin UI immediately before overlay-apply.
+#
+#   ACTION REQUIRED BEFORE `ddev drush php:script apply-canvas-page.php`:
+#   Replace PLACEHOLDER-PLACEHOLDER-ABOUTUS-PAGE-UUID below with the
+#   real canvas_page uuid, OR export the empty shell with
+#   `ddev drush content:export` and splice its uuid into _meta.uuid.
+#
+# Greenfield build — the /about-us path currently 404s; no legacy entity
+# to displace; the stale footer menu link (id 43) gets repointed from
+# /about → /about-us in a separate bridge-daemon pass after T3 verify.
+#
+# Sections emitted (5, per brief §"Page structure"):
+#   §1. Hero — h1 + italic subhead + 2 CTAs
+#   §2. Depth (on drupal.org since 2006) — h2 + prose + 3-anchor list
+#   §3. The tools we wrote — h2 + intro + 2-project HTML block (ATK +
+#       Testor) + inline "Other OSS we ship" line + compact "Who we are"
+#       block (brief §4 folded inline per D8)
+#   §5. We test what we ship — h2 + prose + single button to
+#       /how-we-built-this-site
+#   §6. Final CTA — h2 + 1-sentence sub-copy + 2 CTAs
+#
+# Theme alternation: white → light → white → light → white.
+#   §6 is `white` (NOT `primary`) — same reasoning as the §6 of
+#   /how-we-built-this-site: engineer-audience pages read a loud primary
+#   block as marketing affect. Brief tone: "peer-to-peer, not brochure."
+#
+# Editorial rules enforced:
+#   - Playwright named before Cypress any time both appear (memory
+#     project_pl2_playwright_first). See §3 ATK card body.
+#   - "André Angelantoni" at first mention (§3 "Who we are"); "André"
+#     if/when he appears again (not in v1).
+#   - "ATK" full name at first mention (§3 ATK card heading uses the
+#     full Automated Testing Kit name; body uses ATK).
+#
+# Rendering dependencies (all already in place from prior commits —
+# confirmed via `/how-we-built-this-site` deploy 2026-04-22):
+#   - canvas_html_block filter allows: <ul> <li> <ol> <blockquote>
+#     <a> <em> <strong> <code>. No <table> needed for /about-us; anchors
+#     are rendered as a <ul> with bolded labels.
+#   - __root__ sentinel in apply-canvas-page.php (f33618d 2026-04-22).
+#
+# Apply (after uuid swap):
+#   ddev drush php:script scripts/apply-canvas-page.php \
+#     content-exports/about-us.overlay.yml dry-run
+# Drop `dry-run` to save. Then T1 → T2 → T3 per Three-Tier memory.
+#
+# Post-apply DB steps (separate alias-bridge commit per
+# feedback_alias_swap_after_verify memory — only AFTER T1/T2/T3 pass):
+#   1. path_alias insert: path=/node/<eid> alias=/about-us
+#      (or canvas_page equivalent path). Verify /about-us resolves 200.
+#   2. Menu link id 43 (footer): repoint from internal:/about →
+#      internal:/about-us.
+#   3. Add new main-nav entry "About" at weight 4 (between Open Source
+#      Projects and Contact Us), internal:/about-us.
+#   4. Publish the canvas_page (status=1).
+#
+# Known open items (deferred from v1, per brief "Deliberate omissions"):
+#   - No ATK install-count citation (drupal.org usage widget not
+#     parseable from the fetch; if André wants the number, re-fetch
+#     at draft time and splice into §2 or §3 intro).
+#   - No named engineers besides André (D4 locked). When André supplies
+#     names, extend §3 "Who we are" text inline — no structural change
+#     needed; the sentence "A small team of senior testing engineers
+#     work alongside him…" is deliberately bounded to accept insertion.
+
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: PLACEHOLDER-PLACEHOLDER-ABOUTUS-PAGE-UUID
+
+overlay:
+
+  add_components:
+
+    - after_uuid: __root__
+      components:
+
+        # ──────────────────────────────────────────────────────────────
+        # §1. HERO — theme=white.
+        # Centered h1 + italic subhead + 2 CTAs. No hero image (D2).
+        # Mirrors homepage §1 shape.
+        # ──────────────────────────────────────────────────────────────
+
+        - uuid: a1e7c3b4-1d2f-4a5b-9c6d-7e8f9a0b1c2d
+          component_id: sdc.dripyard_base.section
+          component_version: e6079b189d228dad
+          inputs:
+            section_width: max-width
+            content_width: max-width
+            margin_top: zero
+            margin_bottom: zero
+            padding_top: large
+            padding_bottom: large
+            theme: white
+
+        - uuid: a2b8d4c5-2e3f-4b6c-ad7e-8f9a0b1c2d3e
+          parent_uuid: a1e7c3b4-1d2f-4a5b-9c6d-7e8f9a0b1c2d
+          slot: content
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "Drupal testing, done by the people who wrote the tools."
+            html_element: h1
+            style: h1
+            color: loud
+            margin_top: zero
+            margin_bottom: small
+            center: true
+            text_max_width: "900px"
+
+        - uuid: a3c9e5d6-3f40-4c7d-be8f-9a0b1c2d3e4f
+          parent_uuid: a1e7c3b4-1d2f-4a5b-9c6d-7e8f9a0b1c2d
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p><em>Nearly two decades of Drupal work, narrowed to testing. Author of Automated Testing Kit on drupal.org, and of Testor on GitHub. The dogfooding proof runs on this site, every night.</em></p>
+            style: body_l
+            color: soft
+
+        - uuid: a4d0f6e7-4051-4d8e-cf90-ab1c2d3e4f50
+          parent_uuid: a1e7c3b4-1d2f-4a5b-9c6d-7e8f9a0b1c2d
+          slot: content
+          component_id: sdc.dripyard_base.button
+          component_version: 3155d0acceef4faf
+          inputs:
+            text: "Book a testing review"
+            href: "/contact-us?intent=testing-review"
+            style: primary
+            size: large
+            suffix_icon: arrow-right
+
+        - uuid: a5e10708-5162-4e9f-d0a1-bc2d3e4f5061
+          parent_uuid: a1e7c3b4-1d2f-4a5b-9c6d-7e8f9a0b1c2d
+          slot: content
+          component_id: sdc.dripyard_base.button
+          component_version: 3155d0acceef4faf
+          inputs:
+            text: "See the site test itself"
+            href: "/how-we-built-this-site"
+            style: secondary
+            size: large
+
+        # ──────────────────────────────────────────────────────────────
+        # §2. DEPTH — theme=light.
+        # h2 + prose + 3-anchor <ul> (each bullet = bold label + inline
+        # evidence link). D9 locked shape: prose + 3 anchors.
+        # ──────────────────────────────────────────────────────────────
+
+        - uuid: b1f21819-6273-4fa0-e1b2-cd3e4f506172
+          component_id: sdc.dripyard_base.section
+          component_version: e6079b189d228dad
+          inputs:
+            section_width: max-width
+            content_width: max-width
+            margin_top: zero
+            margin_bottom: zero
+            padding_top: large
+            padding_bottom: large
+            theme: light
+
+        - uuid: b202292a-7384-40b1-f2c3-de4f50617283
+          parent_uuid: b1f21819-6273-4fa0-e1b2-cd3e4f506172
+          slot: header
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "On drupal.org since 2006."
+            html_element: h2
+            style: h2
+            color: primary
+            margin_top: zero
+            margin_bottom: small
+
+        - uuid: b3133a3b-8495-41c2-03d4-ef5061728394
+          parent_uuid: b1f21819-6273-4fa0-e1b2-cd3e4f506172
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p>Performant Labs has been on drupal.org for nineteen-plus years — since the Drupal 4.7 era, before automated testing in Drupal was a distinct practice. The work narrowed to testing deliberately, as the rest of the community converged on Drupal's testing ecosystem (Behat, PHPUnit, then Playwright and Cypress). We stayed with it because it's where the hardest, most valuable Drupal problems live: not building the next site, but keeping the critical one working through twelve major-version upgrades.</p>
+            style: body_m
+            color: soft
+
+        - uuid: b4244b4c-95a6-42d3-14e5-f06172839405
+          parent_uuid: b1f21819-6273-4fa0-e1b2-cd3e4f506172
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <ul>
+              <li><strong>19+ years on drupal.org</strong> — <a href="https://www.drupal.org/u/aangel">drupal.org/u/aangel</a> (member for 19 years 9 months as of this writing).</li>
+              <li><strong>9+ projects credited on drupal.org</strong> — the project list on the same profile covers Automated Testing Kit (and its D7 backport + Demo Recipe), Campaign Kit, Layout Builder Kit, the Drupal Quality Initiative, Audit Kit, AI Drush Tools, and Payment Stripe.</li>
+              <li><strong>Active in the community</strong> — Bay Area Drupal Camp presenter on the Drupal Quality Initiative. See <a href="/open-source-projects">our open-source projects</a>.</li>
+              </ul>
+            style: body_m
+            color: soft
+
+        # ──────────────────────────────────────────────────────────────
+        # §3. THE TOOLS WE WROTE — theme=white.
+        # h2 + intro + 2-project block (ATK + Testor) rendered inline
+        # inside a single text component for v1 (HTML only — no custom
+        # card SDC needed). Trailing "Other OSS we ship" line and compact
+        # "Who we are" block (brief §4, folded per D8) in their own text
+        # components for semantic clarity.
+        # ──────────────────────────────────────────────────────────────
+
+        - uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+          component_id: sdc.dripyard_base.section
+          component_version: e6079b189d228dad
+          inputs:
+            section_width: max-width
+            content_width: max-width
+            margin_top: zero
+            margin_bottom: zero
+            padding_top: large
+            padding_bottom: large
+            theme: white
+
+        - uuid: c266de6e-b7c8-44f5-3607-17283941526b
+          parent_uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+          slot: header
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "Open source: the tools we wrote."
+            html_element: h2
+            style: h2
+            color: primary
+            margin_top: zero
+            margin_bottom: small
+
+        - uuid: c377ef7f-c8d9-4506-4718-28394152637c
+          parent_uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+          slot: header
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p><em>Automated Testing Kit and Testor aren't projects we contribute to — we author and maintain them. Both exist because specific testing gaps in the Drupal community weren't being filled by anything else.</em></p>
+            style: body_l
+            color: soft
+
+        - uuid: c488f080-d9ea-4617-5829-394152637d8d
+          parent_uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <h3>Automated Testing Kit (ATK)</h3>
+              <p><em>A library of tests and helper functions for end-to-end testing of Drupal sites, for both Playwright and Cypress.</em></p>
+              <p>Why it exists: every Drupal site re-writes the same twenty login / entity-reference / permissions tests in each new project. ATK ships them pre-written, together with the helper functions needed to make them reliable against Drupal's specific quirks. Maintained on drupal.org as a supported module, including a Drupal 7 backport and a demonstration recipe.</p>
+              <p><a href="https://www.drupal.org/project/automated_testing_kit"><strong>drupal.org/project/automated_testing_kit</strong></a></p>
+              <h3>Testor</h3>
+              <p><em>A command-line companion to ATK for running tests outside the Drupal admin UI.</em></p>
+              <p>Why it exists: teams running ATK in CI and local dev want the same test suite accessible from a terminal, not only from the Drupal admin. Testor provides that surface. Maintained in the open on GitHub, updated through late 2025.</p>
+              <p><a href="https://github.com/Performant-Labs/testor"><strong>github.com/Performant-Labs/testor</strong></a></p>
+            style: body_m
+            color: soft
+
+        - uuid: c5990191-ea0b-4728-693a-4a5263748e9e
+          parent_uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p><em>Other OSS we ship.</em> Performant Labs also maintains <a href="https://www.drupal.org/project/campaign_kit">Campaign Kit</a>, <a href="https://www.drupal.org/project/layout_builder_kit">Layout Builder Kit</a>, the <a href="https://www.drupal.org/project/dqi">Drupal Quality Initiative</a>, <a href="https://www.drupal.org/project/audit_kit">Audit Kit</a>, <a href="https://www.drupal.org/project/ai_drush_tools">AI Drush Tools</a>, and <a href="https://www.drupal.org/project/payment_stripe">Payment Stripe</a> on drupal.org.</p>
+            style: body_s
+            color: soft
+
+        # §4 folded inline (D8 — compact "Who we are" block, not its own
+        # full section). Separate heading + text components for semantic
+        # weight; both still anchored to the §3 section_uuid.
+
+        - uuid: c6aa12a2-fb1c-4839-7a4b-5b637485a0af
+          parent_uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+          slot: content
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "Who we are."
+            html_element: h3
+            style: h3
+            color: primary
+            margin_top: medium
+            margin_bottom: small
+
+        - uuid: c7bb23b3-0c2d-493a-8b5c-6c748596b1b0
+          parent_uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p>Performant Labs is led by <strong>André Angelantoni</strong> (drupal.org <a href="https://www.drupal.org/u/aangel"><code>aangel</code></a>), author of Automated Testing Kit and maintainer of the testing-specific Drupal projects linked above. A small team of senior testing engineers work alongside him on the autonomous-healing workflow you see running on this site.</p>
+            style: body_m
+            color: soft
+
+        # ──────────────────────────────────────────────────────────────
+        # §5. WE TEST WHAT WE SHIP — theme=light.
+        # Short prose + single button to /how-we-built-this-site.
+        # ──────────────────────────────────────────────────────────────
+
+        - uuid: d1cc34c4-1d3e-4a4b-9c6d-7d8596a7c2c1
+          component_id: sdc.dripyard_base.section
+          component_version: e6079b189d228dad
+          inputs:
+            section_width: max-width
+            content_width: max-width
+            margin_top: zero
+            margin_bottom: zero
+            padding_top: large
+            padding_bottom: large
+            theme: light
+
+        - uuid: d2dd45d5-2e4f-4b5c-ad7e-8e96a7b8d3d2
+          parent_uuid: d1cc34c4-1d3e-4a4b-9c6d-7d8596a7c2c1
+          slot: header
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "We test what we ship."
+            html_element: h2
+            style: h2
+            color: primary
+            margin_top: zero
+            margin_bottom: small
+
+        - uuid: d3ee56e6-3f50-4c6d-be8f-9fa7b8c9e4e3
+          parent_uuid: d1cc34c4-1d3e-4a4b-9c6d-7d8596a7c2c1
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p>This site runs the same autonomous-healing workflow we offer our clients. Every night, Claude agents re-run the Playwright suite against the live site, triage failures, author fixes as pull requests, and file issues when the failure is in the site rather than the test. The commit history is public. The dashboard is public. Every heal is a verifiable fact, not a case study.</p>
+            style: body_m
+            color: soft
+
+        - uuid: d4ff67f7-4061-4d7e-cf90-a0b8c9d0f5f4
+          parent_uuid: d1cc34c4-1d3e-4a4b-9c6d-7d8596a7c2c1
+          slot: content
+          component_id: sdc.dripyard_base.button
+          component_version: 3155d0acceef4faf
+          inputs:
+            text: "Read how the workflow is wired"
+            href: "/how-we-built-this-site"
+            style: primary
+            size: large
+            suffix_icon: arrow-right
+
+        # ──────────────────────────────────────────────────────────────
+        # §6. FINAL CTA — theme=white.
+        # h2 + 1-sentence sub-copy + 2 CTAs. Engineer-audience pages →
+        # avoid `primary` theme block; keep white for sober register.
+        # ──────────────────────────────────────────────────────────────
+
+        - uuid: e1007808-5172-4e8f-d0a1-b1c9d0e1a605
+          component_id: sdc.dripyard_base.section
+          component_version: e6079b189d228dad
+          inputs:
+            section_width: max-width
+            content_width: max-width
+            margin_top: zero
+            margin_bottom: zero
+            padding_top: large
+            padding_bottom: large
+            theme: white
+
+        - uuid: e2118919-6283-4f90-e1b2-c2d0e1f2b716
+          parent_uuid: e1007808-5172-4e8f-d0a1-b1c9d0e1a605
+          slot: content
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "Want to talk testing?"
+            html_element: h2
+            style: h2
+            color: loud
+            margin_top: zero
+            margin_bottom: small
+            center: true
+
+        - uuid: e3229a2a-7394-40a1-f2c3-d3e1f203c827
+          parent_uuid: e1007808-5172-4e8f-d0a1-b1c9d0e1a605
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p>If any of this sounds like the kind of Drupal testing partner you're looking for — start here.</p>
+            style: body_l
+            color: soft
+
+        - uuid: e433ab3b-84a5-41b2-03d4-e4f20314d938
+          parent_uuid: e1007808-5172-4e8f-d0a1-b1c9d0e1a605
+          slot: content
+          component_id: sdc.dripyard_base.button
+          component_version: 3155d0acceef4faf
+          inputs:
+            text: "Book a testing review"
+            href: "/contact-us?intent=testing-review"
+            style: primary
+            size: large
+            suffix_icon: arrow-right
+
+        - uuid: e544bc4c-95b6-42c3-14e5-f5031425ea49
+          parent_uuid: e1007808-5172-4e8f-d0a1-b1c9d0e1a605
+          slot: content
+          component_id: sdc.dripyard_base.button
+          component_version: 3155d0acceef4faf
+          inputs:
+            text: "See the testing menu"
+            href: "/services"
+            style: secondary
+            size: large
