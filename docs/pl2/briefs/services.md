@@ -1,6 +1,6 @@
 # Services Brief — `/services`
 
-*Phase 3 content brief. **v0 draft — 2026-04-21.** Not yet approved; contains open decision points for André.*
+*Phase 3 content brief. **v1 — 2026-04-22.** All open decisions (D1–D10) resolved and locked. Ready for overlay implementation.*
 
 | Field | Value |
 |---|---|
@@ -57,88 +57,72 @@ Same as homepage — pragmatic, specifics over adjectives, no hype. The /service
 
 ---
 
-## Page structure — 5 sections (proposed)
-
-> **Open decision (D1): section count.** Homepage has 6 sections. I've proposed 5 for `/services` on the assumption that a trust bar isn't needed here (the reader clicked through from the homepage trust bar). If you want one anyway, we add it between §1 and §2 and the count becomes 6. **Decision needed before this brief is approved.**
+## Page structure — 6 sections
 
 ### 1. Hero
 
-- **H1 (TBD — two options):**
-  - *Option A (engagement-first):* **Testing engagements for Drupal teams.**
-  - *Option B (promise-first):* **Senior testing engineers, on your terms.**
-- **Subhead (draft):** *Pick a shape: take over our open-source tools, embed a senior testing engineer alongside your team, or hand us the whole release pipeline. Every engagement is testing work — we don't build Drupal sites.*
+- **H1:** *Testing engagements for Drupal teams.* *(D2 locked: Option A — engagement-first, Drupal-specific.)*
+- **Subhead:** *Take over a broken test suite. Embed a senior testing engineer. Pilot AI-driven test healing. Audit accessibility. Every engagement is testing work — we don't build Drupal sites.*
 - **Primary CTA:** `Book a testing review` → `/contact-us?intent=testing-review`
 - **Secondary CTA:** `See how we test this site` → `/how-we-built-this-site`
 
-**Layout notes:** Single `<h1>` only (the current page has 2 — accessibility smell flagged in audit). CTAs identical to homepage hero; consistency is deliberate.
+**Layout notes:** Single `<h1>` (confirmed correct on live page — the earlier audit that flagged 2 h1s was wrong). **Hero image retired in this overlay pass:** the current `thinker_1600.png` is generic stock that conflicts with the tone guardrail (*"no hype, specifics over adjectives"*). A Drupal-specific replacement — code snippet, test-run screenshot, or workflow diagram — is tracked as a follow-on (task #59). Interim layout is centered text-only, matching homepage §1 shape. The existing section + flex-wrapper structure is replaced with a simpler heading + text + button-row arrangement.
 
-> **Open decision (D2): H1 copy.** I don't have a strong preference between the two options. Option A is more concrete and matches the positioning statement; Option B is warmer but softens the Drupal-specific framing. **André to pick, or reject both.**
+### 2. Four ways we engage
 
-### 2. What we do (the offerings)
+Replaces the current "What we do generally" section. The 4-card grid structure is preserved (D4 locked: keep + reframe); all four card titles and bodies are rewritten to strictly testing scope. The "What we do specifically" 18-card sub-specialty grid beneath it retires entirely (D3 locked: delete — confirmed 18 cards, not 14+, in the 2026-04-22 audit).
 
-**Current state on the live page:** 4 "general" cards + 14+ sub-specialty cards in a grid (audited 2026-04-21). The grid reads as "we do every kind of Drupal development," which actively contradicts the Phase 1 framework.
+- **Section heading:** *Four ways we engage.* (replaces *"What we do generally"*)
+- **Subhead:** *Every engagement is testing work. We don't build Drupal sites — we test the ones you already have.* (replaces the live build-shop framing: *"Modern websites can have lots of moving parts so it's best to pick a web site building partner who specializes in building and testing Drupal sites."*)
 
-**Proposed direction:** replace the grid entirely with **3 named engagement shapes**, each a card with a heading, a one-paragraph description, and a "Talk to us →" link to the contact form with an `?intent=` query param. No sub-specialty grid.
+**4 cards, all testing-specific:**
 
-**Shape-only draft — copy to be finalized:**
+| # | Title | Body |
+|---|---|---|
+| 1 | **Testing-suite takeover** | *Your Playwright or Cypress suite is broken, flaky, or abandoned. We take it over, fix it, and either hand it back green or keep running it for you. Ships with ATK where useful.* |
+| 2 | **Embedded testing engineer** | *A senior testing engineer joins your team for the duration of a project or release. Pairs with your developers, owns the test strategy, ships with your release cadence.* |
+| 3 | **Autonomous-healing pilot** | *We install the same Claude-agent workflow we run on this site, scoped to a slice of your existing test suite. You see how it behaves on real failures before committing to a broader rollout.* |
+| 4 | **Accessibility testing** | *WCAG audits integrated into your CI pipeline. Not a one-time report — a continuous automated check that catches regressions before deploy.* |
 
-> **Testing-suite takeover**
-> Your Playwright or Cypress suite is broken, flaky, or abandoned. We take it over, fix it, and either hand it back green or keep running it for you. Ships with ATK where useful.
-> *`Talk to us →` `/contact-us?intent=suite-takeover`*
+**Layout notes:** Cards preserve their existing `sdc.dripyard_base.card-canvas` component shape — only `title` and `body` inputs change via `component_inputs`. No new component types added. Cards do not carry individual CTAs in the initial pass; readers scroll to §3–§6 or use the final-CTA at §6. **Per-card `?intent=…` CTA params deferred to `/contact-us` brief (D7 locked: defer).**
 
-> **Embedded testing engineer**
-> A senior testing engineer joins your team for the duration of a project or release. Pairs with your developers, owns the test strategy, ships with your release cadence. North American project lead, nearshore delivery options (see §3).
-> *`Talk to us →` `/contact-us?intent=embedded-engineer`*
-
-> **Autonomous-healing pilot**
-> We install the same Claude-agent workflow we run on this site, scoped to a slice of your existing test suite. You see how it behaves on real failures before committing to a broader rollout.
-> *`Talk to us →` `/contact-us?intent=healing-pilot`*
-
-> **Open decision (D3): fate of the 14+ sub-specialty cards.** The current page's long specialty grid (accessibility testing, load testing, API testing, module testing, theme testing, etc.) is the single biggest conflict with the new positioning. Three options:
->
-> 1. **Delete the whole grid.** Cleanest. A few of those sub-specialties genuinely are what we sell — but they live naturally inside the three engagement shapes above, not as stand-alone menu items.
-> 2. **Keep a condensed 4–6 card grid of testing-only specialties** (accessibility, load, API, visual regression, etc.) — explicitly excluding any "general Drupal development" items.
-> 3. **Keep the grid but reframe every card.** Highest rework cost; I don't recommend it.
->
-> **My recommendation: option 1.** **André to confirm or override.**
-
-> **Open decision (D4): fate of the 4 top-level "what we do" cards.** On the live page these currently include items like "Drupal Development" and similar build-shop framings. These need to either be deleted (most likely) or rewritten to testing-only scope. **André to confirm delete.**
+**Sub-specialty grid retirement:** the current section `e014edc3-0694-4d76-9b61-772d35e613c0` (heading *"What we do specifically"*) and all 18 child cards (uuids `3cd00424…` through `8be90fdd…`) are `remove_components` targets. Descendant cascade handles cleanup.
 
 ### 3. Nearshore testing staff augmentation (ONE block)
 
-Per user directive 2026-04-21: nearshore is **one block** on this page, not a separate page or a sub-page of /services.
+Per user directive 2026-04-21, and D5 locked 2026-04-22: nearshore is **one block** on this page, written **deliberately vague** — no region, hours, engagement-shape, or named-client specifics. The block exists because Phase 2 decision D requires folding retired `/nearshoring` content into `/services`; with specifics pending, the block's copy stays general.
 
-- **Heading (draft):** *Nearshore testing, senior-only.*
-- **Body (draft — specifics are TBD):** *When a client needs ongoing embedded capacity, we extend the team with senior testing engineers working from [REGION TBD] during [HOURS TBD]. Every engineer is Drupal-literate and testing-specialist from day one — we don't route junior generalists through this channel. Project leadership stays in North America. Engagements are full-time or fractional, usually month-to-month after an initial scoping block.*
-- **Inline credibility cue (optional):** a short sentence about how long we've run the nearshore model and/or how many engagements it's supported. Write only if the number is honest and specific.
+> **Tone-guardrail trade-off (accepted 2026-04-22):** a vague nearshore block risks reading as *"we also have nearshore partners"* hand-wave, which tensions against the brief's pragmatic-tone guardrail (*"specifics over adjectives"*). André accepted this trade-off — the block exists as a Phase-2-compliance placeholder until nearshore specifics land. When they do, this section should be rewritten with region / hours / engagement shape / scope limits baked in.
+
+- **Heading:** *Senior testing capacity, when you need more hands.*
+- **Body:** *When a project needs ongoing embedded capacity beyond a single senior engineer, we extend the team with additional senior testing engineers through our nearshore delivery channel. Project leadership stays in North America. Engagements are sized to the work, not to a headcount target. Every engineer on this channel is Drupal-literate and testing-specialist — we don't route junior generalists through it.*
 - **CTA:** `Talk about capacity →` `/contact-us?intent=nearshore-capacity`
 
-> **Open decisions (D5) — nearshore specifics.** I need at least:
->
-> - **Region(s).** Which countries / which time zones? Brief must name them; vague "LATAM" or "nearshore partners" will fail the pragmatic-tone guardrail.
-> - **Hours overlap.** How much of the US business day do these engineers work? If <6 hours, say so honestly — it's still a legitimate model, just a different one.
-> - **Engagement minimum / shape.** Is the default FTE or part-time? Month-to-month or quarterly? Is there a minimum?
-> - **Named clients / volume proof (optional).** Do we have a client willing to be named for this specifically, or a believable volume statistic?
-> - **Any hard scope limits.** Anything a nearshore engineer *won't* do on our engagements (e.g. "they don't run production deploys" / "they don't interface with non-engineering stakeholders directly"). These limits are reassuring to scoping buyers.
+### 4. Proof / dogfooding pointer
 
-### 4. Proof / dogfooding (brief inline pointer)
+Single short paragraph, not a repeat of homepage §4. Covers readers arriving at `/services` directly (search, share link) without having seen the homepage proof block. (D6 locked: include.)
 
-**Not a repeat of the homepage's §4.** Just a single paragraph anchoring *why* these offerings are credible: we run the same workflow on our own site nightly.
-
-- **Heading (draft):** *These aren't services we're spinning up. They're how we already work.*
-- **Body (draft):** *Every engagement ships with the tooling we built and maintain (ATK, Testor) and, where appropriate, the same autonomous-healing workflow we run against this site in CI. If you want to see it before you buy it, start with the how-we-built-this-site walkthrough.*
+- **Heading:** *These aren't services we're spinning up. They're how we already work.*
+- **Body:** *Every engagement ships with the tooling we built and maintain (ATK, Testor) and, where appropriate, the same autonomous-healing workflow we run against this site in CI. If you want to see it before you buy it, start with the how-we-built-this-site walkthrough.*
 - **CTA:** `See how we test this site →` `/how-we-built-this-site`
 
-> **Open decision (D6): include or skip this section?** If the homepage §4 already lands the dogfooding proof, repeating it here may be noise. Counter-argument: a /services reader who hit the page via search (not via homepage) hasn't seen the homepage proof yet. **Lean: include.** **André to confirm.**
+### 5. We Speak — client trust bar
 
-### 5. Final CTA
+Preserved from current `/services` (D1 locked: 6 sections, trust bar retained per André's override of my default). Logo grid is unchanged: client logos mids 15, 13, 16, 17, 22, 23 (same media entities as homepage trust bar, so any future logo refresh propagates to both pages).
+
+- **Heading:** *We Speak.* (current copy retained; no change required for v1.)
+- **Content:** unchanged — 6-logo `logo-grid` component at uuid `dfb7f393-1f76-4e05-8c08-3fd33aff45da`.
+
+**Layout notes:** This section retains its current position (between the dogfooding pointer and the final CTA), matching the live page's existing persuasion flow: *offerings → capacity model → capability proof → client trust → CTA*. Not zero-effort — §4 dogfooding is new and gets inserted immediately before this section.
+
+### 6. Final CTA
 
 - **Heading:** *Not sure which shape fits? Start with a testing review.*
 - **Body:** *A 30-minute call with a senior engineer. We'll look at your current workflow, tell you honestly which of the engagement shapes above (if any) makes sense, and leave you with a one-page writeup. No sales pitch. No obligation.*
 - **Primary CTA:** `Book a testing review` → `/contact-us?intent=testing-review`
 - **Optional micro-CTA:** *Or start with the tools →* `/open-source-projects`
 
-**Deliberately identical to homepage §6.** The same reader leaves via the same door. Don't force a different CTA here just for variety.
+**Deliberately identical to homepage §6.** The same reader leaves via the same door. The existing `title-cta` composite at uuid `509fc6e0-19f4-4339-b284-0c3d602a2fd8` (currently *"Ready to take your web presence to the next level?"* / *"Contact us today"* → `/contact-us`) gets `component_inputs`-patched to the new title, button text, and `?intent=testing-review` href — no component replacement required.
 
 ---
 
@@ -153,7 +137,7 @@ Per user directive 2026-04-21: nearshore is **one block** on this page, not a se
 | Scoped conversion — nearshore capacity | Talk about capacity | `/contact-us?intent=nearshore-capacity` | Reader scoping ongoing embedded capacity |
 | Secondary | See how we test this site | `/how-we-built-this-site` | Self-qualify / educate |
 
-> **Open decision (D7): intent query params.** `/contact-us` today has a single CTA and (as of the homepage brief) needs at least a `testing-review` intent handler. Do we want the page to also disambiguate between suite-takeover / embedded / healing-pilot / nearshore as separate intents, or is that over-engineering the contact form? **Depends on André's contact-form preference.** Defer decision to the `/contact-us` brief; pages link with intent params now, and the form can choose to branch on them later.
+**D7 locked: defer to `/contact-us` brief.** This page emits scoped `?intent=…` params on every CTA; the form is free to branch on them later or ignore them for now (all CTAs still land on a working contact page in the meantime).
 
 ## Success criteria
 
@@ -164,37 +148,41 @@ Per user directive 2026-04-21: nearshore is **one block** on this page, not a se
 
 ## Dependencies
 
-- **Nearshore specifics** (D5 above) — brief cannot go to apply without these. Can ship an approved brief *with* TBDs if André prefers to fill them during implementation.
+- **Nearshore specifics (future iteration)** — when region, hours-overlap, engagement shape, and any scope limits are nailed down, §3 gets rewritten from vague → concrete. Not a blocker for the current overlay pass; D5 is locked as the interim state.
+- **Hero image follow-on** — `thinker_1600.png` retires in this pass; the text-only interim matches homepage §1 shape. A Drupal-specific replacement (code snippet / test-run screenshot / workflow diagram) is tracked as task #59.
 - **Contact form intent handling** — coordinate with the `/contact-us` brief. If the contact form can't yet branch on `?intent=…`, the CTAs on this page still work but all land on the same generic form.
 - **`/how-we-built-this-site` rewrite** — this page's §4 points to it; if that page hasn't been rewritten yet the link will land on a stale page. Same dependency as homepage §4.
-- **Homepage Pillar 3 wording** — currently *"Experts alongside your team"* with link text *"How we engage →"*. This brief's §2 uses the framing "engagement shapes" rather than "engagement models." If André prefers the homepage wording to change, or this page's, they should match.
+- **Homepage Pillar 3 wording** — currently *"Experts alongside your team"* with link text *"How we engage →"*. This brief's §2 uses the framing "four ways we engage." If the wording should match between the two pages, that's a follow-on sync decision.
 
 ## Out of scope
 
 - **A standalone `/nearshoring` or `/nearshore-testing` page.** Confirmed 2026-04-21: nearshore lives as ONE block inside /services.
-- **The 14+ sub-specialty cards** from the current page (pending D3 confirmation). Case made above.
+- **The 18 sub-specialty cards** from the current page — retired in this overlay pass (D3 locked: delete).
+- **Hero image swap** — tracked as follow-on task #59; `thinker_1600.png` retires in this pass, replacement asset to be sourced separately.
 - **Case studies on /services.** The homepage §5 strip is the canonical case-study surface. Don't duplicate here.
 - **Pricing.** No rate cards, no engagement pricing, no "starting at." Pricing conversations happen on the call.
+- **Per-card CTA intent params beyond the five listed in the Conversion path table.** If the four engagement shapes need finer-grained routing later, add them to `/contact-us` then expose in a follow-on overlay.
 
 ---
 
-## Open decisions summary (for André)
+## Locked decisions log
 
-| ID | Decision | Default / recommendation |
-|---|---|---|
-| D1 | Section count — 5 or 6? | 5 (skip trust bar) |
-| D2 | Hero H1 — Option A or B or new? | Lean Option A |
-| D3 | Fate of the 14+ sub-specialty grid | Delete (option 1) |
-| D4 | Fate of the 4 top-level "what we do" cards | Delete |
-| D5 | Nearshore specifics (region / hours / shape / proof / scope limits) | Need from André |
-| D6 | Include §4 dogfooding pointer? | Lean yes |
-| D7 | `?intent=…` query params | Defer to `/contact-us` brief |
-| D8 | Overall length target | TBD — homepage is ~30s read; I'd aim similar |
-| D9 | Tone check — too engineering-manager, not enough sales? | For André to read-aloud |
+| ID | Decision | Locked value | Date |
+|---|---|---|---|
+| D1 | Section count | **6** sections (trust bar retained) | 2026-04-22 |
+| D2 | Hero H1 copy | Option A: *"Testing engagements for Drupal teams."* | 2026-04-22 |
+| D3 | 18 sub-specialty cards | **Delete entirely** | 2026-04-22 |
+| D4 | 4 top-level *"What we do"* cards | **Keep** the 4-card slot, **reframe** all four to testing-only scope | 2026-04-22 |
+| D5 | Nearshore specifics | Keep the block, write **deliberately vague** (no region / hours / shape / proof) — tone-guardrail trade-off accepted | 2026-04-22 |
+| D6 | §4 dogfooding pointer | **Include** | 2026-04-22 |
+| D7 | `?intent=…` query params | Defer to `/contact-us` brief; pages emit params now | 2026-04-22 |
+| D8 | Length target | Homepage-parity (~30s read) | 2026-04-22 |
+| D9 | Tone check | During overlay T3 review (screenshots + read-aloud) | 2026-04-22 |
+| D10 | Hero image | Retire `thinker_1600.png` in this overlay; Drupal-specific replacement tracked as follow-on task #59 | 2026-04-22 |
 
 ## Approval
 
 | Stage | Status | Date |
 |---|---|---|
-| v0 draft (this document) | Pending André's review | 2026-04-21 |
-| Brief approved (all D1–D9 resolved) | — | — |
+| v0 draft | Superseded by v1 | 2026-04-21 |
+| v1 — all D1–D10 resolved | Approved by André Angelantoni | 2026-04-22 |
