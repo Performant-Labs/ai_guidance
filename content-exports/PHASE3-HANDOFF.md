@@ -2,14 +2,16 @@
 
 Living document. Update as work progresses. Lives in-repo so it versions with the overlay YAMLs and scripts it describes. NOT a substitute for `.auto-memory/` — memory holds cross-conversation rules; this holds current Phase 3 working state that would be expensive to reconstruct after a Claude context compaction.
 
-Last updated: 2026-04-21 (post Section 2 envelope-fix)
+Last updated: 2026-04-21 (post Section 2 PNG fix; commit `28e32eb`)
 
 ---
 
 ## TL;DR — where we are right now
 
 - **Section 1 (hero):** applied, live on the homepage.
-- **Section 2 (trust bar, 6 client logos):** ✅ **rendering.** Envelope fix applied via `content-exports/homepage-section-2-envelope-fix.overlay.yml`; Tier 1 curl verification shows 6 `<img>` tags with full responsive `srcset` chains, correct alt text, and `data-component-id="canvas:image"`. Rollback point: commit `74c8c7f` + ddev snapshot `section2-envelope-20260421-1853`.
+- **Section 2 (trust bar, 6 client logos):** ✅ **actually rendering** (browser-verified). Two sequential fixes landed:
+  1. **Envelope fix** (commit `93f2a3b`): switched the stored image-prop shape from the silently-coerced flat form to the StaticPropSource envelope, so Canvas stopped dropping the prop.
+  2. **PNG fix** (commit `28e32eb`): rasterized the 6 source SVGs to 600px-wide PNGs and re-seeded as `image`-bundle media (mids 53–58), because Canvas's `image` component unconditionally emits a responsive srcset via `toSrcSet`, and Drupal's image toolkit can't generate AVIF derivatives from SVG sources — every srcset URL was returning HTTP 500 even though the envelope fix was correct. Current verification: all 54 src+srcset URLs return 200 + `image/png`. Rollback point: commit `28e32eb`.
 - **Sections 3–6:** not started.
 - **Other pages (/services, /how-we-do-it, /automated-testing, /about-us, /cypress-on-drupal, /open-source-projects, /introduction-to-atk):** not started.
 
@@ -27,7 +29,7 @@ The flat shape `{src, alt, width, height}` is silently dropped at submit time (n
 - Canvas then falls back to a `DefaultRelativeUrlPropSource` at render time — which is a render-time fallback only, NOT a valid storage shape. If no fallback asset exists, the image simply doesn't render.
 - The consumer template (`themes/contrib/dripyard_base/components/image-or-media/image-or-media.twig`) guards with `{% if image.src %}`, so a coerced-empty value emits no `<img>` at all.
 
-**Empirical confirmation (2026-04-21):** after applying `homepage-section-2-envelope-fix.overlay.yml`, a fresh `dump-canvas-page.php` shows each `logo-item-canvas` inputs JSON as `{"href":null,"image":{"target_id":41}}` (etc). Rendered HTML has all 6 `<img>` tags with `data-component-id="canvas:image"` and correct srcset.
+**Empirical confirmation (2026-04-21):** after applying `homepage-section-2-envelope-fix.overlay.yml`, a fresh `dump-canvas-page.php` shows each `logo-item-canvas` inputs JSON as `{"href":null,"image":{"target_id":53}}` (etc, now pointing at the PNG-backed mids after the second fix — see below). Rendered HTML has all 6 `<img>` tags with `data-component-id="canvas:image"` and correct srcset, and every srcset URL resolves to a PNG derivative.
 
 **Correct submit-time envelope (for the `logo-item-canvas` component's `image` prop):**
 
@@ -58,6 +60,29 @@ The `expression` is the active `logo-item-canvas` version `3c9e4bde3fcefeed` (se
 
 ---
 
+## Canvas image component + SVG sources — the second gotcha (2026-04-21)
+
+After the envelope fix above, the 6 `logo-item-canvas` components correctly stored `{"image":{"target_id":41..46}}` and rendered HTML with 6 `<img data-component-id="canvas:image">` tags. But the trust bar was still visually blank in the browser.
+
+**What was happening:** Canvas's `image` component template (`web/modules/contrib/canvas/components/image/image.twig`) unconditionally expands its src into a responsive srcset via `{% set srcset = src|toSrcSet(width) %}`. The `src_with_alternate_widths` computed property produces URLs that go through Drupal's image-style pipeline, requesting AVIF derivatives. Drupal's image toolkit cannot rasterize SVG into AVIF → each of the 48 srcset URLs (6 logos × 8 widths) returned **HTTP 500 "Error generating image."** Browsers prefer srcset over src, so they saw 8 broken derivative URLs per img and rendered nothing.
+
+**First remediation attempt (didn't work — documented so we don't repeat it):** Re-seeded the 6 media entities in the `svg_image` bundle (mids 47–52) on the theory that bypassing `field_media_image` would skip the raster image-style pipeline. It didn't — the srcset is emitted by the *component* template, not chosen by the media bundle, so swapping bundles made no visible difference. The 48 derivative URLs still 500'd.
+
+**Working fix (PNG rasterization):**
+
+1. Convert each source SVG to a 600px-wide PNG using ImageMagick inside DDEV (`convert -background none -density 300 input.svg -resize 600x PNG32:output.png`). 600px wide comfortably exceeds the largest srcset width (384px) so the down-scale stays sharp.
+2. Place PNGs at `public://client-logos-png/`.
+3. Seed 6 new `image`-bundle media entities (mids 53–58) pointing at the PNG files.
+4. Apply `content-exports/homepage-section-2-pngfix.overlay.yml` to re-target the 6 `logo-item-canvas` components at the new mids.
+5. `ddev drush cr` to invalidate the Canvas render cache.
+6. Verify: `curl` the homepage, extract every src + each comma-separated srcset entry, HEAD each URL. All 54 URLs return 200 + `image/png`.
+
+**Guidance amendment (docs/ai_guidance/frameworks/drupal/theming/verification-cookbook.md):** Tier 1 now requires a "Check E — srcset URLs must actually resolve" step before declaring any image-prop component green. Check C (srcset presence) only proves the HTML attribute exists; Check E proves the browser has something to display. Full incident write-up in the cookbook's Incident Appendix.
+
+**Rule of thumb for future components consuming SVG media:** if the component renders through Canvas's `image` component (or anything else that calls `toSrcSet`), rasterize the source to PNG/JPEG first. SVG media is only safe in contexts that emit raw `<img src=...>` with no srcset derivatives — e.g., a custom template that inlines the file or uses `<picture>` with explicit sources.
+
+---
+
 ## Homepage UUIDs
 
 - **canvas_page UUID:** `bb5bbbb1-4a16-4b86-bbea-b215ab8096cf`
@@ -69,18 +94,24 @@ The `expression` is the active `logo-item-canvas` version `3c9e4bde3fcefeed` (se
 
 ## Seeded media entities (client logos)
 
-Media bundle: `image`. Files at `/sites/default/files/client-logos/`.
+**Current working set** — bundle `image`, PNG files at `/sites/default/files/client-logos-png/`:
 
-| mid | Brand       | Filename (approx)      |
-|-----|-------------|------------------------|
-| 41  | CBS         | cbs.*                  |
-| 42  | DocuSign    | docusign.*             |
-| 43  | Orange      | orange.*               |
-| 44  | Renesas     | renesas.*              |
-| 45  | Robert Half | robert-half.*          |
-| 46  | Tesla       | tesla.*                |
+| mid | Brand               | Filename                          |
+|-----|---------------------|-----------------------------------|
+| 53  | CBS Interactive     | CBS-Interactive-logo.png          |
+| 54  | DocuSign            | DocuSign-logo.png                 |
+| 55  | Orange              | Orange-logo.png                   |
+| 56  | Renesas Electronics | Renesas_Electronics_logo.png      |
+| 57  | Robert Half         | Robert-Half-logo.png              |
+| 58  | Tesla               | Tesla-logo.png                    |
 
-Verify via `ddev drush sqlq "SELECT mid, name FROM media_field_data WHERE mid BETWEEN 41 AND 46"` before acting on these IDs — they were seeded earlier but a DB rollback could change them.
+Sources preserved in `logos-staging/` (SVG originals, gitignored workspace).
+
+**Deleted (do not reference):**
+- mids 41–46 — original `image` bundle, SVG files. Dropped because of the SVG/AVIF mismatch described above.
+- mids 47–52 — intermediate `svg_image` bundle, SVG files. Red herring — bundle swap didn't change the render pipeline.
+
+Verify via `ddev drush sqlq "SELECT mid, name FROM media_field_data WHERE mid BETWEEN 53 AND 58"` before acting on these IDs — a DB rollback could change them.
 
 ---
 
@@ -91,6 +122,7 @@ Convention: `<slug>-YYYYMMDD-HHMM`. Same tag goes in the git commit message and 
 | Tag | What it preserves | Notes |
 |-----|-------------------|-------|
 | `section2-envelope-20260421-1853` | Pre-envelope-fix homepage DB state (Section 2 broken, flat image shape) + gitignore rule committed at `74c8c7f`. | Use to re-reproduce the broken-flat-shape bug for debugging, or to roll back if Section 2's envelope apply turns out to have had a subtle regression elsewhere. |
+| Post-PNG-fix state | Current working homepage DB + commit `28e32eb`. Trust bar rendering with PNG-backed mids 53–58. | No paired ddev snapshot was taken for this step — the fix is purely additive on top of the envelope-fix snapshot. The PNG source files at `web/sites/default/files/client-logos-png/*.png` persist across DB rollbacks; if a rollback to `section2-envelope-20260421-1853` is ever needed, re-create the 6 `image`-bundle media entities pointing at those files, then re-apply `content-exports/homepage-section-2-pngfix.overlay.yml` (the committed record of the fix) and adjust the `target_id`s if the new mids aren't 53–58. If you want a paired snapshot for the current state, run `ddev snapshot --name=section2-pngfix-20260421`. |
 
 When creating a new rollback point, update this table with one line — the tag plus a ~10-word summary of the state it captures. Future-you will thank present-you when sorting through a dozen of these.
 
@@ -117,11 +149,13 @@ Claude's side-effect cleanup: bridge requests start with `find .claude-bridge -t
 
 1. ~~**Section 2 envelope fix**~~ — done 2026-04-21.
 2. ~~**Memory cleanup** (`project_pl2_canvas_content_flow.md`)~~ — done 2026-04-21.
-3. **Section 3:** design + content TBD.
-4. **Sections 4–6:** TBD.
-5. **Existing `canvas-image` tab-panel fix:** re-apply with the correct envelope once we're back in that area. Now that the submit-time envelope shape is verified, this should be mechanical.
-6. **Other pages** (services, how-we-do-it, etc.): post-homepage.
-7. **Optional script cleanup (not urgent):** `scripts/dump-canvas-page.php` writes relative to drush CWD (`/var/www/html/web`), so dumps land at `web/content-exports/<uuid>.yml` instead of repo-root `content-exports/`. Harmless (now gitignored) but slightly confusing. A one-line fix would be to resolve the default output path relative to `__DIR__ . '/../content-exports/'`.
+3. ~~**Section 2 PNG fix**~~ — done 2026-04-21 (commit `28e32eb`).
+4. ~~**Tier 1 cookbook amendment (srcset resolution check)**~~ — done 2026-04-21; pushed upstream to `Performant-Labs/ai_guidance`.
+5. **Section 3:** design + content TBD.
+6. **Sections 4–6:** TBD.
+7. **Existing `canvas-image` tab-panel fix:** re-apply with the correct envelope once we're back in that area. Same two-gotcha pair applies — use the StaticPropSource envelope AND rasterize source SVG to PNG if the `canvas:image` component is in the render path.
+8. **Other pages** (services, how-we-do-it, etc.): post-homepage.
+9. **Optional script cleanup (not urgent):** `scripts/dump-canvas-page.php` writes relative to drush CWD (`/var/www/html/web`), so dumps land at `web/content-exports/<uuid>.yml` instead of repo-root `content-exports/`. Harmless (now gitignored) but slightly confusing. A one-line fix would be to resolve the default output path relative to `__DIR__ . '/../content-exports/'`.
 
 ---
 
