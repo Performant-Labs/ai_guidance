@@ -1,0 +1,302 @@
+---
+d1ba47d6-e1b9-48f1-8d18-9f467d77c458:
+  _meta:
+    version: '1.0'
+    entity_type: canvas_page
+    uuid: d1ba47d6-e1b9-48f1-8d18-9f467d77c458
+    bundle: canvas_page
+    default_langcode: en
+  default:
+    uuid:
+      -
+        value: d1ba47d6-e1b9-48f1-8d18-9f467d77c458
+    langcode:
+      -
+        value: en
+    status:
+      -
+        value: '1'
+    owner:
+      -
+        target_id: '1'
+    title:
+      -
+        value: 'How We Built This Site'
+    description: {  }
+    components:
+      -
+        parent_uuid: null
+        slot: null
+        uuid: 6afc66a3-74b8-4647-99cf-facd6a078594
+        component_id: sdc.dripyard_base.section
+        component_version: e6079b189d228dad
+        inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+        label: null
+      -
+        parent_uuid: 6afc66a3-74b8-4647-99cf-facd6a078594
+        slot: content
+        uuid: 0028dadf-9bb7-4daf-8638-96ec88699b93
+        component_id: sdc.dripyard_base.heading
+        component_version: 69804e3c5ff45a2b
+        inputs: '{"text":"How we test this site.","html_element":"h1","style":"h1","color":"loud","margin_top":"zero","margin_bottom":"small","center":true,"text_max_width":"800px"}'
+        label: null
+      -
+        parent_uuid: 6afc66a3-74b8-4647-99cf-facd6a078594
+        slot: content
+        uuid: b7bd056e-7272-4bc9-bc0f-3f177ab26d8a
+        component_id: sdc.dripyard_base.text
+        component_version: 05732cb45a35eac6
+        inputs: '{"text":"\u003Cp\u003E\u003Cem\u003EEvery night, Playwright tests run against performantlabs.com. When a test breaks, a Claude agent diagnoses the failure, classifies it, and \u2014 when appropriate \u2014 opens a pull request with the fix. This page links to the code that decides what it\u0027s allowed to touch.\u003C\/em\u003E\u003C\/p\u003E","style":"body_l","color":"soft"}'
+        label: null
+      -
+        parent_uuid: null
+        slot: null
+        uuid: ddfd0144-886a-47f2-80e5-fa98feb30e76
+        component_id: sdc.dripyard_base.section
+        component_version: e6079b189d228dad
+        inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"light"}'
+        label: null
+      -
+        parent_uuid: ddfd0144-886a-47f2-80e5-fa98feb30e76
+        slot: header
+        uuid: e72f1a6a-4fb4-4a48-a934-33e4ddac3675
+        component_id: sdc.dripyard_base.heading
+        component_version: 69804e3c5ff45a2b
+        inputs: '{"text":"The stack.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"small"}'
+        label: null
+      -
+        parent_uuid: ddfd0144-886a-47f2-80e5-fa98feb30e76
+        slot: header
+        uuid: e375556f-d5f1-4a13-b44b-ea46036a24ef
+        component_id: sdc.dripyard_base.text
+        component_version: 05732cb45a35eac6
+        inputs: '{"text":"\u003Cp\u003E\u003Cem\u003ENothing exotic. Every choice is justified by something concrete.\u003C\/em\u003E\u003C\/p\u003E","style":"body_l","color":"soft"}'
+        label: null
+      -
+        parent_uuid: ddfd0144-886a-47f2-80e5-fa98feb30e76
+        slot: content
+        uuid: 94540588-da03-45ce-ade8-05d1bad5ed9c
+        component_id: sdc.dripyard_base.text
+        component_version: 05732cb45a35eac6
+        inputs: '{"text":"\u003Ctable\u003E\n\u003Cthead\u003E\u003Ctr\u003E\u003Cth\u003ELayer\u003C\/th\u003E\u003Cth\u003EChoice\u003C\/th\u003E\u003Cth\u003EWhy\u003C\/th\u003E\u003C\/tr\u003E\u003C\/thead\u003E\n\u003Ctbody\u003E\n\u003Ctr\u003E\u003Ctd\u003ECMS\u003C\/td\u003E\u003Ctd\u003EDrupal 11 (Canvas module v1.3.2)\u003C\/td\u003E\u003Ctd\u003ERecent migration from D10; Canvas is our Layout Builder \/ theming stack.\u003C\/td\u003E\u003C\/tr\u003E\n\u003Ctr\u003E\u003Ctd\u003EHosting\u003C\/td\u003E\u003Ctd\u003EPantheon (dev \u2192 test \u2192 live)\u003C\/td\u003E\u003Ctd\u003EMultidev branches map 1:1 to PR branches.\u003C\/td\u003E\u003C\/tr\u003E\n\u003Ctr\u003E\u003Ctd\u003EE2E tests\u003C\/td\u003E\u003Ctd\u003EPlaywright (primary), Cypress (legacy support)\u003C\/td\u003E\u003Ctd\u003EPlaywright is where autonomous healing lives; Cypress suites still run.\u003C\/td\u003E\u003C\/tr\u003E\n\u003Ctr\u003E\u003Ctd\u003ETest toolkit\u003C\/td\u003E\u003Ctd\u003EATK (our open-source Drupal testing kit)\u003C\/td\u003E\u003Ctd\u003EWe maintain it; using it here is dogfooding.\u003C\/td\u003E\u003C\/tr\u003E\n\u003Ctr\u003E\u003Ctd\u003ECI\u003C\/td\u003E\u003Ctd\u003EGitHub Actions, nightly cron\u003C\/td\u003E\u003Ctd\u003E\u003Ccode\u003Eheal-tests-claude.yml\u003C\/code\u003E orchestrates the healer; \u003Ccode\u003Etest-against-pantheon.yml\u003C\/code\u003E orchestrates the run.\u003C\/td\u003E\u003C\/tr\u003E\n\u003Ctr\u003E\u003Ctd\u003EReporting\u003C\/td\u003E\u003Ctd\u003ECTRF JSON + Playwright HTML report\u003C\/td\u003E\u003Ctd\u003EStructured failure data is what Claude reads.\u003C\/td\u003E\u003C\/tr\u003E\n\u003Ctr\u003E\u003Ctd\u003EAI\u003C\/td\u003E\u003Ctd\u003EClaude (Sonnet) via Anthropic API\u003C\/td\u003E\u003Ctd\u003EOperating under a \u003Ccode\u003ECLAUDE.md\u003C\/code\u003E ruleset committed to the repo.\u003C\/td\u003E\u003C\/tr\u003E\n\u003C\/tbody\u003E\n\u003C\/table\u003E","style":"body_m","color":"soft"}'
+        label: null
+      -
+        parent_uuid: null
+        slot: null
+        uuid: cb7559db-2938-4305-afc3-dd8d69c59db3
+        component_id: sdc.dripyard_base.section
+        component_version: e6079b189d228dad
+        inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+        label: null
+      -
+        parent_uuid: cb7559db-2938-4305-afc3-dd8d69c59db3
+        slot: header
+        uuid: 1987b572-443b-4ebf-bcdc-e336527295ff
+        component_id: sdc.dripyard_base.heading
+        component_version: 69804e3c5ff45a2b
+        inputs: '{"text":"The nightly workflow.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"small"}'
+        label: null
+      -
+        parent_uuid: cb7559db-2938-4305-afc3-dd8d69c59db3
+        slot: content
+        uuid: fe85aabe-76e4-48bf-86af-4b04a83369ee
+        component_id: sdc.dripyard_base.text
+        component_version: 05732cb45a35eac6
+        inputs: '{"text":"\u003Cp\u003EIt\u0027s two workflows, not one. The first runs the tests; the second heals them.\u003C\/p\u003E\n\u003Cp\u003E\u003Cstrong\u003EWorkflow 1 \u2014 the tester\u003C\/strong\u003E (\u003Ca href=\u0022https:\/\/github.com\/Performant-Labs\/performantlabs.com\/blob\/main\/.github\/workflows\/test-against-pantheon.yml\u0022\u003E\u003Ccode\u003Etest-against-pantheon.yml\u003C\/code\u003E\u003C\/a\u003E). Every night at 23:57 UTC:\u003C\/p\u003E\n\u003Col\u003E\n\u003Cli\u003EPlaywright runs the full suite against \u003Ccode\u003Ehttps:\/\/live-performant-labs.pantheonsite.io\u003C\/code\u003E, sharded across parallel runners for speed.\u003C\/li\u003E\n\u003Cli\u003EResults merge into \u003Ccode\u003Ectrf\/ctrf-report.json\u003C\/code\u003E \u2014 structured JSON describing every pass, fail, and flake.\u003C\/li\u003E\n\u003Cli\u003EIf anything failed, \u003Ccode\u003Eai-ctrf claude\u003C\/code\u003E enriches the CTRF with per-failure summaries (model: \u003Ccode\u003Eclaude-sonnet-4-20250514\u003C\/code\u003E).\u003C\/li\u003E\n\u003Cli\u003EA GitHub issue is opened \u2014 or reused if one is already open \u2014 with the label \u003Ccode\u003Eauto-heal\u003C\/code\u003E.\u003C\/li\u003E\n\u003C\/ol\u003E\n\u003Cp\u003E\u003Cstrong\u003EWorkflow 2 \u2014 the healer\u003C\/strong\u003E (\u003Ca href=\u0022https:\/\/github.com\/Performant-Labs\/performantlabs.com\/blob\/main\/.github\/workflows\/heal-tests-claude.yml\u0022\u003E\u003Ccode\u003Eheal-tests-claude.yml\u003C\/code\u003E\u003C\/a\u003E). On each new \u003Ccode\u003Eauto-heal\u003C\/code\u003E issue:\u003C\/p\u003E\n\u003Col\u003E\n\u003Cli\u003EClaude checks out the repo, reads \u003Ccode\u003ECLAUDE.md\u003C\/code\u003E, and identifies the failing test file(s) from the issue body.\u003C\/li\u003E\n\u003Cli\u003EIt classifies each failure: \u003Cstrong\u003Etest issue\u003C\/strong\u003E or \u003Cstrong\u003Ewebsite issue\u003C\/strong\u003E.\u003C\/li\u003E\n\u003Cli\u003E\u003Cstrong\u003ETest issue\u003C\/strong\u003E \u2192 Claude fixes the test on a branch named \u003Ccode\u003Eclaude\/issue-N\u003C\/code\u003E; a subsequent step opens a PR automatically.\u003C\/li\u003E\n\u003Cli\u003E\u003Cstrong\u003EWebsite issue\u003C\/strong\u003E \u2192 Claude posts its analysis as an issue comment. No code changes.\u003C\/li\u003E\n\u003C\/ol\u003E\n\u003Cp\u003EA small detail that matters: the healer fires on \u003Ccode\u003Eissues: [opened]\u003C\/code\u003E, \u003Cem\u003Enot\u003C\/em\u003E \u003Ccode\u003E[labeled]\u003C\/code\u003E. Multiple labels would otherwise trigger multiple duplicate runs.\u003C\/p\u003E","style":"body_m","color":"soft"}'
+        label: null
+      -
+        parent_uuid: null
+        slot: null
+        uuid: e9c5aafa-f9ee-4f2a-bb5e-33e589386b48
+        component_id: sdc.dripyard_base.section
+        component_version: e6079b189d228dad
+        inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"light"}'
+        label: null
+      -
+        parent_uuid: e9c5aafa-f9ee-4f2a-bb5e-33e589386b48
+        slot: header
+        uuid: 1dde9f5f-6747-4d9b-9ab2-158877892b37
+        component_id: sdc.dripyard_base.heading
+        component_version: 69804e3c5ff45a2b
+        inputs: '{"text":"Where Claude is allowed to touch.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"small"}'
+        label: null
+      -
+        parent_uuid: e9c5aafa-f9ee-4f2a-bb5e-33e589386b48
+        slot: content
+        uuid: 09a11d10-e684-4f54-a710-83600c311bfb
+        component_id: sdc.dripyard_base.text
+        component_version: 05732cb45a35eac6
+        inputs: '{"text":"\u003Cp\u003EThe guardrails live in a committed file: \u003Ca href=\u0022https:\/\/github.com\/Performant-Labs\/performantlabs.com\/blob\/main\/CLAUDE.md\u0022\u003E\u003Ccode\u003ECLAUDE.md\u003C\/code\u003E\u003C\/a\u003E. It\u0027s not a prompt buried in a secret. It\u0027s in the repo, reviewable like any other code.\u003C\/p\u003E\n\u003Cp\u003EThe load-bearing rule is the \u003Cstrong\u003Etwo-mode split\u003C\/strong\u003E:\u003C\/p\u003E\n\u003Cblockquote\u003E\u003Cp\u003E\u003Cstrong\u003ECI mode\u003C\/strong\u003E (default in GitHub Actions) \u2014 conservative. Only fix test code. Never modify website source.\u003C\/p\u003E\u003C\/blockquote\u003E\n\u003Cblockquote\u003E\u003Cp\u003E\u003Cstrong\u003ELocal mode\u003C\/strong\u003E (when running \u003Ccode\u003Eclaude\u003C\/code\u003E on a developer\u0027s machine) \u2014 aggressive. Fix whatever is broken, test \u003Cem\u003Eor\u003C\/em\u003E website.\u003C\/p\u003E\u003C\/blockquote\u003E\n\u003Cp\u003EThe reasoning is in the file itself: the CI runner cannot deploy code changes to Pantheon, so fixing website code from CI would be pointless. Test-only PRs are safe to review and merge.\u003C\/p\u003E\n\u003Cp\u003EA few other guardrails worth naming:\u003C\/p\u003E\n\u003Cul\u003E\n\u003Cli\u003E\u003Cstrong\u003ETool allowlist\u003C\/strong\u003E in the workflow: Claude can run \u003Ccode\u003Enpx\u003C\/code\u003E, \u003Ccode\u003Enpm\u003C\/code\u003E, \u003Ccode\u003Egit\u003C\/code\u003E, and a handful of read-only shell commands. It cannot \u003Ccode\u003Ecurl\u003C\/code\u003E, \u003Ccode\u003Ewget\u003C\/code\u003E, or touch arbitrary binaries.\u003C\/li\u003E\n\u003Cli\u003E\u003Cstrong\u003E25-turn cap.\u003C\/strong\u003E No runaway sessions.\u003C\/li\u003E\n\u003Cli\u003E\u003Cstrong\u003E10-minute hard timeout.\u003C\/strong\u003E If a fix isn\u0027t obvious in 10 minutes, the run dies and a human picks it up.\u003C\/li\u003E\n\u003Cli\u003E\u003Cstrong\u003EClassification framework\u003C\/strong\u003E in \u003Ccode\u003ECLAUDE.md\u003C\/code\u003E tells Claude how to decide \u0022test issue vs website issue\u0022 \u2014 selector mismatches and stale assertions go in the test-fix bucket; missing elements, broken forms, and 500s go in the website-fix bucket and get a comment, not a PR.\u003C\/li\u003E\n\u003C\/ul\u003E\n\u003Cp\u003ENone of this is clever. All of it is written down.\u003C\/p\u003E","style":"body_m","color":"soft"}'
+        label: null
+      -
+        parent_uuid: null
+        slot: null
+        uuid: d554d154-2016-4805-b012-002abca7856a
+        component_id: sdc.dripyard_base.section
+        component_version: e6079b189d228dad
+        inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+        label: null
+      -
+        parent_uuid: d554d154-2016-4805-b012-002abca7856a
+        slot: header
+        uuid: 300419b4-74fc-4333-ab4b-cd2dc082c882
+        component_id: sdc.dripyard_base.heading
+        component_version: 69804e3c5ff45a2b
+        inputs: '{"text":"A real healing session.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"small"}'
+        label: null
+      -
+        parent_uuid: d554d154-2016-4805-b012-002abca7856a
+        slot: content
+        uuid: a5a05340-b68c-4fe6-b1d7-eef12da00a15
+        component_id: sdc.dripyard_base.text
+        component_version: 05732cb45a35eac6
+        inputs: '{"text":"\u003Cp\u003EHere\u0027s one from this February. Issue \u003Ca href=\u0022https:\/\/github.com\/Performant-Labs\/performantlabs.com\/issues\/231\u0022\u003E#231\u003C\/a\u003E landed overnight: Playwright had failed on the Contact Us smoke test. The error: timeout waiting for a link with accessible name \u003Ccode\u003E\u0022COTACT US\u0022\u003C\/code\u003E.\u003C\/p\u003E\n\u003Cp\u003EClaude read \u003Ccode\u003ECLAUDE.md\u003C\/code\u003E, opened the failing test file, and made the classification:\u003C\/p\u003E\n\u003Cblockquote\u003E\u003Cp\u003E\u003Cstrong\u003ETEST issue\u003C\/strong\u003E \u2014 The selector text is \u0022COTACT US\u0022 (missing the second \u0027N\u0027). The site\u0027s navigation correctly says \u0022CONTACT US\u0022. The test\u0027s selector is a typo.\u003C\/p\u003E\u003C\/blockquote\u003E\n\u003Cp\u003EIt fixed the one-line typo and committed to a \u003Ccode\u003Eclaude\/issue-231\u003C\/code\u003E branch:\u003C\/p\u003E\n\u003Cpre\u003E\u003Ccode\u003E-    await page.getByRole(\u0027link\u0027, { name: \u0027COTACT US\u0027 }).first().click()\n+    await page.getByRole(\u0027link\u0027, { name: \u0027CONTACT US\u0027 }).first().click()\u003C\/code\u003E\u003C\/pre\u003E\n\u003Cp\u003E(From \u003Ccode\u003Etests\/atk_contact_us\/atk_contact_us.spec.js\u003C\/code\u003E.)\u003C\/p\u003E\n\u003Cp\u003EA human reviewed the PR, confirmed the diff matched the classification, and merged. Commit \u003Ca href=\u0022https:\/\/github.com\/Performant-Labs\/performantlabs.com\/commit\/1d0741170f5cbc71090dfaa331f0e2f85e4a511b\u0022\u003E\u003Ccode\u003E1d0741170f\u003C\/code\u003E\u003C\/a\u003E. No calls. No flake dashboards. No \u0022investigate this next sprint.\u0022 The whole loop \u2014 failure \u2192 issue \u2192 classification \u2192 PR \u2192 merge \u2014 closed before Monday\u0027s standup.\u003C\/p\u003E\n\u003Cp\u003EIf the typo had been on the \u003Cem\u003Ewebsite\u003C\/em\u003E side instead of the test side (say, the navigation itself said \u0022COTACT US\u0022), the classification would have been \u003Cstrong\u003Ewebsite issue\u003C\/strong\u003E: Claude would have posted its analysis as a comment on the issue and declined to touch any code. That\u0027s not a limitation to work around. That\u0027s the contract.\u003C\/p\u003E","style":"body_m","color":"soft"}'
+        label: null
+      -
+        parent_uuid: null
+        slot: null
+        uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+        component_id: sdc.dripyard_base.section
+        component_version: e6079b189d228dad
+        inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"light"}'
+        label: null
+      -
+        parent_uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+        slot: content
+        uuid: 4426b2b9-e127-4a14-992e-651746039924
+        component_id: sdc.dripyard_base.heading
+        component_version: 69804e3c5ff45a2b
+        inputs: '{"text":"Honest limits.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"small"}'
+        label: null
+      -
+        parent_uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+        slot: content
+        uuid: 345079f5-cb2d-495f-896c-73c71dcc827c
+        component_id: sdc.dripyard_base.text
+        component_version: 05732cb45a35eac6
+        inputs: '{"text":"\u003Cp\u003EA few things to know:\u003C\/p\u003E\n\u003Cul\u003E\n\u003Cli\u003E\u003Cstrong\u003EThe workflow heals; it doesn\u0027t author.\u003C\/strong\u003E Claude doesn\u0027t write new tests. It fixes ones that already exist.\u003C\/li\u003E\n\u003Cli\u003E\u003Cstrong\u003EIt can\u0027t find what\u0027s not broken.\u003C\/strong\u003E A test that passes while checking the wrong thing will never trigger a heal.\u003C\/li\u003E\n\u003Cli\u003E\u003Cstrong\u003ETruly flaky tests don\u0027t reproduce reliably.\u003C\/strong\u003E If a failure doesn\u0027t recur on re-run, Claude documents that and moves on.\u003C\/li\u003E\n\u003Cli\u003E\u003Cstrong\u003EEvery PR is reviewed by a human.\u003C\/strong\u003E The classification is Claude\u0027s. The merge is not.\u003C\/li\u003E\n\u003C\/ul\u003E\n\u003Cp\u003EThis isn\u0027t magic. It\u0027s a workflow, a ruleset, and a human in the loop. The things we\u0027ve gotten back are Monday mornings, and the calendar time of a senior engineer we no longer spend on flake triage.\u003C\/p\u003E","style":"body_m","color":"soft"}'
+        label: null
+      -
+        parent_uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+        slot: content
+        uuid: cc320dbc-13e7-4154-b6bd-bf7a2462db2e
+        component_id: sdc.dripyard_base.heading
+        component_version: 69804e3c5ff45a2b
+        inputs: '{"text":"Want this running on your site?","html_element":"h2","style":"h2","color":"primary","margin_top":"medium","margin_bottom":"small"}'
+        label: null
+      -
+        parent_uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+        slot: content
+        uuid: 66f58e9c-3889-4588-a10d-d63fbaf0bf87
+        component_id: sdc.dripyard_base.text
+        component_version: 05732cb45a35eac6
+        inputs: '{"text":"\u003Cp\u003EIf you have a Drupal site with a Playwright suite and nightly CI \u2014 or want to get there \u2014 we run a 30-minute review. We\u0027ll look at your current workflow, tell you honestly where autonomous healing would (and wouldn\u0027t) help, and leave you with a one-page writeup.\u003C\/p\u003E\n\u003Cp\u003ENo sales pitch. No obligation.\u003C\/p\u003E","style":"body_m","color":"soft"}'
+        label: null
+      -
+        parent_uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+        slot: content
+        uuid: deed6cbe-4572-4f9c-ab8c-b1dfb1a97712
+        component_id: sdc.dripyard_base.button
+        component_version: 3155d0acceef4faf
+        inputs: '{"text":"Book a testing review","href":"\/contact-us?intent=testing-review","style":"primary","size":"large","suffix_icon":"arrow-right"}'
+        label: null
+      -
+        parent_uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+        slot: content
+        uuid: f03bb4c5-3974-4213-a692-cce076658f7d
+        component_id: sdc.dripyard_base.text
+        component_version: 05732cb45a35eac6
+        inputs: '{"text":"\u003Cp\u003E\u003Cem\u003EOr, if you\u0027d rather start with the code:\u003C\/em\u003E\u003C\/p\u003E\n\u003Cul\u003E\n\u003Cli\u003E\u003Ca href=\u0022https:\/\/github.com\/Performant-Labs\/automated_testing_kit\u0022\u003EATK on GitHub\u003C\/a\u003E\u003C\/li\u003E\n\u003Cli\u003E\u003Ca href=\u0022https:\/\/github.com\/Performant-Labs\/performantlabs.com\/blob\/main\/.github\/workflows\/heal-tests-claude.yml\u0022\u003E\u003Ccode\u003Eheal-tests-claude.yml\u003C\/code\u003E\u003C\/a\u003E\u003C\/li\u003E\n\u003Cli\u003E\u003Ca href=\u0022https:\/\/github.com\/Performant-Labs\/performantlabs.com\/blob\/main\/CLAUDE.md\u0022\u003E\u003Ccode\u003ECLAUDE.md\u003C\/code\u003E\u003C\/a\u003E\u003C\/li\u003E\n\u003C\/ul\u003E","style":"body_s","color":"soft"}'
+        label: null
+    path:
+      -
+        alias: /how-we-built-this-site-v2
+        pid: '321'
+        langcode: en
+    created:
+      -
+        value: '1776882772'
+    changed:
+      -
+        value: '1776883306'
+    image: {  }
+    default_langcode:
+      -
+        value: '1'
+    revision_default:
+      -
+        value: '1'
+    metatags:
+      -
+        value: '{"canonical_url":"[canvas_page:url]","description":"[canvas_page:description]","image_src":"[canvas_page:image:entity:field_media_image:entity:url]","title":"[canvas_page:title] | [site:name]"}'
+    metatag:
+      -
+        tag: meta
+        attributes:
+          name: title
+          content: 'How We Built This Site | Performant Labs'
+      -
+        tag: link
+        attributes:
+          rel: canonical
+          href: /how-we-built-this-site-v2
+      -
+        tag: meta
+        attributes:
+          property: 'og:site_name'
+          content: 'Performant Labs'
+      -
+        tag: meta
+        attributes:
+          property: 'og:type'
+          content: website
+      -
+        tag: meta
+        attributes:
+          property: 'og:url'
+          content: 'https://pl-performantlabs.com.2.ddev.site:8493/home'
+      -
+        tag: meta
+        attributes:
+          property: 'og:title'
+          content: '| Performant Labs'
+      -
+        tag: meta
+        attributes:
+          property: 'og:description'
+          content: 'Performant Labs delivers expert Drupal development, the Automated Testing Kit (ATK), and AI-guided site assembly for agencies and enterprise teams.'
+      -
+        tag: meta
+        attributes:
+          property: 'og:image'
+          content: 'https://pl-performantlabs.com.2.ddev.site:8493/themes/custom/performant_labs_20260411/assets/og-image.png'
+      -
+        tag: meta
+        attributes:
+          property: 'og:image:width'
+          content: '1200'
+      -
+        tag: meta
+        attributes:
+          property: 'og:image:height'
+          content: '630'
+      -
+        tag: meta
+        attributes:
+          name: 'twitter:card'
+          content: summary_large_image
+      -
+        tag: meta
+        attributes:
+          name: 'twitter:description'
+          content: 'Performant Labs delivers expert Drupal development, the Automated Testing Kit (ATK), and AI-guided site assembly for agencies and enterprise teams.'
+      -
+        tag: meta
+        attributes:
+          name: 'twitter:title'
+          content: '| Performant Labs'
+      -
+        tag: meta
+        attributes:
+          name: 'twitter:image'
+          content: 'https://pl-performantlabs.com.2.ddev.site:8493/themes/custom/performant_labs_20260411/assets/og-image.png'
