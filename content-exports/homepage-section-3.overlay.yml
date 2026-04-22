@@ -1,0 +1,105 @@
+# Homepage — Section 3 (Three pillars).
+#
+# From the approved Phase 3 homepage brief (docs/pl2/briefs/homepage.md §3).
+#
+# Three actions:
+#   1. remove_components: drop the old H2 heading "Everything your team
+#      needs to build better Drupal." (section header slot).
+#   2. component_inputs: rewrite the three content-cards in place (title,
+#      body_text) and clear each card's link_href so the new CTA button
+#      below is the sole click target (no redundant two-links-to-same-URL).
+#   3. add_components: insert three `sdc.dripyard_base.button` components,
+#      one into each grid-cell's `content` slot, immediately below each
+#      card. Style: bare, size small, suffix_icon arrow-right.
+#
+# Parent/cell mapping (left to right in the grid):
+#   Pillar 1 (tools)  → cell f5a4a12d-87e6-4f60-8f41-69248f431e29
+#   Pillar 2 (AI)     → cell 817542f6-4063-4ca8-a252-5e57a07480be
+#   Pillar 3 (people) → cell b0c096ed-41d5-4039-9928-33e01c69d6ac
+#
+# All three new buttons are inserted after the last grid-cell (b0c096ed)
+# so every new component lives after its parent in the flattened array
+# (per apply-canvas-page.php's ordering constraint). Each button carries
+# its own parent_uuid + slot, so they still render inside the correct cell.
+#
+# Apply with:
+#   cd ~/Sites/pl-performantlabs.com.2/web
+#   ddev drush php:script ../scripts/apply-canvas-page.php \
+#     ../content-exports/homepage-section-3.overlay.yml dry-run
+# (Drop `dry-run` to actually save.)
+
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: bb5bbbb1-4a16-4b86-bbea-b215ab8096cf
+
+overlay:
+
+  # 1. Drop the old section H2.
+  remove_components:
+    - 39ce81d6-1bed-4975-ad8f-3883c3612cb0
+
+  # 2. Rewrite each content-card in place and clear link_href.
+  component_inputs:
+
+    # Pillar 1 — Tools the Drupal community uses (was: "Automated Testing")
+    d261e1c0-9857-4fda-a836-fa4c9e72f756:
+      title: "Tools the Drupal community uses"
+      body_text: "ATK (Automated Testing Kit) and Testor are ours. Open source, actively maintained, adopted across the ecosystem. Download them, read the source, ask questions."
+      link_href: "/open-source-projects"
+
+    # Pillar 2 — Tests that heal themselves (was: "Expert Engineering")
+    5138cbe4-6f75-4efc-a608-5ce08e6b4222:
+      title: "Tests that heal themselves"
+      body_text: "AI agents diagnose and fix broken Playwright tests in CI — nightly, on this very site. Not a demo. A shipped workflow, running right now."
+      link_href: "/how-we-built-this-site"
+
+    # Pillar 3 — Experts alongside your team (was: "Open Source Leadership")
+    08dbda27-103f-428e-900b-9b143e3a0ea3:
+      title: "Experts alongside your team"
+      body_text: "When you need hands, we embed senior testing engineers. North American project leads, nearshore delivery options. Fully billable or fractional."
+      link_href: "/services"
+
+  # 3. Add three bare-style CTA buttons, one per grid-cell.
+  add_components:
+    after_uuid: b0c096ed-41d5-4039-9928-33e01c69d6ac
+    components:
+
+      # Pillar 1 CTA
+      - uuid: dae09299-79a9-40d3-a218-7b4ed96ff1db
+        component_id: sdc.dripyard_base.button
+        component_version: 3155d0acceef4faf
+        parent_uuid: f5a4a12d-87e6-4f60-8f41-69248f431e29
+        slot: content
+        inputs:
+          text: "Explore the tools"
+          href: "/open-source-projects"
+          style: bare
+          size: small
+          suffix_icon: arrow-right
+
+      # Pillar 2 CTA
+      - uuid: 22257828-3b8f-41ab-97b4-2b810c5cff7a
+        component_id: sdc.dripyard_base.button
+        component_version: 3155d0acceef4faf
+        parent_uuid: 817542f6-4063-4ca8-a252-5e57a07480be
+        slot: content
+        inputs:
+          text: "See it in action"
+          href: "/how-we-built-this-site"
+          style: bare
+          size: small
+          suffix_icon: arrow-right
+
+      # Pillar 3 CTA
+      - uuid: 5ad06e4d-45d0-4434-8d4c-4e0381df9578
+        component_id: sdc.dripyard_base.button
+        component_version: 3155d0acceef4faf
+        parent_uuid: b0c096ed-41d5-4039-9928-33e01c69d6ac
+        slot: content
+        inputs:
+          text: "Talk to an engineer"
+          href: "/services"
+          style: bare
+          size: small
+          suffix_icon: arrow-right

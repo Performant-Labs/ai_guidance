@@ -2,7 +2,7 @@
 
 Living document. Update as work progresses. Lives in-repo so it versions with the overlay YAMLs and scripts it describes. NOT a substitute for `.auto-memory/` — memory holds cross-conversation rules; this holds current Phase 3 working state that would be expensive to reconstruct after a Claude context compaction.
 
-Last updated: 2026-04-21 (post Section 2 PNG fix; commit `28e32eb`)
+Last updated: 2026-04-21 (post Section 3 pillars apply; this commit)
 
 ---
 
@@ -12,7 +12,8 @@ Last updated: 2026-04-21 (post Section 2 PNG fix; commit `28e32eb`)
 - **Section 2 (trust bar, 6 client logos):** ✅ **actually rendering** (browser-verified). Two sequential fixes landed:
   1. **Envelope fix** (commit `93f2a3b`): switched the stored image-prop shape from the silently-coerced flat form to the StaticPropSource envelope, so Canvas stopped dropping the prop.
   2. **PNG fix** (commit `28e32eb`): rasterized the 6 source SVGs to 600px-wide PNGs and re-seeded as `image`-bundle media (mids 53–58), because Canvas's `image` component unconditionally emits a responsive srcset via `toSrcSet`, and Drupal's image toolkit can't generate AVIF derivatives from SVG sources — every srcset URL was returning HTTP 500 even though the envelope fix was correct. Current verification: all 54 src+srcset URLs return 200 + `image/png`. Rollback point: commit `28e32eb`.
-- **Sections 3–6:** not started.
+- **Section 3 (three pillars — tools / AI / people):** ✅ applied, full three-tier verification passed. Content swap on three existing `content-card` components plus three new `sdc.dripyard_base.button` components (bare style, small size, arrow-right suffix) inserted one per pillar's grid-cell. Old section H2 removed entirely. Screenshot review: clean 3-column desktop grid, stacked mobile layout, CTA text + arrow rendering correctly. See `homepage-section-3.overlay.yml` for the exact patch.
+- **Sections 4–6:** not started.
 - **Other pages (/services, /how-we-do-it, /automated-testing, /about-us, /cypress-on-drupal, /open-source-projects, /introduction-to-atk):** not started.
 
 ---
@@ -83,10 +84,26 @@ After the envelope fix above, the 6 `logo-item-canvas` components correctly stor
 
 ---
 
+## `dripyard_base/content-card` — link_href is required (2026-04-21, Section 3)
+
+The `content-card` component declares `link_href` as a **required** prop of type `string, format: uri-reference`. Canvas validates this at `preSave`, so both `null` and `""` are rejected (attempted during Section 3 apply — failed with `LogicException: NULL value found, but a string or an object is required` and `The property link_href is required` respectively).
+
+**Practical consequence for Section 3:** each pillar card's title wraps in an `<a class="content-card__link">` pointing to the same URL as the CTA button below it. Two anchors → same destination → different accessible names ("Tools the Drupal community uses" vs. "Explore the tools"). Not a WCAG violation but worth knowing when wiring future card grids.
+
+**If you ever want a content-card with no title link:** you'd need to either (a) override the component schema to make `link_href` optional, or (b) use a plainer component (e.g., `dripyard_base:text` inside a grid-cell). Don't try to pass empty strings — Canvas will reject the save.
+
+---
+
 ## Homepage UUIDs
 
 - **canvas_page UUID:** `bb5bbbb1-4a16-4b86-bbea-b215ab8096cf`
 - **Component UUIDs (Section 2 logo-items):** see `content-exports/homepage-section-2.overlay.yml` for the 6 `logo-item-canvas` UUIDs that need the envelope patch.
+- **Component UUIDs (Section 3 pillars):**
+  - Section wrapper: `d87022b5-64e7-4d27-8b80-873c800256ae`
+  - Removed H2: `39ce81d6-1bed-4975-ad8f-3883c3612cb0` (deleted)
+  - Grid-cells: `f5a4a12d-87e6-4f60-8f41-69248f431e29` (pillar 1), `817542f6-4063-4ca8-a252-5e57a07480be` (pillar 2), `b0c096ed-41d5-4039-9928-33e01c69d6ac` (pillar 3)
+  - Content-cards (patched): `d261e1c0-9857-4fda-a836-fa4c9e72f756`, `5138cbe4-6f75-4efc-a608-5ce08e6b4222`, `08dbda27-103f-428e-900b-9b143e3a0ea3`
+  - CTA buttons (new): `dae09299-79a9-40d3-a218-7b4ed96ff1db`, `22257828-3b8f-41ab-97b4-2b810c5cff7a`, `5ad06e4d-45d0-4434-8d4c-4e0381df9578`
 
 (When another section starts, append its component UUID map here — saves re-grepping the overlay file every compaction.)
 
@@ -123,6 +140,7 @@ Convention: `<slug>-YYYYMMDD-HHMM`. Same tag goes in the git commit message and 
 |-----|-------------------|-------|
 | `section2-envelope-20260421-1853` | Pre-envelope-fix homepage DB state (Section 2 broken, flat image shape) + gitignore rule committed at `74c8c7f`. | Use to re-reproduce the broken-flat-shape bug for debugging, or to roll back if Section 2's envelope apply turns out to have had a subtle regression elsewhere. |
 | Post-PNG-fix state | Current working homepage DB + commit `28e32eb`. Trust bar rendering with PNG-backed mids 53–58. | No paired ddev snapshot was taken for this step — the fix is purely additive on top of the envelope-fix snapshot. The PNG source files at `web/sites/default/files/client-logos-png/*.png` persist across DB rollbacks; if a rollback to `section2-envelope-20260421-1853` is ever needed, re-create the 6 `image`-bundle media entities pointing at those files, then re-apply `content-exports/homepage-section-2-pngfix.overlay.yml` (the committed record of the fix) and adjust the `target_id`s if the new mids aren't 53–58. If you want a paired snapshot for the current state, run `ddev snapshot --name=section2-pngfix-20260421`. |
+| `pre-homepage-s3-2026-04-21` | Pre-Section-3 homepage DB state (old H2 "Three ways we help" still present; three pillar cards with placeholder copy; no CTAs below cards). | Paired with git HEAD at the time of this commit's parent (`6ec13d3`). Use to replay a different Section 3 strategy — e.g., if we decide the per-card CTA is noise and prefer a single section-level CTA instead, roll here and re-apply a different overlay. |
 
 When creating a new rollback point, update this table with one line — the tag plus a ~10-word summary of the state it captures. Future-you will thank present-you when sorting through a dozen of these.
 
@@ -151,8 +169,9 @@ Claude's side-effect cleanup: bridge requests start with `find .claude-bridge -t
 2. ~~**Memory cleanup** (`project_pl2_canvas_content_flow.md`)~~ — done 2026-04-21.
 3. ~~**Section 2 PNG fix**~~ — done 2026-04-21 (commit `28e32eb`).
 4. ~~**Tier 1 cookbook amendment (srcset resolution check)**~~ — done 2026-04-21; pushed upstream to `Performant-Labs/ai_guidance`.
-5. **Section 3:** design + content TBD.
-6. **Sections 4–6:** TBD.
+5. ~~**Section 3 (three pillars + per-card CTAs)**~~ — done 2026-04-21. Content patch on three content-cards; H2 removed; three bare-style CTA buttons inserted one per grid-cell. All three tiers verified (curl, ARIA, screenshots).
+6. **Homepage SEO meta:** not started (title tag, meta description, OG tags).
+7. **Sections 4–6:** TBD.
 7. **Existing `canvas-image` tab-panel fix:** re-apply with the correct envelope once we're back in that area. Same two-gotcha pair applies — use the StaticPropSource envelope AND rasterize source SVG to PNG if the `canvas:image` component is in the render path.
 8. **Other pages** (services, how-we-do-it, etc.): post-homepage.
 9. **Optional script cleanup (not urgent):** `scripts/dump-canvas-page.php` writes relative to drush CWD (`/var/www/html/web`), so dumps land at `web/content-exports/<uuid>.yml` instead of repo-root `content-exports/`. Harmless (now gitignored) but slightly confusing. A one-line fix would be to resolve the default output path relative to `__DIR__ . '/../content-exports/'`.
