@@ -34,7 +34,9 @@ These are the pages that carry the repositioning. Each needs a Phase 3 content b
 - **`/` (nid 38)** — Must carry the "tools + AI + people" hero. Load-bearing page for the entire site.
 
 ### Core offerings
-- **`/services` (nid 8)** — Core offering page. **Must include a sub-section on nearshore testing staff augmentation**, folded in from the retired `/nearshoring` page (decision D). Framing: testing staff, not build-shop developers.
+- **`/services` (canvas_page id 3, uuid `b2613e35-516b-4d7c-86b8-75eb8a5d5356`)** — Core offering page. **Must include a sub-section on nearshore testing staff augmentation**, folded in from the retired `/nearshoring` page (decision D). Framing: testing staff, not build-shop developers.[^canvas-nids]
+
+[^canvas-nids]: *Note on node IDs in this document:* the Phase 2 inventory was compiled before the site's migration to the Canvas page-builder module. Pages previously authored as `landing_page` nodes (homepage, `/services`, `/how-we-do-it`, `/open-source-projects`, etc.) now live as `canvas_page` entities with their own ID sequence. The original legacy `nid`s referenced below (e.g. `nid 8`, `nid 38`, `nid 9`) no longer resolve to the page in question — in many cases they now resolve to unrelated content (e.g. legacy `nid 8` is now *Terms of Service*). Where a Phase 3 brief depends on a specific entity, it should cite the current `canvas_page` UUID instead. Legacy `nid`s are retained here for Phase 2 traceability only.
 - **`/how-we-do-it` (nid 9)** — Methodology. Pragmatic tone proven through specifics, not adjectives.
 - **`/automated-testing` (nid 98)** — Elevated to **hero status**. The autonomous-test-healing showcase.
 
