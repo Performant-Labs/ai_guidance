@@ -222,4 +222,4 @@ Pointer to `/how-we-built-this-site`, a healed-test diff snippet, and the dogfoo
 
 | Stage | Status | Date |
 |---|---|---|
-| v1 — all D0–D10 resolved | Pending André Angelantoni review | 2026-04-22 |
+| v1 — all D0–D10 resolved | Approved by André Angelantoni | 2026-04-22 |

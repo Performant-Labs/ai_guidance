@@ -112,7 +112,7 @@
         "drupal/theme_switcher": "^2.1",
         "drupal/token": "^1.17.0",
         "drupal/token_or": "^2.3.2",
-        "drupal/trash": "^3.0.25",
+        "drupal/trash": "^3.0",
         "drupal/ui_icons": "^1.1.1",
         "drupal/view_password": "^6.0.5",
         "drupal/views_infinite_scroll": "^2.0.3",

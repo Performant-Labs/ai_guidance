@@ -1,0 +1,375 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: b2613e35-516b-4d7c-86b8-75eb8a5d5356
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  title:
+    -
+      value: Services
+  components:
+    -
+      parent_uuid: null
+      slot: null
+      uuid: 52ffa371-d22a-4a7c-a586-2aa4a3b9b349
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 52ffa371-d22a-4a7c-a586-2aa4a3b9b349
+      slot: content
+      uuid: 9e73d47c-cbd2-4f20-8f1d-f2ecaaceee3c
+      component_id: sdc.dripyard_base.flex-wrapper
+      component_version: 647154c4adbb1587
+      inputs: '{"margin_top":"zero","margin_bottom":"zero","padding_top":"zero","padding_bottom":"zero","align_x":"space-between","align_y":"center","column_gutter":"large","row_gutter":"medium"}'
+      label: null
+    -
+      parent_uuid: 9e73d47c-cbd2-4f20-8f1d-f2ecaaceee3c
+      slot: content
+      uuid: f88b7db5-2822-410c-966e-51200b045409
+      component_id: sdc.dripyard_base.canvas-image
+      component_version: 432a6a71fe725929
+      inputs: '{"image":{"target_id":21},"width":600,"loading":"lazy"}'
+      label: null
+    -
+      parent_uuid: 9e73d47c-cbd2-4f20-8f1d-f2ecaaceee3c
+      slot: content
+      uuid: 8f28a7ca-03a9-4577-96a4-dc72ff306c45
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Our Services","html_element":"h1","style":"h1","color":"primary","margin_top":"zero","margin_bottom":"small"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: 561beca9-7fb2-4637-990e-f4dc346a0f7d
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 561beca9-7fb2-4637-990e-f4dc346a0f7d
+      slot: header
+      uuid: 58425299-d1f4-4743-a5dc-c713b5ab7764
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"What we do generally","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"medium"}'
+      label: null
+    -
+      parent_uuid: 561beca9-7fb2-4637-990e-f4dc346a0f7d
+      slot: header
+      uuid: bac48626-113e-46ee-9b19-fa07a3b3deec
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EModern websites can have lots of moving parts so it\u0027s best to pick a web site building partner who specializes in building and testing Drupal sites.\u003C\/p\u003E","style":"body_l","color":"soft"}'
+      label: null
+    -
+      parent_uuid: 561beca9-7fb2-4637-990e-f4dc346a0f7d
+      slot: content
+      uuid: d9c118eb-2a4c-4282-a3b4-ed42e8b3bb8f
+      component_id: sdc.dripyard_base.grid-wrapper
+      component_version: ba954a2accbc0f5c
+      inputs: '{"column_gutter":"large","row_gutter":"large"}'
+      label: null
+    -
+      parent_uuid: d9c118eb-2a4c-4282-a3b4-ed42e8b3bb8f
+      slot: grid_cells
+      uuid: 7b67d4d0-6531-4bbb-8573-f92e35fead0e
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Automated Testing","body":"We create robust automated tests using Cypress and Playwright to ensure your site stays healthy.","theme":"light"}'
+      label: null
+    -
+      parent_uuid: d9c118eb-2a4c-4282-a3b4-ed42e8b3bb8f
+      slot: grid_cells
+      uuid: e5700743-ab67-445f-aa18-cb31e1a7f4c1
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Technology Strategy","body":"Helping you make the right technical decisions for your long-term goals.","theme":"light"}'
+      label: null
+    -
+      parent_uuid: d9c118eb-2a4c-4282-a3b4-ed42e8b3bb8f
+      slot: grid_cells
+      uuid: 9c6dfdf5-ea98-48fb-a86c-e7407568e6fa
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Web Development","body":"Expert Drupal development with clean code and high performance standards.","theme":"light"}'
+      label: null
+    -
+      parent_uuid: d9c118eb-2a4c-4282-a3b4-ed42e8b3bb8f
+      slot: grid_cells
+      uuid: 5f776a8b-87e0-4217-a9a4-61cdbb992331
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Training \u0026 Support","body":"Empowering your team to manage and maintain your digital presence effectively.","theme":"light"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: e014edc3-0694-4d76-9b61-772d35e613c0
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"light"}'
+      label: null
+    -
+      parent_uuid: e014edc3-0694-4d76-9b61-772d35e613c0
+      slot: header
+      uuid: 29a57593-1e3e-4ad8-8491-cc390d7d1bfc
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"What we do specifically","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"medium"}'
+      label: null
+    -
+      parent_uuid: e014edc3-0694-4d76-9b61-772d35e613c0
+      slot: content
+      uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      component_id: sdc.dripyard_base.grid-wrapper
+      component_version: ba954a2accbc0f5c
+      inputs: '{"column_gutter":"medium","row_gutter":"medium"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: 3cd00424-7b3b-4a63-9555-571fe4374fbb
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Accessibility","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: 9887bedc-57c9-4d23-8355-68239cc43065
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"API Integration","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: 25e4233c-2fdf-4998-a2be-fa09a1b67d14
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Best Practices","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: 150ca9d7-2166-46d0-8304-821e9beee60f
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Business Processes","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: 74ff9470-de33-42b6-8ec0-26ba69682491
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Compliance","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: c78c9c76-d602-45ce-9b4b-25d71dd2e157
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Drupal 7 to 10 Migration","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: c41c0ee8-e7bc-4437-854a-fdd53d172e10
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"DevOps","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: 9d4fbc5d-97bc-40f8-93ea-1ccff318a520
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Digital Assets Management","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: fa6e32c4-7337-46dd-b91a-9db956b42b94
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Drupal Customization","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: e57429d7-f97b-4875-a46c-bfc7a10989e6
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Drupal Upgrades","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: 473e62da-756d-4da5-ae37-274a660c817a
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Editorial Workflows","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: 1b1a6116-15a0-4047-b751-e24054da0c4b
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Open Social Implementation","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: a1f6e808-c5bd-417c-82bd-c66ba2339118
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Platform \u0026 Technology Evaluation","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: cb1c8487-6c4a-414e-9fbe-6c5087808eeb
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Re-architecture","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: cf77d834-86c7-4ccc-ab0f-fed4f6eb606c
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"System Architecture","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: 6452462a-9e6a-4665-bb46-b00959de5d12
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Technology Strategy","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: 7a539e8e-8885-4763-a1da-6475417a8ad7
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"UX\/UI","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 8dadac6c-bc36-429b-ab64-23cbde630def
+      slot: grid_cells
+      uuid: 8be90fdd-e931-485d-b256-640bec34cc5c
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Automated Testing with Cypress or Playwright","body":" ","theme":"white"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: cb83f10b-2b3b-41a3-a002-b5f59f2b84a5
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: cb83f10b-2b3b-41a3-a002-b5f59f2b84a5
+      slot: header
+      uuid: bf33aa16-87a3-44ba-aa87-3896cdf41643
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"We Speak","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"medium"}'
+      label: null
+    -
+      parent_uuid: cb83f10b-2b3b-41a3-a002-b5f59f2b84a5
+      slot: content
+      uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      component_id: sdc.dripyard_base.logo-grid
+      component_version: ce3f2429d9631143
+      inputs: '{"logo_size":"medium","layout":"center","logo_background":"white"}'
+      label: null
+    -
+      parent_uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      slot: logo_grid_content
+      uuid: 137a803b-27ff-4deb-8b68-26f8728fc5fd
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"image":{"target_id":15}}'
+      label: null
+    -
+      parent_uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      slot: logo_grid_content
+      uuid: bcffaba2-574d-4ae4-b579-d7d720974073
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"image":{"target_id":13}}'
+      label: null
+    -
+      parent_uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      slot: logo_grid_content
+      uuid: 2fa49ecb-aca1-49b3-b614-d9b3ae1c2921
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"image":{"target_id":16}}'
+      label: null
+    -
+      parent_uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      slot: logo_grid_content
+      uuid: b0cf6ec2-a52d-4fc4-afb8-32aeecd2e06d
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"image":{"target_id":17}}'
+      label: null
+    -
+      parent_uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      slot: logo_grid_content
+      uuid: 13c06de6-f19f-46aa-a2f2-6e664542c3b4
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"image":{"target_id":22}}'
+      label: null
+    -
+      parent_uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      slot: logo_grid_content
+      uuid: 336dc8ac-9cd7-4a3a-8026-7ae6ed56f911
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"image":{"target_id":23}}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: cbc9d4dd-d2df-4fad-a4a9-7fe773a9ee53
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"primary"}'
+      label: null
+    -
+      parent_uuid: cbc9d4dd-d2df-4fad-a4a9-7fe773a9ee53
+      slot: content
+      uuid: 509fc6e0-19f4-4339-b284-0c3d602a2fd8
+      component_id: sdc.dripyard_base.title-cta
+      component_version: fd6bbffa9b05aa5a
+      inputs: '{"title":"Ready to take your web presence to the next level?","button_text":"Contact us today","button_href":"\/contact-us","button_style":"primary"}'
+      label: null
+  owner:
+    -
+      target_id: 0
+  created:
+    -
+      value: 1776392701
+  path:
+    -
+      alias: /services
+      langcode: en
