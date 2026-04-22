@@ -1,0 +1,47 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: bb5bbbb1-4a16-4b86-bbea-b215ab8096cf
+
+# Fix for the homepage tabs §7 Strategy tab canvas-image rendering empty.
+#
+# Same root cause as /services #88 (see commit fe9afbe): canvas-image's
+# `image` input stored the raw {src, alt, width, height} object shape,
+# which Canvas's prop-resolution / ImageAdapter pipeline silently drops
+# — image-or-media.twig receives an empty `image` prop and the inner
+# {% if image.src %} gate falls through to the empty branch (no error,
+# no warning, no fallback).
+#
+# Fix: swap raw-src for a Media entity reference {target_id: 60}.
+# Media 60 (uuid ad419a56-727c-48a8-a18d-b7f42b34c46b) was created just
+# now, wrapping File 59 at public://pl-images/pl-dashboard.png.
+#
+# Notes for future audits:
+#
+#   1. The file on disk is mis-named. It's "pl-dashboard.png" but is
+#      actually a 1024×1024 JPEG with a .png extension. The Media name
+#      reflects this; the alt text matches the authored alt. Left as-is
+#      so as not to break any inbound references in other content.
+#
+#   2. The stored input had `aspect_ratio: "wide"` + width 1024 /
+#      height 576 — i.e. authored for a 16:9 crop of a square source.
+#      Kept `aspect_ratio: "wide"` as-authored; the wide crop will cut
+#      top/bottom of the square image. If the rendered result looks off
+#      to the content editor, they can either (a) swap the source for
+#      a 16:9 image or (b) drop the aspect_ratio input in the UI. Out
+#      of scope for this bug-fix pass.
+#
+#   3. Homepage tab-group (delta 22) uses dripyard_base shoelace-tabs —
+#      role="tab"/role="tabpanel" get attached by JS at runtime. Server-
+#      rendered HTML uses <sl-tab> / <sl-tab-panel> web components, so
+#      T1 verification should look for "pl-dashboard" (or the new file
+#      basename) inside the HTML, not for role="tabpanel".
+
+overlay:
+  component_inputs:
+    27272da9-c699-4e4e-8e36-2ce63b07dedc:
+      image:
+        target_id: 60
+      aspect_ratio: wide
+      border_radius: medium
+      loading: lazy
