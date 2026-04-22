@@ -1,0 +1,37 @@
+# Section 2 (trust bar) — point each logo-item-canvas at the new PNG-backed image-bundle mids.
+# Root cause: Canvas's image component unconditionally emits a responsive srcset
+# via `src_with_alternate_widths` + `toSrcSet` Twig filter. For SVG sources, the
+# derivative URLs go through Drupal's image style pipeline, which can't generate
+# AVIF from SVG, returning HTTP 500 "Error generating image." PNGs work fine.
+#
+# Old (broken):
+#   mids 41–46  `image` bundle, SVG files → srcset 500s
+#   mids 47–52  `svg_image` bundle, SVG files → same problem (bundle doesn't
+#                change Canvas's render pipeline; red herring fix)
+# New (working):
+#   mids 53–58  `image` bundle, PNG files (600px wide, converted from SVG)
+
+_meta:
+  uuid: bb5bbbb1-4a16-4b86-bbea-b215ab8096cf
+  entity_type: canvas_page
+
+overlay:
+  component_inputs:
+    '199e0674-b3fd-468a-bb45-1116fb79afe2':
+      image:
+        target_id: 53
+    'f8c11102-6073-49d6-bfb0-ac3e4ca1100e':
+      image:
+        target_id: 54
+    'f3ee89e3-d288-4c61-9815-5c8c4596c55e':
+      image:
+        target_id: 55
+    '352be378-403a-4f6b-aff7-93be270d6607':
+      image:
+        target_id: 56
+    'c4ea0954-5a80-436a-87d7-7757cf4dd678':
+      image:
+        target_id: 57
+    'dbc87634-c5f3-415d-8343-7e96069e2b01':
+      image:
+        target_id: 58

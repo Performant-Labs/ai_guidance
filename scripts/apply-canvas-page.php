@@ -53,6 +53,17 @@
  * Idempotency: if the FIRST new uuid already exists on the page, the
  * entire add block is skipped and reported — safe to re-run.
  *
+ * `remove_components` shape:
+ *
+ *   remove_components:
+ *     - <uuid-1>
+ *     - <uuid-2>
+ *
+ * Removes each named UUID AND all descendants (anything whose parent_uuid
+ * transitively matches a to-remove UUID), so removing a section wrapper
+ * cleans up its whole subtree and nothing is orphaned. Idempotent: UUIDs
+ * not present are silently ignored.
+ *
  * Usage (from inside DDEV, CWD = /var/www/html/web for drush php:script):
  *   ddev drush php:script scripts/apply-canvas-page.php \
  *     ../content-exports/homepage-section-1.overlay.yml
@@ -231,6 +242,56 @@ if (!empty($overlay['add_components'])) {
           $changes[] = "inserted " . count($built) . " components after anchor {$anchor} (position " . ($anchor_index + 1) . ")";
         }
       }
+    }
+  }
+}
+
+// Structural removals: delete named UUIDs + all descendants from the tree.
+if (!empty($overlay['remove_components'])) {
+  $remove_uuids = $overlay['remove_components'];
+  if (!is_array($remove_uuids)) {
+    fwrite(STDERR, "remove_components must be a list of UUIDs — skipped.\n");
+  }
+  else {
+    // Reload components fresh so we layer cleanly on top of any prior
+    // overlay sections that ran above.
+    $components = $entity->get('components')->getValue();
+
+    // Expand the removal set to include descendants (parent_uuid chain).
+    // Iterate until no new descendants are discovered.
+    $to_remove = array_fill_keys($remove_uuids, TRUE);
+    do {
+      $added = FALSE;
+      foreach ($components as $c) {
+        if (!empty($c['parent_uuid'])
+          && isset($to_remove[$c['parent_uuid']])
+          && !isset($to_remove[$c['uuid']])) {
+          $to_remove[$c['uuid']] = TRUE;
+          $added = TRUE;
+        }
+      }
+    } while ($added);
+
+    $kept = [];
+    $removed = [];
+    foreach ($components as $c) {
+      if (isset($to_remove[$c['uuid']])) {
+        $removed[] = $c;
+      }
+      else {
+        $kept[] = $c;
+      }
+    }
+
+    if ($removed) {
+      $entity->set('components', $kept);
+      foreach ($removed as $r) {
+        $changes[] = "- component {$r['uuid']} ({$r['component_id']})";
+      }
+      $changes[] = "removed " . count($removed) . " components (including descendants); " . count($kept) . " remain";
+    }
+    else {
+      $changes[] = "remove_components: none of the listed UUIDs were on the page — no-op";
     }
   }
 }

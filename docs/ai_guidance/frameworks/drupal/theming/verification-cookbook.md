@@ -51,16 +51,39 @@ ddev exec "curl -sk [url] | grep -o 'srcset=\"[^\"]*\"' | head -3"
 # D) Cross-check alt text against what you wrote. Absent/empty alt = wrong media entity
 #    or alt field not copied through at render time.
 ddev exec "curl -sk [url] | grep -o 'alt=\"[^\"]*\"' | head -10"
+
+# E) ⚠️  REQUIRED — Verify each srcset URL actually resolves to an image.
+#    "srcset present" ≠ "browser sees an image." Check C only proves the HTML string
+#    exists; the browser still renders nothing if every derivative URL 500s.
+#    Common trigger: SVG source file + image-bundle media → Drupal tries to generate
+#    AVIF derivatives → image toolkit can't rasterize SVG → HTTP 500 per entry.
+ddev exec "bash -lc '
+  HTML=\$(curl -sk [url])
+  # Extract both src= values and each comma-separated entry in srcset=
+  printf %s \"\$HTML\" | grep -oE \"src=\\\"[^\\\"]+\\\"|srcset=\\\"[^\\\"]+\\\"\" \\
+    | sed -E \"s/^src=\\\"//;s/^srcset=\\\"//;s/\\\"\$//\" \\
+    | tr \",\" \"\\n\" | awk \"{print \\\$1}\" | sort -u \\
+    | while read -r u; do
+        [ -z \"\$u\" ] && continue
+        code=\$(curl -sk -o /dev/null -w \"%{http_code} %{content_type}\" \"http://localhost\$u\")
+        printf \"%s  %s\\n\" \"\$code\" \"\$u\"
+      done
+'" | sort | uniq -c | sort -rn
+# Expected: every line 200 + image/* content-type.
+# Any 500 "Error generating image" or text/html response = broken render; imgs won't display.
 ```
 
 **Interpretation table:**
 
-| Wrapper count | `<img>` count | srcset present? | Likely cause |
-|---|---|---|---|
-| Expected | Expected | Yes | ✅ Rendering correctly. |
-| Expected | 0 | n/a | Silent image-prop coercion (Rule F). Dump the component inputs; re-apply with a valid shape. |
-| 0 | 0 | n/a | Component itself didn't render — check `component_id`, schema, Twig. |
-| Expected | Expected | No | Raw `src` in inputs (Rule A). Prop isn't resolving as a Media entity. |
+| Wrapper count | `<img>` count | srcset present? | All srcset URLs 200 + image/*? | Likely cause |
+|---|---|---|---|---|
+| Expected | Expected | Yes | Yes | ✅ Rendering correctly. |
+| Expected | Expected | Yes | **No — 500s** | **Derivative pipeline mismatch** — source file type isn't compatible with the derived format (classic: SVG source + AVIF derivative). Fix the source (rasterize) or the pipeline, not the component wiring. |
+| Expected | 0 | n/a | n/a | Silent image-prop coercion (Rule F). Dump the component inputs; re-apply with a valid shape. |
+| 0 | 0 | n/a | n/a | Component itself didn't render — check `component_id`, schema, Twig. |
+| Expected | Expected | No | n/a | Raw `src` in inputs (Rule A). Prop isn't resolving as a Media entity. |
+
+> **Lesson — "srcset present" is necessary but not sufficient.** Check C (srcset presence) and Check E (srcset resolution) measure different things. Skipping E produces false positives where the Tier 1 audit reports "rendering correctly" while the browser shows a blank section. Always run E before declaring an image-prop component green. See **Incident — 2026-04-21, trust bar SVG/AVIF mismatch** at the end of this document.
 
 #### 2. Component Wrapper Presence
 
@@ -176,3 +199,30 @@ Reserve `browser_subagent` screenshots exclusively for visual sign-off.
 - **Payload Size**: An ARIA snapshot is typically 10–15KB, while a 4K screenshot context can exceed 5MB in vision-tokens.
 - **Processing Speed**: LLMs can "see" a bug in text (e.g., a missing button in the list) much faster than they can find it in a complex image.
 - **Zero Pixel Noise**: Structural testing ignores CSS "glitches" that don't affect function, allowing the developer to focus on assembly integrity first.
+
+---
+
+## Incident Appendix
+
+### 2026-04-21 — Trust bar SVG/AVIF mismatch (false-positive Tier 1)
+
+**What happened.** On the PL2 homepage rebuild, Section 2 (6-logo trust bar) was assembled by binding 6 `logo-item-canvas` components to 6 existing media entities (mids 41–46, `image` bundle). A Tier 1 audit ran checks A–D from the Canvas Image-Prop Render Check pattern:
+
+- A) 6 `<img data-component-id="canvas:image">` tags — ✅ expected count.
+- B) 6 component wrappers — ✅ present.
+- C) srcset attribute present on every img — ✅ present.
+- D) alt text matched the 6 client names — ✅ correct.
+
+Tier 1 was declared green and the work proceeded to the next section. The user opened the page in a real browser and saw **no logos rendering** — an empty horizontal strip where the trust bar should have been.
+
+**Root cause.** The 6 source files were SVGs uploaded into the `image` media bundle. Canvas's `image` component unconditionally emits a responsive srcset via `src_with_alternate_widths` + the `toSrcSet` Twig filter. Those srcset URLs are Drupal image-style derivatives that request AVIF output. The image toolkit cannot rasterize SVG into AVIF, so every one of the 48 derivative URLs (6 logos × 8 widths) returned **HTTP 500 "Error generating image."** Browsers pick srcset preferentially over src fallback, so nothing displayed.
+
+**Why Tier 1 missed it.** Checks A–D are all server-HTML checks. They verify that Drupal *emitted* an `<img>` tag with the expected attributes, but they never request the URLs those attributes point to. The rendered HTML was indistinguishable between "works" and "every derivative 500s." The gap was: *srcset string exists ≠ srcset URLs resolve to images.*
+
+**Amendment.** Check E ("REQUIRED — Verify each srcset URL actually resolves to an image") was added and is now gated as mandatory before any image-prop component can be declared rendering correctly. The interpretation table added a row for the "srcset present, URLs 500" failure mode pointing at derivative-pipeline mismatch (not component wiring) as the fix axis.
+
+**Red herring worth noting.** The first remediation attempt moved the media from the `image` bundle to the `svg_image` bundle (which uses `field_media_svg_image` and, on paper, bypasses raster image styles). It made no difference because the Canvas `image` component template emits srcset based on the *component* template, not the media bundle — the bundle swap doesn't affect Canvas's render pipeline. The working fix was to rasterize each SVG to a 600px-wide PNG via ImageMagick inside DDEV, create new `image`-bundle media entities backed by those PNGs (mids 53–58), and overlay-patch the 6 `logo-item-canvas` components to point at the new mids. After a cache rebuild, all 54 src + srcset URLs returned 200 + image/png.
+
+**Takeaway for future Tier 1 audits:**
+- When a check operates on rendered HTML alone, ask: "does the browser also need these URLs to resolve?" If yes, add a resolution check to Tier 1 — don't defer to Tier 3.
+- Bundle swaps are cheap to try but usually the wrong lens for Canvas render issues. Canvas components render the same way regardless of the source media bundle; the render pipeline is in the component template, not the media entity.

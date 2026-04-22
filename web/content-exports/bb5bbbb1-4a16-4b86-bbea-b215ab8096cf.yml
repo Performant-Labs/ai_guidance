@@ -20,12 +20,76 @@ default:
       inputs: '{"theme":"primary","height":"full-screen","position_behind_against_screen_top":true,"align_x":"center","align_y":"center","text_color":"white"}'
       label: null
     -
+      parent_uuid: null
+      slot: null
+      uuid: db4ecb86-bd54-4fdc-8f91-5f586043c4e2
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"theme":"white","section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"medium","padding_bottom":"medium"}'
+      label: null
+    -
+      parent_uuid: db4ecb86-bd54-4fdc-8f91-5f586043c4e2
+      slot: content
+      uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      component_id: sdc.dripyard_base.logo-grid
+      component_version: ce3f2429d9631143
+      inputs: '{"logo_size":"medium","layout":"center","logo_background":"transparent","logo_border_radius":"small"}'
+      label: null
+    -
+      parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      slot: logo_grid_content
+      uuid: 199e0674-b3fd-468a-bb45-1116fb79afe2
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"href":null,"image":{"target_id":41}}'
+      label: null
+    -
+      parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      slot: logo_grid_content
+      uuid: f8c11102-6073-49d6-bfb0-ac3e4ca1100e
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"href":null,"image":{"target_id":42}}'
+      label: null
+    -
+      parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      slot: logo_grid_content
+      uuid: f3ee89e3-d288-4c61-9815-5c8c4596c55e
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"href":null,"image":{"target_id":43}}'
+      label: null
+    -
+      parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      slot: logo_grid_content
+      uuid: 352be378-403a-4f6b-aff7-93be270d6607
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"href":null,"image":{"target_id":44}}'
+      label: null
+    -
+      parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      slot: logo_grid_content
+      uuid: c4ea0954-5a80-436a-87d7-7757cf4dd678
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"href":null,"image":{"target_id":45}}'
+      label: null
+    -
+      parent_uuid: 3e957576-deb2-4584-adf1-eac362993aab
+      slot: logo_grid_content
+      uuid: dbc87634-c5f3-415d-8343-7e96069e2b01
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"href":null,"image":{"target_id":46}}'
+      label: null
+    -
       parent_uuid: 1651496e-60ab-4ca8-893a-33fe15f89a43
       slot: hero_content
       uuid: 26a5ade6-f2ac-44d1-8145-ed4e27c2b7f9
       component_id: sdc.dripyard_base.title-cta
       component_version: fd6bbffa9b05aa5a
-      inputs: '{"title":"Expert Drupal engineering, when you need it most.","heading_style":"h1","button_text":"Call today","button_href":"\/contact","button_style":"secondary","layout":"center"}'
+      inputs: '{"title":"Ship Drupal releases with confidence.","heading_style":"h1","button_text":"Book a testing review","button_href":"\/contact-us?intent=testing-review","button_style":"secondary","layout":"center"}'
       label: null
     -
       parent_uuid: null
@@ -65,7 +129,7 @@ default:
       uuid: 5138cbe4-6f75-4efc-a608-5ce08e6b4222
       component_id: sdc.dripyard_base.content-card
       component_version: 7afc561cf35c01e5
-      inputs: '{"title":"Expert Engineering","link_href":"\/services","body_text":"Senior Drupal engineers embedded with your team or delivering to spec. Staff augmentation, project delivery, and code review — right-sized for your engagement.","background":true}'
+      inputs: '{"title":"Expert Engineering","link_href":"\/services","body_text":"Senior Drupal engineers embedded with your team or delivering to spec. Staff augmentation, project delivery, and code review \u2014 right-sized for your engagement.","background":true}'
       label: null
     -
       parent_uuid: b0c096ed-41d5-4039-9928-33e01c69d6ac
@@ -345,7 +409,7 @@ default:
       uuid: 34a2bec3-99cf-4d6b-abef-20edf553bf81
       component_id: sdc.dripyard_base.text
       component_version: 05732cb45a35eac6
-      inputs: '{"text":"Absolutely. We have migrated dozens of legacy Drupal sites to current major versions. Our process covers content, configuration, and custom module refactoring — with automated tests validating each migration stage.","style":"body_m","color":"inherit"}'
+      inputs: '{"text":"Absolutely. We have migrated dozens of legacy Drupal sites to current major versions. Our process covers content, configuration, and custom module refactoring \u2014 with automated tests validating each migration stage.","style":"body_m","color":"inherit"}'
       label: null
     -
       parent_uuid: 0f11d4f2-5715-4180-b73b-fce91ceda2c0
@@ -521,7 +585,7 @@ default:
       uuid: 9f99aaed-3a12-4dfe-aa56-32bedc9106ba
       component_id: sdc.dripyard_base.button
       component_version: 3155d0acceef4faf
-      inputs: '{"text":"Book a call","href":"\/contact","style":"light","size":"medium"}'
+      inputs: '{"text":"See how we test this site","href":"\/how-we-built-this-site","style":"light","size":"medium"}'
       label: null
     -
       parent_uuid: c8aec9ce-9b43-4fdf-9aa4-e9f2ad8cacf8
@@ -537,7 +601,7 @@ default:
       uuid: 8fdea902-b7d7-41c7-aff3-589df86c7802
       component_id: sdc.dripyard_base.text
       component_version: 05732cb45a35eac6
-      inputs: '{"text":"Performant Labs helps organizations build faster, more reliable Drupal sites \u2014 with expert engineering, automated testing, and open source leadership.","style":"body_l","color":"soft","center":true}'
+      inputs: '{"text":"Performant Labs built the Drupal testing stack the ecosystem already uses (ATK, Testor), extended it with AI workflows that heal broken tests on their own, and \u2014 when you need it \u2014 embeds senior testing engineers alongside your team.","style":"body_l","color":"soft","center":true}'
       label: null
   owner:
     -
