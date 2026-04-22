@@ -1,0 +1,440 @@
+# /how-we-built-this-site — Phase 3 v1 build.
+#
+# Translates the approved brief (docs/pl2/briefs/how-we-built-this-site.md,
+# approved 2026-04-21) into component-level inserts on the newly-created
+# canvas_page uuid d1ba47d6-e1b9-48f1-8d18-9f467d77c458 (entity id 16),
+# label "How We Built This Site".
+#
+# Single `add_components` block, anchored at the `__root__` sentinel
+# (commit f33618d 2026-04-22). Page has zero components at overlay-apply
+# time; this one block seeds all 23.
+#
+# Sections emitted (6, per brief § "Page structure"):
+#   1. Hero                    — h1 + italic subhead (no CTA, per brief)
+#   2. The stack               — h2 + intro + HTML table (7 rows)
+#   3. The nightly workflow    — h2 + prose with 2 ordered lists + inline
+#                                GitHub links on workflow filenames
+#   4. Where Claude is allowed — h2 + prose with 2 blockquoted CLAUDE.md
+#      to touch                  rules + guardrail <ul> + inline CLAUDE.md
+#                                link
+#   5. A real healing session  — h2 + prose with blockquoted classification
+#                                + <pre><code> diff block + issue/commit
+#                                links
+#   6. Honest limits + CTA     — h2 + limits <ul>, h2 "Want this running"
+#                                + pitch + primary button, + epilogue
+#                                bridge + 3-link self-serve <ul>
+#
+# Theme alternation: white → light → white → light → white → light.
+# Chose light (not primary) for §6 because the page's engineering-skeptic
+# audience reads a loud primary block as marketing affect; subdued tonal
+# register matches the brief's "pragmatic, technical, exacting" tone.
+#
+# Editorial rule enforced (per project_pl2_playwright_first memory):
+# Playwright is named first any time both frameworks appear. See §2 row
+# "E2E tests" and §3 opening paragraph.
+#
+# Rendering dependencies:
+#   - canvas_html_block filter must allow: <table> <thead> <tbody> <tr>
+#     <th> <td> <blockquote>. Extension committed alongside this overlay
+#     in the same pre-apply commit. Without the filter extension, the §2
+#     table collapses to naked text and the §4/§5 blockquotes render as
+#     inline paragraphs.
+#   - <code> + <pre> already allowed (prior commits 37 + 41b0787).
+#   - __root__ sentinel in apply-canvas-page.php (f33618d 2026-04-22).
+#
+# Apply:
+#   ddev drush php:script scripts/apply-canvas-page.php \
+#     content-exports/how-we-built-this-site-v1.overlay.yml dry-run
+# (Drop `dry-run` to save.)
+#
+# Known flag (per brief § "Dependencies"): the ATK canonical GitHub URL
+# (Performant-Labs/automated_testing_kit) is a placeholder best-guess.
+# The /open-source-projects brief will carry the authoritative URL; if
+# it differs, patch the §6 self-serve <ul> link.
+
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: d1ba47d6-e1b9-48f1-8d18-9f467d77c458
+
+overlay:
+
+  add_components:
+
+    - after_uuid: __root__
+      components:
+
+        # ──────────────────────────────────────────────────────────────
+        # §1. HERO — theme=white.
+        # Single h1 + italic subhead. No CTA in hero (reader is already
+        # committed — see brief § 1 layout notes).
+        # ──────────────────────────────────────────────────────────────
+
+        - uuid: 6afc66a3-74b8-4647-99cf-facd6a078594
+          component_id: sdc.dripyard_base.section
+          component_version: e6079b189d228dad
+          inputs:
+            section_width: max-width
+            content_width: max-width
+            margin_top: zero
+            margin_bottom: zero
+            padding_top: large
+            padding_bottom: large
+            theme: white
+
+        - uuid: 0028dadf-9bb7-4daf-8638-96ec88699b93
+          parent_uuid: 6afc66a3-74b8-4647-99cf-facd6a078594
+          slot: content
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "How we test this site."
+            html_element: h1
+            style: h1
+            color: loud
+            margin_top: zero
+            margin_bottom: small
+            center: true
+            text_max_width: "800px"
+
+        - uuid: b7bd056e-7272-4bc9-bc0f-3f177ab26d8a
+          parent_uuid: 6afc66a3-74b8-4647-99cf-facd6a078594
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p><em>Every night, Playwright tests run against performantlabs.com. When a test breaks, a Claude agent diagnoses the failure, classifies it, and — when appropriate — opens a pull request with the fix. This page links to the code that decides what it's allowed to touch.</em></p>
+            style: body_l
+            color: soft
+
+        # ──────────────────────────────────────────────────────────────
+        # §2. THE STACK — theme=light.
+        # h2 + intro + 7-row HTML table (Layer / Choice / Why).
+        # Table requires canvas_html_block filter extension.
+        # ──────────────────────────────────────────────────────────────
+
+        - uuid: ddfd0144-886a-47f2-80e5-fa98feb30e76
+          component_id: sdc.dripyard_base.section
+          component_version: e6079b189d228dad
+          inputs:
+            section_width: max-width
+            content_width: max-width
+            margin_top: zero
+            margin_bottom: zero
+            padding_top: large
+            padding_bottom: large
+            theme: light
+
+        - uuid: e72f1a6a-4fb4-4a48-a934-33e4ddac3675
+          parent_uuid: ddfd0144-886a-47f2-80e5-fa98feb30e76
+          slot: header
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "The stack."
+            html_element: h2
+            style: h2
+            color: primary
+            margin_top: zero
+            margin_bottom: small
+
+        - uuid: e375556f-d5f1-4a13-b44b-ea46036a24ef
+          parent_uuid: ddfd0144-886a-47f2-80e5-fa98feb30e76
+          slot: header
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p><em>Nothing exotic. Every choice is justified by something concrete.</em></p>
+            style: body_l
+            color: soft
+
+        - uuid: 94540588-da03-45ce-ade8-05d1bad5ed9c
+          parent_uuid: ddfd0144-886a-47f2-80e5-fa98feb30e76
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <table>
+              <thead><tr><th>Layer</th><th>Choice</th><th>Why</th></tr></thead>
+              <tbody>
+              <tr><td>CMS</td><td>Drupal 11 (Canvas module v1.3.2)</td><td>Recent migration from D10; Canvas is our Layout Builder / theming stack.</td></tr>
+              <tr><td>Hosting</td><td>Pantheon (dev → test → live)</td><td>Multidev branches map 1:1 to PR branches.</td></tr>
+              <tr><td>E2E tests</td><td>Playwright (primary), Cypress (legacy support)</td><td>Playwright is where autonomous healing lives; Cypress suites still run.</td></tr>
+              <tr><td>Test toolkit</td><td>ATK (our open-source Drupal testing kit)</td><td>We maintain it; using it here is dogfooding.</td></tr>
+              <tr><td>CI</td><td>GitHub Actions, nightly cron</td><td><code>heal-tests-claude.yml</code> orchestrates the healer; <code>test-against-pantheon.yml</code> orchestrates the run.</td></tr>
+              <tr><td>Reporting</td><td>CTRF JSON + Playwright HTML report</td><td>Structured failure data is what Claude reads.</td></tr>
+              <tr><td>AI</td><td>Claude (Sonnet) via Anthropic API</td><td>Operating under a <code>CLAUDE.md</code> ruleset committed to the repo.</td></tr>
+              </tbody>
+              </table>
+            style: body_m
+            color: soft
+
+        # ──────────────────────────────────────────────────────────────
+        # §3. THE NIGHTLY WORKFLOW — theme=white.
+        # Prose narrative with two <ol> (workflow 1 steps 1–4, workflow 2
+        # steps 5–8 but renumbered 1–4 starting over). Workflow filenames
+        # linked inline on first mention.
+        # ──────────────────────────────────────────────────────────────
+
+        - uuid: cb7559db-2938-4305-afc3-dd8d69c59db3
+          component_id: sdc.dripyard_base.section
+          component_version: e6079b189d228dad
+          inputs:
+            section_width: max-width
+            content_width: max-width
+            margin_top: zero
+            margin_bottom: zero
+            padding_top: large
+            padding_bottom: large
+            theme: white
+
+        - uuid: 1987b572-443b-4ebf-bcdc-e336527295ff
+          parent_uuid: cb7559db-2938-4305-afc3-dd8d69c59db3
+          slot: header
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "The nightly workflow."
+            html_element: h2
+            style: h2
+            color: primary
+            margin_top: zero
+            margin_bottom: small
+
+        - uuid: fe85aabe-76e4-48bf-86af-4b04a83369ee
+          parent_uuid: cb7559db-2938-4305-afc3-dd8d69c59db3
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p>It's two workflows, not one. The first runs the tests; the second heals them.</p>
+              <p><strong>Workflow 1 — the tester</strong> (<a href="https://github.com/Performant-Labs/performantlabs.com/blob/main/.github/workflows/test-against-pantheon.yml"><code>test-against-pantheon.yml</code></a>). Every night at 23:57 UTC:</p>
+              <ol>
+              <li>Playwright runs the full suite against <code>https://live-performant-labs.pantheonsite.io</code>, sharded across parallel runners for speed.</li>
+              <li>Results merge into <code>ctrf/ctrf-report.json</code> — structured JSON describing every pass, fail, and flake.</li>
+              <li>If anything failed, <code>ai-ctrf claude</code> enriches the CTRF with per-failure summaries (model: <code>claude-sonnet-4-20250514</code>).</li>
+              <li>A GitHub issue is opened — or reused if one is already open — with the label <code>auto-heal</code>.</li>
+              </ol>
+              <p><strong>Workflow 2 — the healer</strong> (<a href="https://github.com/Performant-Labs/performantlabs.com/blob/main/.github/workflows/heal-tests-claude.yml"><code>heal-tests-claude.yml</code></a>). On each new <code>auto-heal</code> issue:</p>
+              <ol>
+              <li>Claude checks out the repo, reads <code>CLAUDE.md</code>, and identifies the failing test file(s) from the issue body.</li>
+              <li>It classifies each failure: <strong>test issue</strong> or <strong>website issue</strong>.</li>
+              <li><strong>Test issue</strong> → Claude fixes the test on a branch named <code>claude/issue-N</code>; a subsequent step opens a PR automatically.</li>
+              <li><strong>Website issue</strong> → Claude posts its analysis as an issue comment. No code changes.</li>
+              </ol>
+              <p>A small detail that matters: the healer fires on <code>issues: [opened]</code>, <em>not</em> <code>[labeled]</code>. Multiple labels would otherwise trigger multiple duplicate runs.</p>
+            style: body_m
+            color: soft
+
+        # ──────────────────────────────────────────────────────────────
+        # §4. WHERE CLAUDE IS ALLOWED TO TOUCH — theme=light.
+        # Two-mode split rendered as <blockquote>s (verbatim CLAUDE.md
+        # quotation per editorial convention). Four-item guardrail <ul>.
+        # ──────────────────────────────────────────────────────────────
+
+        - uuid: e9c5aafa-f9ee-4f2a-bb5e-33e589386b48
+          component_id: sdc.dripyard_base.section
+          component_version: e6079b189d228dad
+          inputs:
+            section_width: max-width
+            content_width: max-width
+            margin_top: zero
+            margin_bottom: zero
+            padding_top: large
+            padding_bottom: large
+            theme: light
+
+        - uuid: 1dde9f5f-6747-4d9b-9ab2-158877892b37
+          parent_uuid: e9c5aafa-f9ee-4f2a-bb5e-33e589386b48
+          slot: header
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "Where Claude is allowed to touch."
+            html_element: h2
+            style: h2
+            color: primary
+            margin_top: zero
+            margin_bottom: small
+
+        - uuid: 09a11d10-e684-4f54-a710-83600c311bfb
+          parent_uuid: e9c5aafa-f9ee-4f2a-bb5e-33e589386b48
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p>The guardrails live in a committed file: <a href="https://github.com/Performant-Labs/performantlabs.com/blob/main/CLAUDE.md"><code>CLAUDE.md</code></a>. It's not a prompt buried in a secret. It's in the repo, reviewable like any other code.</p>
+              <p>The load-bearing rule is the <strong>two-mode split</strong>:</p>
+              <blockquote><p><strong>CI mode</strong> (default in GitHub Actions) — conservative. Only fix test code. Never modify website source.</p></blockquote>
+              <blockquote><p><strong>Local mode</strong> (when running <code>claude</code> on a developer's machine) — aggressive. Fix whatever is broken, test <em>or</em> website.</p></blockquote>
+              <p>The reasoning is in the file itself: the CI runner cannot deploy code changes to Pantheon, so fixing website code from CI would be pointless. Test-only PRs are safe to review and merge.</p>
+              <p>A few other guardrails worth naming:</p>
+              <ul>
+              <li><strong>Tool allowlist</strong> in the workflow: Claude can run <code>npx</code>, <code>npm</code>, <code>git</code>, and a handful of read-only shell commands. It cannot <code>curl</code>, <code>wget</code>, or touch arbitrary binaries.</li>
+              <li><strong>25-turn cap.</strong> No runaway sessions.</li>
+              <li><strong>10-minute hard timeout.</strong> If a fix isn't obvious in 10 minutes, the run dies and a human picks it up.</li>
+              <li><strong>Classification framework</strong> in <code>CLAUDE.md</code> tells Claude how to decide "test issue vs website issue" — selector mismatches and stale assertions go in the test-fix bucket; missing elements, broken forms, and 500s go in the website-fix bucket and get a comment, not a PR.</li>
+              </ul>
+              <p>None of this is clever. All of it is written down.</p>
+            style: body_m
+            color: soft
+
+        # ──────────────────────────────────────────────────────────────
+        # §5. A REAL HEALING SESSION — theme=white.
+        # Narrative + blockquoted classification + <pre><code> diff block
+        # + issue/commit links + contract closing paragraph.
+        # ──────────────────────────────────────────────────────────────
+
+        - uuid: d554d154-2016-4805-b012-002abca7856a
+          component_id: sdc.dripyard_base.section
+          component_version: e6079b189d228dad
+          inputs:
+            section_width: max-width
+            content_width: max-width
+            margin_top: zero
+            margin_bottom: zero
+            padding_top: large
+            padding_bottom: large
+            theme: white
+
+        - uuid: 300419b4-74fc-4333-ab4b-cd2dc082c882
+          parent_uuid: d554d154-2016-4805-b012-002abca7856a
+          slot: header
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "A real healing session."
+            html_element: h2
+            style: h2
+            color: primary
+            margin_top: zero
+            margin_bottom: small
+
+        - uuid: a5a05340-b68c-4fe6-b1d7-eef12da00a15
+          parent_uuid: d554d154-2016-4805-b012-002abca7856a
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p>Here's one from this February. Issue <a href="https://github.com/Performant-Labs/performantlabs.com/issues/231">#231</a> landed overnight: Playwright had failed on the Contact Us smoke test. The error: timeout waiting for a link with accessible name <code>"COTACT US"</code>.</p>
+              <p>Claude read <code>CLAUDE.md</code>, opened the failing test file, and made the classification:</p>
+              <blockquote><p><strong>TEST issue</strong> — The selector text is "COTACT US" (missing the second 'N'). The site's navigation correctly says "CONTACT US". The test's selector is a typo.</p></blockquote>
+              <p>It fixed the one-line typo and committed to a <code>claude/issue-231</code> branch:</p>
+              <pre><code>-    await page.getByRole('link', { name: 'COTACT US' }).first().click()
+              +    await page.getByRole('link', { name: 'CONTACT US' }).first().click()</code></pre>
+              <p>(From <code>tests/atk_contact_us/atk_contact_us.spec.js</code>.)</p>
+              <p>A human reviewed the PR, confirmed the diff matched the classification, and merged. Commit <a href="https://github.com/Performant-Labs/performantlabs.com/commit/1d0741170f5cbc71090dfaa331f0e2f85e4a511b"><code>1d0741170f</code></a>. No calls. No flake dashboards. No "investigate this next sprint." The whole loop — failure → issue → classification → PR → merge — closed before Monday's standup.</p>
+              <p>If the typo had been on the <em>website</em> side instead of the test side (say, the navigation itself said "COTACT US"), the classification would have been <strong>website issue</strong>: Claude would have posted its analysis as a comment on the issue and declined to touch any code. That's not a limitation to work around. That's the contract.</p>
+            style: body_m
+            color: soft
+
+        # ──────────────────────────────────────────────────────────────
+        # §6. HONEST LIMITS + CTA — theme=light.
+        # Two h2 blocks in one section: (a) Honest limits + 4-item <ul>;
+        # (b) Want this running on your site? + 30-min pitch + primary
+        # CTA button + self-serve bridge + 3-link <ul>.
+        # Theme=light (not primary) — audience is engineers; loud primary
+        # block would read as marketing. Brief tone: pragmatic/technical.
+        # ──────────────────────────────────────────────────────────────
+
+        - uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+          component_id: sdc.dripyard_base.section
+          component_version: e6079b189d228dad
+          inputs:
+            section_width: max-width
+            content_width: max-width
+            margin_top: zero
+            margin_bottom: zero
+            padding_top: large
+            padding_bottom: large
+            theme: light
+
+        - uuid: 4426b2b9-e127-4a14-992e-651746039924
+          parent_uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+          slot: content
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "Honest limits."
+            html_element: h2
+            style: h2
+            color: primary
+            margin_top: zero
+            margin_bottom: small
+
+        - uuid: 345079f5-cb2d-495f-896c-73c71dcc827c
+          parent_uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p>A few things to know:</p>
+              <ul>
+              <li><strong>The workflow heals; it doesn't author.</strong> Claude doesn't write new tests. It fixes ones that already exist.</li>
+              <li><strong>It can't find what's not broken.</strong> A test that passes while checking the wrong thing will never trigger a heal.</li>
+              <li><strong>Truly flaky tests don't reproduce reliably.</strong> If a failure doesn't recur on re-run, Claude documents that and moves on.</li>
+              <li><strong>Every PR is reviewed by a human.</strong> The classification is Claude's. The merge is not.</li>
+              </ul>
+              <p>This isn't magic. It's a workflow, a ruleset, and a human in the loop. The things we've gotten back are Monday mornings, and the calendar time of a senior engineer we no longer spend on flake triage.</p>
+            style: body_m
+            color: soft
+
+        - uuid: cc320dbc-13e7-4154-b6bd-bf7a2462db2e
+          parent_uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+          slot: content
+          component_id: sdc.dripyard_base.heading
+          component_version: 69804e3c5ff45a2b
+          inputs:
+            text: "Want this running on your site?"
+            html_element: h2
+            style: h2
+            color: primary
+            margin_top: medium
+            margin_bottom: small
+
+        - uuid: 66f58e9c-3889-4588-a10d-d63fbaf0bf87
+          parent_uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p>If you have a Drupal site with a Playwright suite and nightly CI — or want to get there — we run a 30-minute review. We'll look at your current workflow, tell you honestly where autonomous healing would (and wouldn't) help, and leave you with a one-page writeup.</p>
+              <p>No sales pitch. No obligation.</p>
+            style: body_m
+            color: soft
+
+        - uuid: deed6cbe-4572-4f9c-ab8c-b1dfb1a97712
+          parent_uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+          slot: content
+          component_id: sdc.dripyard_base.button
+          component_version: 3155d0acceef4faf
+          inputs:
+            text: "Book a testing review"
+            href: "/contact-us?intent=testing-review"
+            style: primary
+            size: large
+            suffix_icon: arrow-right
+
+        - uuid: f03bb4c5-3974-4213-a692-cce076658f7d
+          parent_uuid: f42ffa77-4700-4d75-9dde-a19254ba5ff6
+          slot: content
+          component_id: sdc.dripyard_base.text
+          component_version: 05732cb45a35eac6
+          inputs:
+            text: |-
+              <p><em>Or, if you'd rather start with the code:</em></p>
+              <ul>
+              <li><a href="https://github.com/Performant-Labs/automated_testing_kit">ATK on GitHub</a></li>
+              <li><a href="https://github.com/Performant-Labs/performantlabs.com/blob/main/.github/workflows/heal-tests-claude.yml"><code>heal-tests-claude.yml</code></a></li>
+              <li><a href="https://github.com/Performant-Labs/performantlabs.com/blob/main/CLAUDE.md"><code>CLAUDE.md</code></a></li>
+              </ul>
+            style: body_s
+            color: soft
