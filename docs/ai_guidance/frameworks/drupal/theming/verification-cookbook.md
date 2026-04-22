@@ -25,6 +25,54 @@ Use `curl` for instant confirmation of non-visual state.
 - **CSS variable check**: `ddev exec "curl -sk [url] | grep -o 'theme-setting-base-primary-color:[^;]*'"`
 - **Nav Link audit**: `ddev exec "curl -sk [url] | grep '/articles/my-page'"`
 
+### Common Tier 1 Audit Patterns
+
+Cheap, deterministic checks over the server-rendered HTML. Run these first — they fail loudly and in milliseconds when a component didn't render, and they run without a browser.
+
+#### 1. Canvas Image-Prop Render Check
+
+When a Canvas component with an `entity_reference` image prop is expected to render (e.g., a logo grid, card image, hero media), Tier 1 can verify it directly. Failure modes like Rule F silent coercion (see `canvas-scripting-protocol.md`) are invisible in watchdog; only the rendered HTML surfaces them.
+
+```bash
+# A) Count the <img> tags actually emitted inside the component section.
+#    Replace the section anchor selector with whatever wraps your component group:
+ddev exec "curl -sk [url] | grep -o '<img[^>]*data-component-id=\"canvas:image\"' | wc -l"
+# Expected: the number of component instances you placed (e.g., 6 for a 6-logo trust bar).
+
+# B) Verify Canvas emitted the component wrapper with its image-or-media marker.
+#    Missing wrapper = the component didn't render at all (template error, wrong component_id).
+#    Wrapper present but no <img> = classic silent image-prop coercion (Rule F).
+ddev exec "curl -sk [url] | grep -c 'data-component-id=\"canvas:image\"'"
+
+# C) Confirm responsive srcset is present — proves the image was resolved as a Media entity,
+#    not a raw `src` string. Raw-src renders omit srcset entirely.
+ddev exec "curl -sk [url] | grep -o 'srcset=\"[^\"]*\"' | head -3"
+
+# D) Cross-check alt text against what you wrote. Absent/empty alt = wrong media entity
+#    or alt field not copied through at render time.
+ddev exec "curl -sk [url] | grep -o 'alt=\"[^\"]*\"' | head -10"
+```
+
+**Interpretation table:**
+
+| Wrapper count | `<img>` count | srcset present? | Likely cause |
+|---|---|---|---|
+| Expected | Expected | Yes | ✅ Rendering correctly. |
+| Expected | 0 | n/a | Silent image-prop coercion (Rule F). Dump the component inputs; re-apply with a valid shape. |
+| 0 | 0 | n/a | Component itself didn't render — check `component_id`, schema, Twig. |
+| Expected | Expected | No | Raw `src` in inputs (Rule A). Prop isn't resolving as a Media entity. |
+
+#### 2. Component Wrapper Presence
+
+Before Tier 2 ARIA, confirm the server actually emitted the expected component wrappers. This separates "server didn't render" from "server rendered but ARIA tree surprised me":
+
+```bash
+# Count by component type — substitute the SDC id your theme uses.
+ddev exec "curl -sk [url] | grep -c 'data-component-id=\"sdc.<theme>.<component>\"'"
+```
+
+Missing wrappers indicate a render-side failure (template error, missing required prop, enum ceiling violation) that will never surface in the ARIA tree because the HTML it would describe isn't there.
+
 ---
 
 ## Tier 2 — The High-Speed Structural Lens (ARIA)
