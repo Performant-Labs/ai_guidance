@@ -1,0 +1,41 @@
+# /services polish pass — tasks #66 + #67
+#
+# Scope:
+#   ONLY two input patches on the existing /services canvas_page.
+#   No component add/remove, no structural change.
+#
+# Target canvas_page:
+#   entity: canvas_page
+#   id: 3
+#   uuid: b2613e35-516b-4d7c-86b8-75eb8a5d5356
+#
+# Patches:
+#   1. Hero subhead text (uuid 82f14b06-e93a-4c27-9b58-3d7e2a14f6cb)
+#      → add center:true + text_max_width:"800px" so the subhead mirrors
+#        the H1's constraint box (H1 already has center:true + 800px).
+#        Without this, H1 is centered-in-box while the subhead spans the
+#        full section content-width → visual asymmetry under the centered H1.
+#
+#   2. §2 grid-wrapper (uuid d9c118eb-2a4c-4282-a3b4-ed42e8b3bb8f)
+#      → add additional_classes:"grid-wrapper--2col" so the scoped CSS
+#        rule in canvas.css flips this grid from span-4 (3-per-row, yields
+#        3+1 for 4 cards) to span-6 (2-per-row, yields 2×2 for 4 cards).
+#        Other grid-wrappers on other canvas_pages keep their span-4 default.
+#
+# All other component inputs are left EXACTLY as in services-post-v1.yml.
+# No remove_components, no add_components.
+patches:
+  - uuid: 82f14b06-e93a-4c27-9b58-3d7e2a14f6cb
+    reason: "#66 — subhead centering; match H1 constraint"
+    inputs:
+      text: "<p>Take over a broken test suite. Embed a senior testing engineer. Pilot AI-driven test healing. Audit accessibility. Every engagement is testing work \u2014 we don't build Drupal sites.</p>"
+      style: "body_l"
+      color: "soft"
+      center: true
+      text_max_width: "800px"
+  - uuid: d9c118eb-2a4c-4282-a3b4-ed42e8b3bb8f
+    reason: "#67 — §2 four cards from 3+1 to 2×2 via additional_classes hook"
+    inputs:
+      column_gutter: "large"
+      row_gutter: "large"
+      additional_classes: "grid-wrapper--2col"
