@@ -63,6 +63,16 @@
  * still appear after their parent within each block's component list
  * (Canvas stores the tree flattened in traversal order).
  *
+ * Special anchor `__root__`: prepend components to position 0 of the
+ * components array. Primary use case is seeding a newly-created,
+ * empty canvas_page where there are no existing components to anchor to.
+ * Also works against a non-empty page (prepends in front of whatever is
+ * currently first). Multi-block runs can combine a `__root__` seed block
+ * with subsequent blocks anchored to UUIDs introduced by the seed block
+ * — the script reloads the components array fresh between blocks, so
+ * UUIDs inserted by an earlier block are valid anchors for later blocks
+ * in the same overlay.
+ *
  * Idempotency: each block is checked independently — if the FIRST new
  * uuid of a block already exists on the page, that block is skipped and
  * reported, while subsequent blocks continue to be evaluated. Safe to
@@ -215,17 +225,25 @@ if (!empty($overlay['add_components'])) {
       continue;
     }
 
-    // Locate anchor index.
-    $anchor_index = NULL;
-    foreach ($components as $i => $c) {
-      if (($c['uuid'] ?? NULL) === $anchor) {
-        $anchor_index = $i;
-        break;
-      }
+    // Locate anchor index. Special sentinel '__root__' means "insert at
+    // position 0" — used to seed a newly-created empty canvas_page where
+    // there are no existing components to anchor to. Works against a
+    // non-empty page too (prepends in front of whatever's currently first).
+    if ($anchor === '__root__') {
+      $anchor_index = -1;
     }
-    if ($anchor_index === NULL) {
-      fwrite(STDERR, "{$label}: anchor {$anchor} not found on the page — skipped.\n");
-      continue;
+    else {
+      $anchor_index = NULL;
+      foreach ($components as $i => $c) {
+        if (($c['uuid'] ?? NULL) === $anchor) {
+          $anchor_index = $i;
+          break;
+        }
+      }
+      if ($anchor_index === NULL) {
+        fwrite(STDERR, "{$label}: anchor {$anchor} not found on the page — skipped.\n");
+        continue;
+      }
     }
 
     // Build the normalized component records Canvas expects.
