@@ -1,0 +1,105 @@
+# Homepage — Section 6 (Final CTA: "Ready for a release you don't have to babysit?").
+#
+# From the approved Phase 3 homepage brief (docs/pl2/briefs/homepage.md §6).
+#
+# Transform-in-place strategy: repurpose the live §7 section wrapper
+# (0ea6dab8, "Designed for teams that rely on Drupal to scale.") into
+# the brief's Final CTA section. The live §8 ("The engineering debt
+# compounds. Start before it does.") is retired entirely — it was
+# off-brand generic-QA copy with a tab-group UI that doesn't serve the
+# new positioning and its statistics/tabs belong in /services or
+# /how-we-do-it rather than the homepage close.
+#
+# Three actions:
+#   1. component_inputs (4 patches):
+#      - cdcf92d7 (h2 heading): text -> brief heading, add center=true.
+#      - 9ffaa3e9 (body text): text -> brief body, add center=true.
+#      - 4a77e7a2 (primary CTA): text -> "Book a testing review",
+#        href -> "/contact-us?intent=testing-review".
+#      - c8aec9ce (flex-wrapper): align_x -> center. The existing
+#        space-between paired with a right-side canvas-image; once the
+#        image is removed, space-between strands content at the edges.
+#   2. add_components (1 insert, anchored on the primary CTA):
+#      micro-CTA button "Or start with the tools" ->
+#      /open-source-projects, style=bare, size=small,
+#      suffix_icon=arrow-right.
+#   3. remove_components (3 direct + 11 cascaded = 14 total):
+#      - 8d5cb51e  body_m kicker "Designed for teams..." (brief has no
+#        kicker).
+#      - cffe4d63  canvas-image right-rail photo (brief has no image).
+#      - d6f6a1e6  entire live §8 section — cascades to:
+#          ee3b2948 (h2 "The engineering debt compounds…")
+#          2b22c521 (body_l intro)
+#          6df8aa17 (flex-wrapper holding 3 statistics)
+#          ded2d746 (stat "10+ Years of Drupal")
+#          1151866f (stat "100% Open source")
+#          ded075f0 (stat "50+ Modules contributed")
+#          20618334 (tab-group)
+#          43c7a60d (tab "With ATK")
+#          257dac2e (tab panel body)
+#          95dde595 (tab "Without ATK")
+#          70618749 (tab panel body)
+#
+# Insertion anchor for the micro-CTA: 4a77e7a2 (the existing primary
+# CTA button). add_components runs BEFORE remove_components in the
+# apply script, so the surrounding sibling context is unchanged at
+# insertion time.
+#
+# Apply with:
+#   cd ~/Sites/pl-performantlabs.com.2/web
+#   ddev drush php:script ../scripts/apply-canvas-page.php \
+#     ../content-exports/homepage-section-6.overlay.yml dry-run
+# (Drop `dry-run` to actually save.)
+
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: bb5bbbb1-4a16-4b86-bbea-b215ab8096cf
+
+overlay:
+
+  # 1. Patch heading, body, primary CTA, and flex-wrapper layout.
+  component_inputs:
+
+    # §7 h2 -> brief §6 heading.
+    cdcf92d7-6c39-4bf4-89d8-edea7c64282b:
+      text: "Ready for a release you don't have to babysit?"
+      center: true
+
+    # §7 body -> brief §6 body (plain prose; no inline markup needed).
+    9ffaa3e9-8bb3-464e-ae44-2e9587b0b8cf:
+      text: "Book a 30-minute testing review with a senior engineer. We'll look at your current workflow, tell you honestly where autonomous healing would (and wouldn't) help, and leave you with a one-page writeup. No sales pitch. No obligation."
+      center: true
+
+    # §7 primary CTA -> brief §6 primary CTA.
+    4a77e7a2-8fa4-4f84-9eec-33ab67086733:
+      text: "Book a testing review"
+      href: "/contact-us?intent=testing-review"
+
+    # §7 flex-wrapper: drop space-between (only made sense with the
+    # now-removed right-rail image).
+    c8aec9ce-9b43-4fdf-9aa4-e9f2ad8cacf8:
+      align_x: center
+
+  # 2. Append micro-CTA: "Or start with the tools" (bare style).
+  add_components:
+    after_uuid: 4a77e7a2-8fa4-4f84-9eec-33ab67086733
+    components:
+
+      - uuid: 9a3c5b8f-7d4e-4c12-b6a9-3f2e1d8c5a40
+        component_id: sdc.dripyard_base.button
+        component_version: 3155d0acceef4faf
+        parent_uuid: c8aec9ce-9b43-4fdf-9aa4-e9f2ad8cacf8
+        slot: content
+        inputs:
+          text: "Or start with the tools"
+          href: "/open-source-projects"
+          style: bare
+          size: small
+          suffix_icon: arrow-right
+
+  # 3. Drop kicker heading, right-rail image, and retire live §8 entirely.
+  remove_components:
+    - 8d5cb51e-b6bd-41c7-a58b-1f718cd199b7
+    - cffe4d63-6c55-4948-9c1d-2ca1ba2c9507
+    - d6f6a1e6-fd58-4043-a59d-d5d3f659f95e
