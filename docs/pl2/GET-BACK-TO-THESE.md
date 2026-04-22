@@ -292,6 +292,45 @@ Only node 20 has the hand-authored hero body (the seven-block structure: eyebrow
 
 ---
 
+## G. Phase 3 homepage deferrals (2026-04-21)
+
+### G.1 — Trust bar (Section 2) logo sizes inconsistent
+
+**Observed:** After the PNG fix landed (commit `28e32eb`), the 6 trust-bar logos render but at wildly different visual sizes. Only the Tesla logo renders at the intended size; the five wordmark logos (CBS Interactive, DocuSign, Orange, Renesas Electronics, Robert Half) are over- or under-sized relative to it.
+
+**Cause:** Two compounding factors:
+
+1. The component CSS at `web/themes/contrib/dripyard_base/components/logo-grid/logo-item/logo-item.css` sizes images with `height: calc(var(--logo-grid-logo-size) - padding*2); width: auto;` — fixed height, width scales with intrinsic aspect ratio. At `--logo-grid-logo-size: 110px` (medium), effective img height is ~86–94px.
+2. The source SVGs have wildly different aspect ratios, which the PNG rasterization faithfully preserved:
+
+| Logo | Source aspect (w/h) | Rendered width at 90px height |
+|------|---------------------|-------------------------------|
+| Tesla | 0.77 (T-mark stacked above "TESLA") | ~70px — the "correct size" per the user |
+| Orange | 1.00 (square circle-mark) | ~90px |
+| DocuSign | 3.55 (wordmark only) | ~320px |
+| CBS Interactive | 5.19 (wordmark only) | ~467px |
+| Renesas | 6.00 (wordmark only) | ~540px |
+| Robert Half | 7.14 (wordmark only) | ~643px |
+
+The visual inconsistency is because Tesla is the only source that's a balanced mark+wordmark lockup. The other five are wordmark-only variants (typically used inline in body text), which sprawl very wide when placed in a height-constrained trust-bar slot.
+
+**Why deferred:** Requires asset sourcing + decision on the right design direction. Not blocking — the trust bar renders without errors; it just looks visually inconsistent.
+
+**Two fix options when resumed, cheapest → richest:**
+
+- a) **Normalize the PNG canvas.** Re-rasterize each SVG into a uniform box (e.g., 600×600 square or 600×300 landscape) with the logo scaled to fit and centered on transparent padding. All 6 PNGs end up identical pixel dimensions, so all 6 `<img>` slots in the grid end up the same rendered size. Tradeoff: the *visual weight* inside each slot varies — Tesla's lockup fills more of its square, Robert Half's wordmark becomes a thin band with whitespace above and below. ~15 minutes via ImageMagick through the bridge.
+- b) **Replace the sources with lockup variants.** Source or commission stacked/lockup SVGs for CBS Interactive, DocuSign, Orange, Renesas, and Robert Half that match Tesla's balance (mark + wordmark, roughly square or slight-portrait). Re-rasterize, re-seed media, re-apply the overlay. This is how Tesla/Apple/IBM-style trust bars usually look — every logo has the same visual weight. Tradeoff: slower, depends on finding canonical lockup SVGs Performant Labs is licensed to use.
+
+**Scope if (a):** ImageMagick rasterize loop inside DDEV + one-shot media-update script (update `width`/`height` on existing File entities, or replace the files on disk; the mids 53–58 stay pointing at the same files). Re-verify with the Tier 1 srcset-resolution check. No overlay change.
+
+**Scope if (b):** Asset acquisition (editorial) + rasterize + seed 6 replacement `image`-bundle media entities + apply a new overlay YAML targeting the new mids + delete old mids 53–58 (using `scripts/apply-canvas-page.php` `remove_components` flow is overkill here — just `ddev drush entity:delete media 53,54,55,56,57,58` once the new overlay is verified).
+
+**When to revisit:** Before homepage goes live for external review. The trust bar is a marketing credibility signal — inconsistent sizing undermines the "these brands trust us" effect.
+
+**Current state reference:** mids 53–58 point at PNGs in `public://client-logos-png/`. SVG sources preserved in `logos-staging/` (gitignored). See `content-exports/PHASE3-HANDOFF.md` "Seeded media entities" table for the full mid/filename/brand map.
+
+---
+
 ## Triage notes
 
 Items in sections A and B are low-medium stakes, defer to pre-launch or a dedicated a11y/visual pass.
@@ -302,4 +341,5 @@ Item D.3 is a small visual alignment issue revealed by Path 1 (Dripyard-owns-the
 Item D.4 is a site-wide breadcrumb verification task — fold into the next a11y pass or run as a scripted check before external review.
 Section E items are deferred article-detail-page issues. E.1 and E.3 are editorial decisions; E.2 is a minor visual imperfection; E.4 is a naming/config mismatch that will bite later content editors; E.5 lists unperformed audits.
 Section F tracks book-pages polish that was intentionally deferred from the Pass 2 functional landing. See `neonbyte-plan--book-pages.md` for the active work-stream. **F.2** is an editorial follow-up from Pass 3.A.3: five book roots need hero bodies authored so they don't render oddly under the new `node--book--landing.html.twig` template. **F.3** was closed out 2026-04-21 — mobile T3 sign-off passed via Playwright at 375×667; see `visual-regression-report.md` for details.
+Section G tracks Phase 3 homepage deferrals. **G.1** is the trust-bar logo-sizing inconsistency from 2026-04-21: only Tesla renders at the intended size because it's the only balanced lockup; the five wordmark-only sources sprawl horizontally. Promote before homepage goes live for external review.
 Nothing here is blocking the merge of the `/articles-2` work-stream or the article-detail improvements landed this session.
