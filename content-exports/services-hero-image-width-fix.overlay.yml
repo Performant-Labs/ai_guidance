@@ -1,0 +1,21 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: b2613e35-516b-4d7c-86b8-75eb8a5d5356
+
+# Fix for the hero-image canvas-image rendering empty.
+# Working logo-item-canvas passes `width: 400` to image-or-media and the
+# inner canvas:image renders correctly. My hero canvas-image passed no
+# outer width, which caused image-or-media to render the include with a
+# null width that canvas:image couldn't resolve to a srcset/src.
+#
+# The canvas-image component exposes a top-level `width` input (override);
+# setting it fixes the render without touching any theme code.
+#
+# Choice of 1200: the image's natural width is 2400 but the section it
+# sits in has content-width ~1200px max. srcset candidates scale off this.
+
+overlay:
+  component_inputs:
+    b4f7260c-aaaa-4024-ba23-d29a11bdc788:
+      width: 1200

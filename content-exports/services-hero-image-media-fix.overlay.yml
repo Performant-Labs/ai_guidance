@@ -1,0 +1,36 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: b2613e35-516b-4d7c-86b8-75eb8a5d5356
+
+# Follow-up to services-hero-image-width-fix.overlay.yml.
+#
+# Diagnosis: the canvas-image component's `image` prop must be a Media entity
+# reference on this site — raw {src, alt, width, height} silently renders
+# empty. Working example on this codebase (row for node/4, uuid
+# d5a57467-ab5e-4133-9faf-24c85b6ac5ca) stores:
+#   {"image":{"target_id":24},"width":550,"loading":"lazy"}
+#
+# Canvas routes the Media reference through its media adapter chain, which
+# ultimately populates image.src inside image-or-media.twig. The raw-src
+# shape matches `json-schema-definitions://canvas.module/image` loosely, but
+# the prop-resolution pipeline never runs because no media entity is attached,
+# so the image prop arrives at the twig empty.
+#
+# Fix: swap the raw-src object for {target_id: 59} — the Media we already
+# created in #87 (bundle=image, references fid=58 at public://2026-04/
+# services-hero-workflow.png, alt text already set on the media entity).
+# Keep `width: 1200` at the top level (also matches working-row shape;
+# image natural 2400w constrained to section content-width).
+#
+# (Homepage canvas-image on /, delta 28 uuid 27272da9, is stored in the same
+# broken raw-src shape — also renders empty. Out of scope for this pass.)
+
+overlay:
+  component_inputs:
+    b4f7260c-aaaa-4024-ba23-d29a11bdc788:
+      image:
+        target_id: 59
+      width: 1200
+      loading: lazy
+      border_radius: medium

@@ -1,0 +1,37 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: b2613e35-516b-4d7c-86b8-75eb8a5d5356
+
+# §1 hero image — add a canvas-image below the two CTAs, illustrating the
+# four-stage workflow (Flaky suite → Test healing → Drupal CI → Green deploys).
+# Layout 2 per 2026-04-22 decision: stacked beneath CTAs, full section-width.
+#
+# Backing asset: public://2026-04/services-hero-workflow.png (2400x880, PNG,
+# no srcset/AVIF blockers). Media entity: 'Services hero workflow (v1)'
+# mid=59 uuid=e497843a-62ac-4b44-b879-fadf6499b55d.
+#
+# Anchor: 4b7a1d95 is the secondary CTA button — inserting *after* it places
+# the image at the end of the section's `content` slot, which is the natural
+# render order for dripyard_base.section (content stacks vertically).
+#
+# loading=lazy matches homepage hero convention; image appears after the
+# CTAs and is plausibly below-the-fold on mobile.
+
+overlay:
+  add_components:
+    after_uuid: 4b7a1d95-2c68-4e30-afd1-7fb3e5c028a4
+    components:
+      - uuid: b4f7260c-aaaa-4024-ba23-d29a11bdc788
+        component_id: sdc.dripyard_base.canvas-image
+        component_version: 432a6a71fe725929
+        parent_uuid: 52ffa371-d22a-4a7c-a586-2aa4a3b9b349
+        slot: content
+        inputs:
+          loading: lazy
+          border_radius: medium
+          image:
+            src: /sites/default/files/2026-04/services-hero-workflow.png
+            alt: From flaky test suite to green Drupal deploys — four-stage workflow diagram
+            width: 2400
+            height: 880

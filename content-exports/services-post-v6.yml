@@ -1,0 +1,287 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: b2613e35-516b-4d7c-86b8-75eb8a5d5356
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  title:
+    -
+      value: Services
+  components:
+    -
+      parent_uuid: null
+      slot: null
+      uuid: 52ffa371-d22a-4a7c-a586-2aa4a3b9b349
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 52ffa371-d22a-4a7c-a586-2aa4a3b9b349
+      slot: content
+      uuid: a7c50e31-6d82-4f91-b4e7-19a3c8b6f05d
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Testing engagements for Drupal teams.","html_element":"h1","style":"h1","color":"loud","margin_top":"zero","margin_bottom":"small","center":true,"text_max_width":"800px"}'
+      label: null
+    -
+      parent_uuid: 52ffa371-d22a-4a7c-a586-2aa4a3b9b349
+      slot: content
+      uuid: 82f14b06-e93a-4c27-9b58-3d7e2a14f6cb
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003ETake over a broken test suite. Embed a senior testing engineer. Pilot AI-driven test healing. Audit accessibility. Every engagement is testing work \u2014 we don\u0027t build Drupal sites.\u003C\/p\u003E","style":"body_l","color":"soft","center":true,"text_max_width":"800px"}'
+      label: null
+    -
+      parent_uuid: 52ffa371-d22a-4a7c-a586-2aa4a3b9b349
+      slot: content
+      uuid: e3d9f208-7b41-4a6c-853f-6c1e9a24db87
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Book a testing review","href":"\/contact-us?intent=testing-review","style":"primary","size":"large","suffix_icon":"arrow-right"}'
+      label: null
+    -
+      parent_uuid: 52ffa371-d22a-4a7c-a586-2aa4a3b9b349
+      slot: content
+      uuid: 4b7a1d95-2c68-4e30-afd1-7fb3e5c028a4
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"See how we test this site","href":"\/how-we-built-this-site","style":"secondary","size":"large","suffix_icon":"arrow-right"}'
+      label: null
+    -
+      parent_uuid: 52ffa371-d22a-4a7c-a586-2aa4a3b9b349
+      slot: content
+      uuid: b4f7260c-aaaa-4024-ba23-d29a11bdc788
+      component_id: sdc.dripyard_base.canvas-image
+      component_version: 432a6a71fe725929
+      inputs: '{"loading":"lazy","border_radius":"medium","image":{"target_id":59},"width":1200}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: 561beca9-7fb2-4637-990e-f4dc346a0f7d
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 561beca9-7fb2-4637-990e-f4dc346a0f7d
+      slot: header
+      uuid: 58425299-d1f4-4743-a5dc-c713b5ab7764
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Four ways we engage.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"medium"}'
+      label: null
+    -
+      parent_uuid: 561beca9-7fb2-4637-990e-f4dc346a0f7d
+      slot: header
+      uuid: bac48626-113e-46ee-9b19-fa07a3b3deec
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EEvery engagement is testing work. We don\u0027t build Drupal sites \u2014 we test the ones you already have.\u003C\/p\u003E","style":"body_l","color":"soft"}'
+      label: null
+    -
+      parent_uuid: 561beca9-7fb2-4637-990e-f4dc346a0f7d
+      slot: content
+      uuid: d9c118eb-2a4c-4282-a3b4-ed42e8b3bb8f
+      component_id: sdc.dripyard_base.grid-wrapper
+      component_version: ba954a2accbc0f5c
+      inputs: '{"column_gutter":"large","row_gutter":"large","additional_classes":"grid-wrapper--2col"}'
+      label: null
+    -
+      parent_uuid: d9c118eb-2a4c-4282-a3b4-ed42e8b3bb8f
+      slot: grid_cells
+      uuid: 7b67d4d0-6531-4bbb-8573-f92e35fead0e
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Testing-suite takeover","body":"Your Playwright or Cypress suite is broken, flaky, or abandoned. We take it over, fix it, and either hand it back green or keep running it for you. Ships with ATK where useful.","theme":"light"}'
+      label: null
+    -
+      parent_uuid: d9c118eb-2a4c-4282-a3b4-ed42e8b3bb8f
+      slot: grid_cells
+      uuid: e5700743-ab67-445f-aa18-cb31e1a7f4c1
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Embedded testing engineer","body":"A senior testing engineer joins your team for the duration of a project or release. Pairs with your developers, owns the test strategy, ships with your release cadence.","theme":"light"}'
+      label: null
+    -
+      parent_uuid: d9c118eb-2a4c-4282-a3b4-ed42e8b3bb8f
+      slot: grid_cells
+      uuid: 9c6dfdf5-ea98-48fb-a86c-e7407568e6fa
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Autonomous-healing pilot","body":"We install the same Claude-agent workflow we run on this site, scoped to a slice of your existing test suite. You see how it behaves on real failures before committing to a broader rollout.","theme":"light"}'
+      label: null
+    -
+      parent_uuid: d9c118eb-2a4c-4282-a3b4-ed42e8b3bb8f
+      slot: grid_cells
+      uuid: 5f776a8b-87e0-4217-a9a4-61cdbb992331
+      component_id: sdc.dripyard_base.card-canvas
+      component_version: 552876d9540c5ead
+      inputs: '{"title":"Accessibility testing","body":"WCAG audits integrated into your CI pipeline. Not a one-time report \u2014 a continuous automated check that catches regressions before deploy.","theme":"light"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: 91a28c64-0d35-4b72-8e9c-f4a7b1d6e230
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"light"}'
+      label: null
+    -
+      parent_uuid: 91a28c64-0d35-4b72-8e9c-f4a7b1d6e230
+      slot: header
+      uuid: b5f3e810-7a4d-4c89-9b02-8c15d72fae6b
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Senior testing capacity, when you need more hands.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"medium"}'
+      label: null
+    -
+      parent_uuid: 91a28c64-0d35-4b72-8e9c-f4a7b1d6e230
+      slot: header
+      uuid: 2d6a9f47-c158-4e63-b07a-5e38f149c2d0
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EWhen a project needs ongoing embedded capacity beyond a single senior engineer, we extend the team with additional senior testing engineers through our nearshore delivery channel. Project leadership stays in North America. Engagements are sized to the work, not to a headcount target. Every engineer on this channel is Drupal-literate and testing-specialist \u2014 we don\u0027t route junior generalists through it.\u003C\/p\u003E","style":"body_l","color":"soft"}'
+      label: null
+    -
+      parent_uuid: 91a28c64-0d35-4b72-8e9c-f4a7b1d6e230
+      slot: content
+      uuid: f8c13b52-0497-4a6e-9d35-e6c24f80b517
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Talk about capacity","href":"\/contact-us?intent=nearshore-capacity","style":"primary","size":"large","suffix_icon":"arrow-right"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: 34e7b9a1-6d08-4f52-a9b4-c87e5f301d62
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: 34e7b9a1-6d08-4f52-a9b4-c87e5f301d62
+      slot: header
+      uuid: 7c5f0a83-e169-4d24-b7f6-a3b8c9e42501
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"These aren\u0027t services we\u0027re spinning up. They\u0027re how we already work.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"medium"}'
+      label: null
+    -
+      parent_uuid: 34e7b9a1-6d08-4f52-a9b4-c87e5f301d62
+      slot: header
+      uuid: 1b0e4c97-8a2f-4593-b64d-f5e79a012c83
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EEvery engagement ships with the tooling we built and maintain (ATK, Testor) and, where appropriate, the same autonomous-healing workflow we run against this site in CI. If you want to see it before you buy it, start with the how-we-built-this-site walkthrough.\u003C\/p\u003E","style":"body_l","color":"soft"}'
+      label: null
+    -
+      parent_uuid: 34e7b9a1-6d08-4f52-a9b4-c87e5f301d62
+      slot: content
+      uuid: d9a6f120-35c8-4e07-b428-6f91e4503c7a
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"See how we test this site","href":"\/how-we-built-this-site","style":"bare","size":"large","suffix_icon":"arrow-right"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: cb83f10b-2b3b-41a3-a002-b5f59f2b84a5
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: cb83f10b-2b3b-41a3-a002-b5f59f2b84a5
+      slot: header
+      uuid: bf33aa16-87a3-44ba-aa87-3896cdf41643
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"We Speak","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"medium"}'
+      label: null
+    -
+      parent_uuid: cb83f10b-2b3b-41a3-a002-b5f59f2b84a5
+      slot: content
+      uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      component_id: sdc.dripyard_base.logo-grid
+      component_version: ce3f2429d9631143
+      inputs: '{"logo_size":"medium","layout":"center","logo_background":"white"}'
+      label: null
+    -
+      parent_uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      slot: logo_grid_content
+      uuid: 137a803b-27ff-4deb-8b68-26f8728fc5fd
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"image":{"target_id":15}}'
+      label: null
+    -
+      parent_uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      slot: logo_grid_content
+      uuid: bcffaba2-574d-4ae4-b579-d7d720974073
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"image":{"target_id":13}}'
+      label: null
+    -
+      parent_uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      slot: logo_grid_content
+      uuid: 2fa49ecb-aca1-49b3-b614-d9b3ae1c2921
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"image":{"target_id":16}}'
+      label: null
+    -
+      parent_uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      slot: logo_grid_content
+      uuid: b0cf6ec2-a52d-4fc4-afb8-32aeecd2e06d
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"image":{"target_id":17}}'
+      label: null
+    -
+      parent_uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      slot: logo_grid_content
+      uuid: 13c06de6-f19f-46aa-a2f2-6e664542c3b4
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"image":{"target_id":22}}'
+      label: null
+    -
+      parent_uuid: dfb7f393-1f76-4e05-8c08-3fd33aff45da
+      slot: logo_grid_content
+      uuid: 336dc8ac-9cd7-4a3a-8026-7ae6ed56f911
+      component_id: sdc.dripyard_base.logo-item-canvas
+      component_version: 3c9e4bde3fcefeed
+      inputs: '{"image":{"target_id":23}}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: cbc9d4dd-d2df-4fad-a4a9-7fe773a9ee53
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"primary"}'
+      label: null
+    -
+      parent_uuid: cbc9d4dd-d2df-4fad-a4a9-7fe773a9ee53
+      slot: content
+      uuid: 509fc6e0-19f4-4339-b284-0c3d602a2fd8
+      component_id: sdc.dripyard_base.title-cta
+      component_version: fd6bbffa9b05aa5a
+      inputs: '{"title":"Not sure which shape fits? Start with a testing review.","button_text":"Book a testing review","button_href":"\/contact-us?intent=testing-review","button_style":"primary"}'
+      label: null
+  owner:
+    -
+      target_id: 0
+  created:
+    -
+      value: 1776392701
+  path:
+    -
+      alias: /services
+      langcode: en
