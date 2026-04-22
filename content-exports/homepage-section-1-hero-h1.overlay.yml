@@ -1,0 +1,115 @@
+# Homepage — Section 1 (Hero): fix the <h1> element.
+#
+# Task #38. The live hero currently renders its title via the
+# dripyard_base:title-cta composite SDC. title-cta.twig hardcodes
+# html_element: 'h2' when it includes the heading SDC, so even though
+# the page has heading_style: 'h1' (CSS class), the actual DOM element
+# is <h2 class="heading h1 …">. That means the document has zero <h1>
+# elements — a concrete accessibility + SEO regression flagged in the
+# §6 commit's known-follow-ups.
+#
+# Fix strategy (Approach A — content-layer swap):
+#   Replace the title-cta composite in hero_content with two sibling
+#   components already supported by the theme:
+#     1. sdc.dripyard_base.heading  (html_element=h1)
+#     2. sdc.dripyard_base.button   (primary CTA — same text/href)
+#   Both live under parent 1651496e (neonbyte:hero) / slot hero_content,
+#   same parent/slot the title-cta occupied. The hero's existing siblings
+#   (secondary CTA 9f99aaed and subhead text 8fdea902) are untouched.
+#
+# Why this over a subtheme SDC override of title-cta.twig (Approach B)?
+#   - No theme fork to maintain against upstream dripyard_base changes.
+#   - No new component version hashes to manage.
+#   - Uses only shipped, documented SDC props.
+#   - Reversible via overlay YAML alone.
+#
+# Visual parity notes (title-cta → plain heading + button):
+#   title-cta's container CSS applies:
+#       max-width: 800px;
+#       color: var(--theme-text-color-loud);
+#   The plain heading SDC supports both via props:
+#       text_max_width: '800px'   → sets --heading-max-width: 800px
+#       color: loud               → adds class color--loud
+#   Centering comes from the hero's align_x=center (.hero__content has
+#   text-align: center for the whole slot), so `center: true` on the
+#   heading is redundant but set for belt-and-suspenders. The hero's
+#   block-content wrapper already gaps children with --gap-large, so
+#   the button follows the heading with correct spacing without any
+#   extra flex wrapper.
+#
+# Button defaults match what title-cta's template effectively produced:
+#   - style: secondary       (title-cta's button_style input value)
+#   - size: large            (title-cta.twig: size: button_size|default('large'))
+#   - suffix_icon: arrow-right (title-cta.twig default)
+#   - no target / no prefix_icon
+#
+# Order in hero_content after apply (components are stored flat in the
+# page's components array; order matches slot-rendering order):
+#   1. new <h1> heading               (5e2a7b91)   ← this overlay adds
+#   2. new primary CTA button         (7f3b8c02)   ← this overlay adds
+#   3. secondary CTA button           (9f99aaed)   (unchanged)
+#   4. subhead text                   (8fdea902)   (unchanged)
+#
+# Anchor for add_components: 26a5ade6 (the doomed title-cta). The apply
+# script runs adds BEFORE removes, so new components land immediately
+# after 26a5ade6 and then 26a5ade6 vanishes — net effect is in-place
+# replacement. We intentionally anchor ON the thing being removed
+# rather than on the section wrapper 1651496e so the two new components
+# sit at the *top* of the slot (position 0), matching the visual role
+# of the title-cta they're replacing.
+#
+# Apply with:
+#   cd ~/Sites/pl-performantlabs.com.2/web
+#   ddev drush php:script ../scripts/apply-canvas-page.php \
+#     ../content-exports/homepage-section-1-hero-h1.overlay.yml dry-run
+# (Drop `dry-run` to actually save.)
+
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: bb5bbbb1-4a16-4b86-bbea-b215ab8096cf
+
+overlay:
+
+  # Add the new heading + primary CTA button right before the
+  # title-cta's removal below. Both are children of the neonbyte:hero
+  # wrapper in the hero_content slot.
+  add_components:
+    after_uuid: 26a5ade6-f2ac-44d1-8145-ed4e27c2b7f9
+    components:
+
+      # 1. Real <h1> heading — the whole point of this pass.
+      - uuid: 5e2a7b91-8c4d-4f63-9e08-1b3d7c5a2f40
+        component_id: sdc.dripyard_base.heading
+        component_version: 69804e3c5ff45a2b
+        parent_uuid: 1651496e-60ab-4ca8-893a-33fe15f89a43
+        slot: hero_content
+        inputs:
+          text: "Ship Drupal releases with confidence."
+          html_element: h1
+          style: h1
+          margin_top: zero
+          margin_bottom: zero
+          color: loud
+          center: true
+          text_max_width: '800px'
+
+      # 2. Primary CTA button — replicates title-cta's button_* inputs
+      #    with the template's effective defaults (size=large,
+      #    suffix_icon=arrow-right).
+      - uuid: 7f3b8c02-9d5e-4a74-af19-2c4e8d6b3a51
+        component_id: sdc.dripyard_base.button
+        component_version: 3155d0acceef4faf
+        parent_uuid: 1651496e-60ab-4ca8-893a-33fe15f89a43
+        slot: hero_content
+        inputs:
+          text: "Book a testing review"
+          href: "/contact-us?intent=testing-review"
+          style: secondary
+          size: large
+          suffix_icon: arrow-right
+
+  # Retire the title-cta composite now that its heading + CTA roles are
+  # covered by the two siblings above.
+  remove_components:
+    - 26a5ade6-f2ac-44d1-8145-ed4e27c2b7f9
