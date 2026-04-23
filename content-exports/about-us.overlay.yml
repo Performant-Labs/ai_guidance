@@ -110,7 +110,7 @@ overlay:
             margin_top: zero
             margin_bottom: small
             center: true
-            text_max_width: "900px"
+            text_max_width: "1000px"
 
         - uuid: a3c9e5d6-3f40-4c7d-be8f-9a0b1c2d3e4f
           parent_uuid: a1e7c3b4-1d2f-4a5b-9c6d-7e8f9a0b1c2d
