@@ -1,0 +1,223 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: e9578306-4047-4655-9949-03bf04d2ba4c
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  title:
+    -
+      value: 'About Us'
+  components:
+    -
+      parent_uuid: null
+      slot: null
+      uuid: a1e7c3b4-1d2f-4a5b-9c6d-7e8f9a0b1c2d
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: a1e7c3b4-1d2f-4a5b-9c6d-7e8f9a0b1c2d
+      slot: content
+      uuid: a2b8d4c5-2e3f-4b6c-ad7e-8f9a0b1c2d3e
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Drupal testing, done by the people who wrote the tools.","html_element":"h1","style":"h1","color":"loud","margin_top":"zero","margin_bottom":"small","center":true,"text_max_width":"1000px"}'
+      label: null
+    -
+      parent_uuid: a1e7c3b4-1d2f-4a5b-9c6d-7e8f9a0b1c2d
+      slot: content
+      uuid: a3c9e5d6-3f40-4c7d-be8f-9a0b1c2d3e4f
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003E\u003Cem\u003ENearly two decades of Drupal work, narrowed to testing. Author of Automated Testing Kit on drupal.org, and of Testor on GitHub. The dogfooding proof runs on this site, every night.\u003C\/em\u003E\u003C\/p\u003E","style":"body_l","color":"soft"}'
+      label: null
+    -
+      parent_uuid: a1e7c3b4-1d2f-4a5b-9c6d-7e8f9a0b1c2d
+      slot: content
+      uuid: a4d0f6e7-4051-4d8e-cf90-ab1c2d3e4f50
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Book a testing review","href":"\/contact-us?intent=testing-review","style":"primary","size":"large","suffix_icon":"arrow-right"}'
+      label: null
+    -
+      parent_uuid: a1e7c3b4-1d2f-4a5b-9c6d-7e8f9a0b1c2d
+      slot: content
+      uuid: a5e10708-5162-4e9f-d0a1-bc2d3e4f5061
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"See the site test itself","href":"\/how-we-built-this-site","style":"secondary","size":"large"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: b1f21819-6273-4fa0-e1b2-cd3e4f506172
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"light"}'
+      label: null
+    -
+      parent_uuid: b1f21819-6273-4fa0-e1b2-cd3e4f506172
+      slot: header
+      uuid: b202292a-7384-40b1-f2c3-de4f50617283
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"On drupal.org since 2006.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"small"}'
+      label: null
+    -
+      parent_uuid: b1f21819-6273-4fa0-e1b2-cd3e4f506172
+      slot: content
+      uuid: b3133a3b-8495-41c2-03d4-ef5061728394
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EPerformant Labs has been on drupal.org for nineteen-plus years \u2014 since the Drupal 4.7 era, before automated testing in Drupal was a distinct practice. The work narrowed to testing deliberately, as the rest of the community converged on Drupal\u0027s testing ecosystem (Behat, PHPUnit, then Playwright and Cypress). We stayed with it because it\u0027s where the hardest, most valuable Drupal problems live: not building the next site, but keeping the critical one working through twelve major-version upgrades.\u003C\/p\u003E","style":"body_m","color":"soft"}'
+      label: null
+    -
+      parent_uuid: b1f21819-6273-4fa0-e1b2-cd3e4f506172
+      slot: content
+      uuid: b4244b4c-95a6-42d3-14e5-f06172839405
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cul\u003E\n\u003Cli\u003E\u003Cstrong\u003E19+ years on drupal.org\u003C\/strong\u003E \u2014 \u003Ca href=\u0022https:\/\/www.drupal.org\/u\/aangel\u0022\u003Edrupal.org\/u\/aangel\u003C\/a\u003E (member for 19 years 9 months as of this writing).\u003C\/li\u003E\n\u003Cli\u003E\u003Cstrong\u003E9+ projects credited on drupal.org\u003C\/strong\u003E \u2014 the project list on the same profile covers Automated Testing Kit (and its D7 backport + Demo Recipe), Campaign Kit, Layout Builder Kit, the Drupal Quality Initiative, Audit Kit, AI Drush Tools, and Payment Stripe.\u003C\/li\u003E\n\u003Cli\u003E\u003Cstrong\u003EActive in the community\u003C\/strong\u003E \u2014 Bay Area Drupal Camp presenter on the Drupal Quality Initiative. See \u003Ca href=\u0022\/open-source-projects\u0022\u003Eour open-source projects\u003C\/a\u003E.\u003C\/li\u003E\n\u003C\/ul\u003E","style":"body_m","color":"soft"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+      slot: header
+      uuid: c266de6e-b7c8-44f5-3607-17283941526b
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Open source: the tools we wrote.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"small"}'
+      label: null
+    -
+      parent_uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+      slot: header
+      uuid: c377ef7f-c8d9-4506-4718-28394152637c
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003E\u003Cem\u003EAutomated Testing Kit and Testor aren\u0027t projects we contribute to \u2014 we author and maintain them. Both exist because specific testing gaps in the Drupal community weren\u0027t being filled by anything else.\u003C\/em\u003E\u003C\/p\u003E","style":"body_l","color":"soft"}'
+      label: null
+    -
+      parent_uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+      slot: content
+      uuid: c488f080-d9ea-4617-5829-394152637d8d
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Ch3\u003EAutomated Testing Kit (ATK)\u003C\/h3\u003E\n\u003Cp\u003E\u003Cem\u003EA library of tests and helper functions for end-to-end testing of Drupal sites, for both Playwright and Cypress.\u003C\/em\u003E\u003C\/p\u003E\n\u003Cp\u003EWhy it exists: every Drupal site re-writes the same twenty login \/ entity-reference \/ permissions tests in each new project. ATK ships them pre-written, together with the helper functions needed to make them reliable against Drupal\u0027s specific quirks. Maintained on drupal.org as a supported module, including a Drupal 7 backport and a demonstration recipe.\u003C\/p\u003E\n\u003Cp\u003E\u003Ca href=\u0022https:\/\/www.drupal.org\/project\/automated_testing_kit\u0022\u003E\u003Cstrong\u003Edrupal.org\/project\/automated_testing_kit\u003C\/strong\u003E\u003C\/a\u003E\u003C\/p\u003E\n\u003Ch3\u003ETestor\u003C\/h3\u003E\n\u003Cp\u003E\u003Cem\u003EA command-line companion to ATK for running tests outside the Drupal admin UI.\u003C\/em\u003E\u003C\/p\u003E\n\u003Cp\u003EWhy it exists: teams running ATK in CI and local dev want the same test suite accessible from a terminal, not only from the Drupal admin. Testor provides that surface. Maintained in the open on GitHub, updated through late 2025.\u003C\/p\u003E\n\u003Cp\u003E\u003Ca href=\u0022https:\/\/github.com\/Performant-Labs\/testor\u0022\u003E\u003Cstrong\u003Egithub.com\/Performant-Labs\/testor\u003C\/strong\u003E\u003C\/a\u003E\u003C\/p\u003E","style":"body_m","color":"soft"}'
+      label: null
+    -
+      parent_uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+      slot: content
+      uuid: c5990191-ea0b-4728-693a-4a5263748e9e
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003E\u003Cem\u003EOther OSS we ship.\u003C\/em\u003E Performant Labs also maintains \u003Ca href=\u0022https:\/\/www.drupal.org\/project\/campaign_kit\u0022\u003ECampaign Kit\u003C\/a\u003E, \u003Ca href=\u0022https:\/\/www.drupal.org\/project\/layout_builder_kit\u0022\u003ELayout Builder Kit\u003C\/a\u003E, the \u003Ca href=\u0022https:\/\/www.drupal.org\/project\/dqi\u0022\u003EDrupal Quality Initiative\u003C\/a\u003E, \u003Ca href=\u0022https:\/\/www.drupal.org\/project\/audit_kit\u0022\u003EAudit Kit\u003C\/a\u003E, \u003Ca href=\u0022https:\/\/www.drupal.org\/project\/ai_drush_tools\u0022\u003EAI Drush Tools\u003C\/a\u003E, and \u003Ca href=\u0022https:\/\/www.drupal.org\/project\/payment_stripe\u0022\u003EPayment Stripe\u003C\/a\u003E on drupal.org.\u003C\/p\u003E","style":"body_s","color":"soft"}'
+      label: null
+    -
+      parent_uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+      slot: content
+      uuid: c6aa12a2-fb1c-4839-7a4b-5b637485a0af
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Who we are.","html_element":"h3","style":"h3","color":"primary","margin_top":"medium","margin_bottom":"small"}'
+      label: null
+    -
+      parent_uuid: c155cd5d-a6b7-43e4-25f6-06172839415a
+      slot: content
+      uuid: c7bb23b3-0c2d-493a-8b5c-6c748596b1b0
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EPerformant Labs is led by \u003Cstrong\u003EAndr\u00e9 Angelantoni\u003C\/strong\u003E (drupal.org \u003Ca href=\u0022https:\/\/www.drupal.org\/u\/aangel\u0022\u003E\u003Ccode\u003Eaangel\u003C\/code\u003E\u003C\/a\u003E), author of Automated Testing Kit and maintainer of the testing-specific Drupal projects linked above. A small team of senior testing engineers work alongside him on the autonomous-healing workflow you see running on this site.\u003C\/p\u003E","style":"body_m","color":"soft"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: d1cc34c4-1d3e-4a4b-9c6d-7d8596a7c2c1
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"light"}'
+      label: null
+    -
+      parent_uuid: d1cc34c4-1d3e-4a4b-9c6d-7d8596a7c2c1
+      slot: header
+      uuid: d2dd45d5-2e4f-4b5c-ad7e-8e96a7b8d3d2
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"We test what we ship.","html_element":"h2","style":"h2","color":"primary","margin_top":"zero","margin_bottom":"small"}'
+      label: null
+    -
+      parent_uuid: d1cc34c4-1d3e-4a4b-9c6d-7d8596a7c2c1
+      slot: content
+      uuid: d3ee56e6-3f50-4c6d-be8f-9fa7b8c9e4e3
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EThis site runs the same autonomous-healing workflow we offer our clients. Every night, Claude agents re-run the Playwright suite against the live site, triage failures, author fixes as pull requests, and file issues when the failure is in the site rather than the test. The commit history is public. The dashboard is public. Every heal is a verifiable fact, not a case study.\u003C\/p\u003E","style":"body_m","color":"soft"}'
+      label: null
+    -
+      parent_uuid: d1cc34c4-1d3e-4a4b-9c6d-7d8596a7c2c1
+      slot: content
+      uuid: d4ff67f7-4061-4d7e-cf90-a0b8c9d0f5f4
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Read how the workflow is wired","href":"\/how-we-built-this-site","style":"primary","size":"large","suffix_icon":"arrow-right"}'
+      label: null
+    -
+      parent_uuid: null
+      slot: null
+      uuid: e1007808-5172-4e8f-d0a1-b1c9d0e1a605
+      component_id: sdc.dripyard_base.section
+      component_version: e6079b189d228dad
+      inputs: '{"section_width":"max-width","content_width":"max-width","margin_top":"zero","margin_bottom":"zero","padding_top":"large","padding_bottom":"large","theme":"white"}'
+      label: null
+    -
+      parent_uuid: e1007808-5172-4e8f-d0a1-b1c9d0e1a605
+      slot: content
+      uuid: e2118919-6283-4f90-e1b2-c2d0e1f2b716
+      component_id: sdc.dripyard_base.heading
+      component_version: 69804e3c5ff45a2b
+      inputs: '{"text":"Want to talk testing?","html_element":"h2","style":"h2","color":"loud","margin_top":"zero","margin_bottom":"small","center":true}'
+      label: null
+    -
+      parent_uuid: e1007808-5172-4e8f-d0a1-b1c9d0e1a605
+      slot: content
+      uuid: e3229a2a-7394-40a1-f2c3-d3e1f203c827
+      component_id: sdc.dripyard_base.text
+      component_version: 05732cb45a35eac6
+      inputs: '{"text":"\u003Cp\u003EIf any of this sounds like the kind of Drupal testing partner you\u0027re looking for \u2014 start here.\u003C\/p\u003E","style":"body_l","color":"soft"}'
+      label: null
+    -
+      parent_uuid: e1007808-5172-4e8f-d0a1-b1c9d0e1a605
+      slot: content
+      uuid: e433ab3b-84a5-41b2-03d4-e4f20314d938
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"Book a testing review","href":"\/contact-us?intent=testing-review","style":"primary","size":"large","suffix_icon":"arrow-right"}'
+      label: null
+    -
+      parent_uuid: e1007808-5172-4e8f-d0a1-b1c9d0e1a605
+      slot: content
+      uuid: e544bc4c-95b6-42c3-14e5-f5031425ea49
+      component_id: sdc.dripyard_base.button
+      component_version: 3155d0acceef4faf
+      inputs: '{"text":"See the testing menu","href":"\/services","style":"secondary","size":"large"}'
+      label: null
+  owner:
+    -
+      target_id: 1
+  created:
+    -
+      value: 1776902945
+  path:
+    -
+      alias: /about-us
+      langcode: en
