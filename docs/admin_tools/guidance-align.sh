@@ -120,6 +120,12 @@ Here is the Analysis Report:
 $REPORT
 
 Please execute the requested actions according to the AI Guidance Alignment Protocol.
+
+**IMPORTANT**: Execute ONLY the actions specified in the "User Decision" above. 
+- If the decision is "all", execute every suggestion in the report.
+- If the decision lists specific numbers (e.g. "1 pull, 3 push"), execute ONLY those items.
+- Do NOT act on any items not explicitly selected in the User Decision.
+
 - pull: Copy from Source to Target.
 - push: Copy from Target to Source.
 - merge: Harmonize contents bidirectionally.
