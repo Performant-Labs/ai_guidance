@@ -134,5 +134,5 @@ if [ -n "$GEMINI_MODEL" ]; then
     GEMINI_CMD="$GEMINI_CMD -m \"$GEMINI_MODEL\""
 fi
 
-# Invoke Gemini in interactive mode
-eval "$GEMINI_CMD -i \"\$PROMPT\""
+# Invoke Gemini in non-interactive (headless) mode
+eval "$GEMINI_CMD -p \"\$PROMPT\""
