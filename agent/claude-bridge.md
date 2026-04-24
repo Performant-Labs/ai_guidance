@@ -19,20 +19,29 @@ If the agent only needs to read or write files in the repo, use the file tools d
 
 | Path | Role |
 |------|------|
-| `scripts/claude-bridge.sh` | The watcher. Run on the host. |
-| `.claude-bridge/` | Spool directory. Gitignored. Created on first run. |
-| `.claude-bridge/req-<id>.sh` | Request script from the agent. Deleted after execution. |
-| `.claude-bridge/res-<id>.out` | Combined stdout + stderr from the request. |
-| `.claude-bridge/res-<id>.exit` | The request's exit code (single integer, newline-terminated). |
+| `~/Sites/ai_guidance/agent/claude-bridge.sh` | The watcher. Canonical home — one copy, used across every project. |
+| `<repo>/.claude-bridge/` | Per-repo spool directory. Gitignored. Created on first run. |
+| `<repo>/.claude-bridge/req-<id>.sh` | Request script from the agent. Deleted after execution. |
+| `<repo>/.claude-bridge/res-<id>.out` | Combined stdout + stderr from the request. |
+| `<repo>/.claude-bridge/res-<id>.exit` | The request's exit code (single integer, newline-terminated). |
 
 `<id>` is a free-form identifier the agent chooses — typically a short descriptor plus a timestamp, e.g. `cr-logogrid-1776997521`.
 
+**Gitignore requirement:** each repo that uses the bridge must list `.claude-bridge/` in its `.gitignore`. If it's missing, a stray `git add -A` or `git add .` will sweep up pending request files.
+
 ## Start the bridge
 
-From the repo root, in a dedicated terminal:
+The watcher is a single script in the canonical ai_guidance location; you do not copy it into each project. In a dedicated terminal, `cd` to the target repo and invoke it:
 
 ```bash
-./scripts/claude-bridge.sh
+cd ~/Projects/<repo>
+~/Sites/ai_guidance/agent/claude-bridge.sh
+```
+
+Or pass the target explicitly as the first argument:
+
+```bash
+~/Sites/ai_guidance/agent/claude-bridge.sh ~/Projects/<repo>
 ```
 
 You should see:
