@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# AI Guidance Alignment Tool (Deterministic + Gemini Execution)
+# AI Guidance Alignment Tool (Gemini-Powered)
 # Follows the AI Guidance Alignment Protocol
 
 # --- Color Definitions ---
@@ -17,7 +17,6 @@ if [ -f "$CONFIG_FILE" ]; then
     source "$CONFIG_FILE"
 else
     # Fallback defaults
-    GEMINI_MODEL="gemini-2.0-flash-thinking-exp"
     CANONICAL_SOURCE="$HOME/Sites/ai_guidance"
 fi
 
@@ -46,14 +45,12 @@ fi
 
 if [ ! -d "$TARGET_DIR" ]; then
     echo -e "${RED}🚨 Error: Target directory $TARGET_DIR not found.${NC}"
-    echo -e "${YELLOW}Note: This tool is designed to sync the 'docs/ai_guidance' subfolder.${NC}"
     exit 1
 fi
 
-echo -e "${CYAN}🔍 Running Deterministic Alignment Analysis...${NC}"
-echo -e "${CYAN}Targeting: ${NC}${YELLOW}docs/ai_guidance/${NC}"
+echo -e "${CYAN}🔍 Running AI Guidance Alignment Analysis...${NC}"
 
-# Run comparison
+# Run deterministic comparison
 DIFF_OUTPUT=$(diff -rq "$TARGET_DIR" "$SOURCE_DIR" --exclude='.git' 2>&1)
 
 if [ -z "$DIFF_OUTPUT" ]; then
@@ -70,6 +67,7 @@ while read -r line; do
     
     ACTION=""
     REL_PATH_IN_TARGET=""
+    COLOR=$NC
     
     if [[ $line == Only\ in\ $TARGET_DIR* ]]; then
         DIR_PART=$(echo "$line" | cut -d: -f1 | sed "s|Only in ||")
@@ -90,7 +88,6 @@ while read -r line; do
         COLOR=$MAGENTA
     fi
     
-    # Prepend 'docs/ai_guidance/' to the path for absolute clarity
     DISPLAY_PATH="docs/ai_guidance/$REL_PATH_IN_TARGET"
     ITEM="$i. $DISPLAY_PATH — [Suggestion: $ACTION]"
     echo -e "  $i. $DISPLAY_PATH — [Suggestion: ${COLOR}${ACTION}${NC}]"
@@ -109,8 +106,9 @@ if [ -z "$USER_INPUT" ] || [[ "$USER_INPUT" == "quit" ]] || [[ "$USER_INPUT" == 
     exit 0
 fi
 
-# Hand off the SPECIFIC DECISION to Gemini for execution
-PROMPT="I have performed a deterministic alignment check. 
+# Prepare the prompt using a heredoc to avoid syntax errors with special characters
+read -r -d '' PROMPT <<EOF
+I have performed a deterministic alignment check. 
 Target: $TARGET_DIR
 Source: $SOURCE_DIR
 
@@ -127,7 +125,14 @@ Please execute the requested actions.
 
 **Special Intelligence Rule**: If you detect 'Near-Matches' (e.g., the same file with different casing or separators), recommend standardizing on the Source filename and merging the content into that single file.
 
-Do not perform any new analysis; just execute the plan based on the report provided."
+Do not perform any new analysis; just execute the plan based on the report provided.
+EOF
 
-# Invoke Gemini in interactive mode (YOLO mode to avoid permission prompts)
-gemini -y -m "$GEMINI_MODEL" -i "$PROMPT"
+# Construct gemini command
+GEMINI_CMD="gemini -y"
+if [ -n "$GEMINI_MODEL" ]; then
+    GEMINI_CMD="$GEMINI_CMD -m \"$GEMINI_MODEL\""
+fi
+
+# Invoke Gemini in interactive mode
+eval "$GEMINI_CMD -i \"\$PROMPT\""
