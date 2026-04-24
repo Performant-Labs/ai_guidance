@@ -50,6 +50,20 @@ if [ ! -d "$TARGET" ]; then
   exit 1
 fi
 
+# Target must be a git repo. This catches the common footgun of invoking
+# the watcher from the home directory without cd'ing first — the watcher
+# would otherwise happily poll ~/.claude-bridge/ and miss every project
+# request. If you genuinely need to run against a non-repo dir, create an
+# empty .git/ first (not recommended) or bypass by editing this check.
+if ! git -C "$TARGET" rev-parse --git-dir > /dev/null 2>&1; then
+  echo -e "${RED}✗ Error:${NC} target is not a git repository: $TARGET" >&2
+  echo -e "  ${GRAY}(no .git/ found; probably means you ran this from \$HOME${NC}" >&2
+  echo -e "  ${GRAY} instead of cd'ing into your project first.)${NC}" >&2
+  echo -e "  ${GRAY}Usage:${NC} cd <repo> && $(basename "$0")" >&2
+  echo -e "  ${GRAY}   or:${NC} $(basename "$0") <path-to-repo>" >&2
+  exit 1
+fi
+
 REPO_ROOT="$(cd "$TARGET" && pwd)"
 BRIDGE="$REPO_ROOT/.claude-bridge"
 mkdir -p "$BRIDGE"
