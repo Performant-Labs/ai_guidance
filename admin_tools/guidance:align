@@ -95,11 +95,28 @@ def main():
         elif line.startswith("Files ") and " differ" in line:
             # Files /target/file and /source/file differ
             parts = line.split()
-            if len(parts) >= 2:
+            if len(parts) >= 4:
                 file1 = parts[1]
+                file2 = parts[3]
                 rel_path = os.path.relpath(file1, target_dir)
-            action = "merge"
-            color = "magenta"
+                try:
+                    target_mtime = os.path.getmtime(file1)
+                    source_mtime = os.path.getmtime(file2)
+                    if source_mtime > target_mtime:
+                        action = "pull"
+                        color = "yellow"
+                    elif target_mtime > source_mtime:
+                        action = "push"
+                        color = "green"
+                    else:
+                        action = "merge"
+                        color = "magenta"
+                except OSError:
+                    action = "merge"
+                    color = "magenta"
+            else:
+                action = "merge"
+                color = "magenta"
         else:
             continue
 
