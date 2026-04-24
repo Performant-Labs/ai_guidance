@@ -1,0 +1,155 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# dependencies = ["rich"]
+# ///
+
+import os
+import sys
+import subprocess
+
+sys.path.insert(0, os.path.dirname(__file__))
+
+from ai_common import (
+    console, parse_args, run_preflight_checks, print_header, load_config, run_gemini_agent
+)
+
+def main():
+    load_config()
+    args = parse_args("Run the AI Guidance Alignment Tool.")
+    model = args.model
+
+    run_preflight_checks()
+
+    canonical_source = os.environ.get("CANONICAL_SOURCE")
+    if not canonical_source:
+        console.print("[bold red]🚨 Error: CANONICAL_SOURCE is not set in guidance-align.env[/bold red]")
+        sys.exit(1)
+
+    project_root = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+    if project_root.returncode != 0:
+        console.print("[bold red]🚨 Error: Must be run inside a git repository.[/bold red]")
+        sys.exit(1)
+    
+    project_root = project_root.stdout.strip()
+    target_dir = os.path.join(project_root, "docs", "ai_guidance")
+
+    if not os.path.isdir(canonical_source):
+        console.print(f"[bold red]🚨 Error: Source repository not found at {canonical_source}[/bold red]")
+        sys.exit(1)
+    if not os.path.isdir(target_dir):
+        console.print(f"[bold red]🚨 Error: Target directory {target_dir} not found.[/bold red]")
+        sys.exit(1)
+
+    print_header("align", model)
+
+    console.print("[cyan]🔍 Running AI Guidance Alignment Analysis...[/cyan]")
+
+    # Run deterministic comparison
+    diff_res = subprocess.run(
+        ["diff", "-rq", target_dir, canonical_source, "--exclude=.git"],
+        capture_output=True, text=True
+    )
+
+    diff_output = diff_res.stdout.strip()
+
+    if not diff_output and diff_res.returncode == 0:
+        console.print("[bold green]✅ Everything is in sync.[/bold green]")
+        sys.exit(0)
+
+    console.print("[bold yellow]Divergences Found (Relative to Project Root):[/bold yellow]")
+    
+    report_lines = []
+    i = 1
+
+    for line in diff_output.splitlines():
+        if not line:
+            continue
+
+        action = ""
+        color = ""
+        rel_path = ""
+
+        if line.startswith(f"Only in {target_dir}"):
+            # Only in target_dir/path: filename
+            parts = line.split(":", 1)
+            dir_part = parts[0].replace("Only in ", "").strip()
+            file_part = parts[1].strip()
+            if dir_part == target_dir:
+                rel_path = file_part
+            else:
+                rel_path = f"{os.path.relpath(dir_part, target_dir)}/{file_part}"
+            action = "push"
+            color = "green"
+
+        elif line.startswith(f"Only in {canonical_source}"):
+            parts = line.split(":", 1)
+            dir_part = parts[0].replace("Only in ", "").strip()
+            file_part = parts[1].strip()
+            if dir_part == canonical_source:
+                rel_path = file_part
+            else:
+                rel_path = f"{os.path.relpath(dir_part, canonical_source)}/{file_part}"
+            action = "pull"
+            color = "yellow"
+
+        elif line.startswith("Files ") and " differ" in line:
+            # Files /target/file and /source/file differ
+            parts = line.split()
+            if len(parts) >= 2:
+                file1 = parts[1]
+                rel_path = os.path.relpath(file1, target_dir)
+            action = "merge"
+            color = "magenta"
+        else:
+            continue
+
+        display_path = f"docs/ai_guidance/{rel_path}"
+        item = f"{i}. {display_path} — [Suggestion: {action}]"
+        console.print(f"  {i}. {display_path} — [Suggestion: [{color}]{action}[/{color}]]")
+        report_lines.append(item)
+        i += 1
+
+    report_text = "\n".join(report_lines)
+
+    console.print("[yellow]------------------------------------------------[/yellow]")
+    console.print("How should we proceed? (Apply all suggestions [all] / Select individual options [provide # then <pull|push|merge|skip>] / [quit])")
+    
+    try:
+        user_input = input("> ").strip()
+    except EOFError:
+        user_input = ""
+
+    if not user_input or user_input.lower() in ("quit", "q"):
+        console.print("Aborted.")
+        sys.exit(0)
+
+    prompt = f"""I have performed a deterministic alignment check. 
+Target: {target_dir}
+Source: {canonical_source}
+
+User Decision: {user_input}
+
+Here is the Analysis Report:
+{report_text}
+
+Please execute the requested actions according to the AI Guidance Alignment Protocol.
+
+**IMPORTANT**: Execute ONLY the actions specified in the "User Decision" above. 
+- If the decision is "all", execute every suggestion in the report.
+- If the decision lists specific numbers (e.g. "1 pull, 3 push"), execute ONLY those items.
+- Do NOT act on any items not explicitly selected in the User Decision.
+
+- pull: Copy from Source to Target.
+- push: Copy from Target to Source.
+- merge: Harmonize contents bidirectionally.
+- skip: Do nothing.
+
+**Near-Matches**: If you detect the same file with different casing or separators, standardize on the Source filename and merge the content.
+
+Just execute the plan based on this report."""
+
+    run_gemini_agent(prompt, model)
+
+
+if __name__ == "__main__":
+    main()

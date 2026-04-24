@@ -8,16 +8,18 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 
 from ai_common import (
-    run, ask_claude, console, Panel,
+    run, ask_gemini, console, Panel,
     PREFIX, REMOTE, BRANCH,
-    print_header, check_dirty_tree, parse_args,
+    run_preflight_checks, print_header, check_dirty_tree, parse_args, load_config
 )
 
 
 def main():
+    load_config()
     args = parse_args("Push local changes to the remote ai_guidance subtree.")
     model = args.model
 
+    run_preflight_checks()
     print_header("push", model)
 
     if not check_dirty_tree("push local changes to", model):

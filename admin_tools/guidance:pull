@@ -8,16 +8,18 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 
 from ai_common import (
-    run, ask_claude, console, Panel,
+    run, ask_gemini, console, Panel,
     PREFIX, REMOTE, BRANCH,
-    print_header, check_dirty_tree, parse_args,
+    run_preflight_checks, print_header, check_dirty_tree, parse_args, load_config
 )
 
 
 def main():
+    load_config()
     args = parse_args("Pull updates from the remote ai_guidance subtree.")
     model = args.model
 
+    run_preflight_checks()
     print_header("pull", model)
 
     if not check_dirty_tree("pull updates from", model):
@@ -45,7 +47,7 @@ def main():
     diff = run(f"git diff {head_before} HEAD -- {PREFIX}").stdout.strip()
     if diff:
         console.print("\n[dim]Summarizing changes…[/dim]")
-        summary = ask_claude(
+        summary = ask_gemini(
             f"Summarize the following git diff for the '{PREFIX}' directory in 2-3 plain English sentences. "
             f"Focus on what actually changed conceptually, not file names or line counts.\n\n{diff[:3000]}",
             model=model,
