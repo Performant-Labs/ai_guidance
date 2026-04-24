@@ -129,7 +129,7 @@ Do not perform any new analysis; just execute the plan based on the report provi
 EOF
 
 # Construct gemini command
-GEMINI_CMD="gemini -y"
+GEMINI_CMD="gemini -y --approval-mode yolo"
 if [ -n "$GEMINI_MODEL" ]; then
     GEMINI_CMD="$GEMINI_CMD -m \"$GEMINI_MODEL\""
 fi
