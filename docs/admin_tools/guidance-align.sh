@@ -132,7 +132,7 @@ EOF
 )
 
 # Construct gemini command
-GEMINI_CMD="gemini -y --approval-mode yolo"
+GEMINI_CMD="gemini --approval-mode yolo"
 if [ -n "$GEMINI_MODEL" ]; then
     GEMINI_CMD="$GEMINI_CMD -m \"$GEMINI_MODEL\""
 fi
