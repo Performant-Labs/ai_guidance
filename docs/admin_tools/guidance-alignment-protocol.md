@@ -15,7 +15,11 @@ Before proposing changes, perform a full deterministic comparison:
 
 ## 3. Inference & Strategy
 Analyze the differences using the following logic:
-- **New Local Items**: If a file exists in the project but not in the Source of Truth, suggest **pushing it upstream** to `~/Sites/ai_guidance`. The default assumption is that all documentation improvements should be shared globally.
+- **New Global Standards (pull)**: File in Source but missing in Target.
+- **New Local Contributions (push)**: File in Target but missing in Source.
+- **Diverged Documents (merge)**: File exists in both but content differs.
+- **Near-Matches (Rename/Consolidate)**: If a file exists in both but with different casing or separators (e.g., `PLAN_INSTRUCTIONS.md` vs `plan-instructions.md`), do NOT treat them as separate pull/push items. Instead, suggest **consolidating** them into the canonical Source filename.
+- **Obsolete Items (skip)**: Temp files, local-only logs, etc.
 - **Global Updates (Source to Target)**: If a file is missing or outdated compared to the Source of Truth, suggest **pulling/updating** it locally.
 - **Diverged Files**: If both have been edited, identify if the local edits should be merged into the global standard or if the local version should be updated from the global standard.
 

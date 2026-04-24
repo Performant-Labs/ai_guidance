@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# AI Guidance Alignment Tool (Gemini-Powered)
+# AI Guidance Alignment Tool (Deterministic + Gemini Execution)
 # Follows the AI Guidance Alignment Protocol
 
 # --- Color Definitions ---
@@ -25,8 +25,6 @@ SOURCE_DIR="$CANONICAL_SOURCE"
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 
 # --- Pre-flight Checks ---
-
-# 1. Check for Project Root
 if [ -z "$PROJECT_ROOT" ]; then
     echo -e "${RED}🚨 Error: Must be run inside a git repository.${NC}"
     exit 1
@@ -35,28 +33,27 @@ fi
 TARGET_DIR="$PROJECT_ROOT/docs/ai_guidance"
 PROTOCOL_FILE="$PROJECT_ROOT/docs/admin_tools/guidance-alignment-protocol.md"
 
-# 2. Check for gemini CLI
 if ! command -v gemini &> /dev/null; then
     echo -e "${RED}🚨 Error: 'gemini' CLI is not installed.${NC}"
-    echo -e "${YELLOW}Setup Instructions:${NC}"
-    echo "  1. Install via Homebrew: ${CYAN}brew install geminicli${NC}"
-    echo "  2. Authenticate: ${CYAN}gemini login${NC}"
-    echo ""
+    echo -e "${YELLOW}Setup Instructions: brew install geminicli && gemini login${NC}"
     exit 1
 fi
 
-# 3. Check for Source Repository
 if [ ! -d "$SOURCE_DIR" ]; then
     echo -e "${RED}🚨 Error: Source repository not found at $SOURCE_DIR${NC}"
-    echo -e "${YELLOW}Setup Instructions:${NC}"
-    echo -e "  ${CYAN}mkdir -p ~/Sites && cd ~/Sites && git clone git@github.com:Performant-Labs/ai_guidance.git${NC}"
-    echo ""
     exit 1
 fi
 
-echo -e "${CYAN}🔍 Running AI Guidance Alignment Analysis...${NC}"
+if [ ! -d "$TARGET_DIR" ]; then
+    echo -e "${RED}🚨 Error: Target directory $TARGET_DIR not found.${NC}"
+    echo -e "${YELLOW}Note: This tool is designed to sync the 'docs/ai_guidance' subfolder.${NC}"
+    exit 1
+fi
 
-# Run deterministic comparison
+echo -e "${CYAN}🔍 Running Deterministic Alignment Analysis...${NC}"
+echo -e "${CYAN}Targeting: ${NC}${YELLOW}docs/ai_guidance/${NC}"
+
+# Run comparison
 DIFF_OUTPUT=$(diff -rq "$TARGET_DIR" "$SOURCE_DIR" --exclude='.git' 2>&1)
 
 if [ -z "$DIFF_OUTPUT" ]; then
@@ -65,37 +62,38 @@ if [ -z "$DIFF_OUTPUT" ]; then
 fi
 
 # --- Generate the Protocol-compliant Numbered List ---
-echo -e "${YELLOW}Divergences Found:${NC}"
+echo -e "${YELLOW}Divergences Found (Relative to Project Root):${NC}"
 REPORT=""
 i=1
 while read -r line; do
     [ -z "$line" ] && continue
     
     ACTION=""
-    REL_PATH=""
-    COLOR=$NC
+    REL_PATH_IN_TARGET=""
     
     if [[ $line == Only\ in\ $TARGET_DIR* ]]; then
         DIR_PART=$(echo "$line" | cut -d: -f1 | sed "s|Only in ||")
         FILE_PART=$(echo "$line" | cut -d: -f2 | sed 's|^ ||')
-        [ "$DIR_PART" == "$TARGET_DIR" ] && REL_PATH="$FILE_PART" || REL_PATH="${DIR_PART#$TARGET_DIR/}/$FILE_PART"
+        [ "$DIR_PART" == "$TARGET_DIR" ] && REL_PATH_IN_TARGET="$FILE_PART" || REL_PATH_IN_TARGET="${DIR_PART#$TARGET_DIR/}/$FILE_PART"
         ACTION="push"
         COLOR=$GREEN
     elif [[ $line == Only\ in\ $SOURCE_DIR* ]]; then
         DIR_PART=$(echo "$line" | cut -d: -f1 | sed "s|Only in ||")
         FILE_PART=$(echo "$line" | cut -d: -f2 | sed 's|^ ||')
-        [ "$DIR_PART" == "$SOURCE_DIR" ] && REL_PATH="$FILE_PART" || REL_PATH="${DIR_PART#$SOURCE_DIR/}/$FILE_PART"
+        [ "$DIR_PART" == "$SOURCE_DIR" ] && REL_PATH_IN_TARGET="$FILE_PART" || REL_PATH_IN_TARGET="${DIR_PART#$SOURCE_DIR/}/$FILE_PART"
         ACTION="pull"
         COLOR=$YELLOW
     elif [[ $line == Files\ *differ ]]; then
         FILE1=$(echo "$line" | awk '{print $2}')
-        REL_PATH=${FILE1#$TARGET_DIR/}
+        REL_PATH_IN_TARGET=${FILE1#$TARGET_DIR/}
         ACTION="merge"
         COLOR=$MAGENTA
     fi
     
-    ITEM="$i. $REL_PATH — [Suggestion: $ACTION]"
-    echo -e "  $REL_PATH — [Suggestion: ${COLOR}${ACTION}${NC}]"
+    # Prepend 'docs/ai_guidance/' to the path for absolute clarity
+    DISPLAY_PATH="docs/ai_guidance/$REL_PATH_IN_TARGET"
+    ITEM="$i. $DISPLAY_PATH — [Suggestion: $ACTION]"
+    echo -e "  $i. $DISPLAY_PATH — [Suggestion: ${COLOR}${ACTION}${NC}]"
     REPORT+="$ITEM\n"
     ((i++))
 done <<< "$DIFF_OUTPUT"
@@ -126,6 +124,8 @@ Please execute the requested actions.
 - For 'push': Copy from Target to Source.
 - For 'merge': Use your intelligence to merge the contents bidirectionally as appropriate.
 - For 'skip': Do nothing for that item.
+
+**Special Intelligence Rule**: If you detect 'Near-Matches' (e.g., the same file with different casing or separators), recommend standardizing on the Source filename and merging the content into that single file.
 
 Do not perform any new analysis; just execute the plan based on the report provided."
 
