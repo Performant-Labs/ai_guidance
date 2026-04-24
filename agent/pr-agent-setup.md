@@ -19,7 +19,7 @@ How to wire up **Qodo PR-Agent** as the automated Spec-enforcer for CTRFHub pull
 | `CLAUDE.md` | Pointer document PR-Agent (and any other Claude-family agent) reads to understand project context, authoritative specs, and forbidden patterns |
 | `.pr_agent.toml` | PR-Agent's primary config — model, prompt instructions (the Spec-enforcer role), output format |
 | `.github/workflows/pr-review.yml` | GitHub Actions workflow — wires up the trigger, secrets, and label-based model routing |
-| `docs/ai_guidance/pr-agent-setup.md` | This file |
+| `docs/ai_guidance/agent/pr-agent-setup.md` | This file |
 
 ## One-time setup
 

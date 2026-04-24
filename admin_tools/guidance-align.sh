@@ -31,7 +31,7 @@ if [ -z "$PROJECT_ROOT" ]; then
 fi
 
 TARGET_DIR="$PROJECT_ROOT/docs/ai_guidance"
-PROTOCOL_FILE="$PROJECT_ROOT/docs/admin_tools/guidance-alignment-protocol.md"
+PROTOCOL_FILE="$PROJECT_ROOT/docs/ai_guidance/admin_tools/guidance-alignment-protocol.md"
 
 if ! command -v gemini &> /dev/null; then
     echo -e "${RED}🚨 Error: 'gemini' CLI is not installed.${NC}"
