@@ -17,6 +17,7 @@ if [ -f "$CONFIG_FILE" ]; then
     source "$CONFIG_FILE"
 else
     # Fallback defaults
+    GEMINI_MODEL="gemini-3-pro-preview"
     CANONICAL_SOURCE="$HOME/Sites/ai_guidance"
 fi
 
@@ -91,7 +92,8 @@ while read -r line; do
     DISPLAY_PATH="docs/ai_guidance/$REL_PATH_IN_TARGET"
     ITEM="$i. $DISPLAY_PATH — [Suggestion: $ACTION]"
     echo -e "  $i. $DISPLAY_PATH — [Suggestion: ${COLOR}${ACTION}${NC}]"
-    REPORT+="$ITEM\n"
+    # Use proper bash newline
+    REPORT="${REPORT}${ITEM}"$'\n'
     ((i++))
 done <<< "$DIFF_OUTPUT"
 
@@ -106,27 +108,28 @@ if [ -z "$USER_INPUT" ] || [[ "$USER_INPUT" == "quit" ]] || [[ "$USER_INPUT" == 
     exit 0
 fi
 
-# Prepare the prompt using a heredoc to avoid syntax errors with special characters
-read -r -d '' PROMPT <<EOF
+# Prepare the prompt using a heredoc
+PROMPT=$(cat <<EOF
 I have performed a deterministic alignment check. 
 Target: $TARGET_DIR
 Source: $SOURCE_DIR
 
 User Decision: $USER_INPUT
 
-Here is the full Analysis Report:
+Here is the Analysis Report:
 $REPORT
 
-Please execute the requested actions. 
-- For 'pull': Copy from Source to Target.
-- For 'push': Copy from Target to Source.
-- For 'merge': Use your intelligence to merge the contents bidirectionally as appropriate.
-- For 'skip': Do nothing for that item.
+Please execute the requested actions according to the AI Guidance Alignment Protocol.
+- pull: Copy from Source to Target.
+- push: Copy from Target to Source.
+- merge: Harmonize contents bidirectionally.
+- skip: Do nothing.
 
-**Special Intelligence Rule**: If you detect 'Near-Matches' (e.g., the same file with different casing or separators), recommend standardizing on the Source filename and merging the content into that single file.
+**Near-Matches**: If you detect the same file with different casing or separators, standardize on the Source filename and merge the content.
 
-Do not perform any new analysis; just execute the plan based on the report provided.
+Just execute the plan based on this report.
 EOF
+)
 
 # Construct gemini command
 GEMINI_CMD="gemini -y --approval-mode yolo"
