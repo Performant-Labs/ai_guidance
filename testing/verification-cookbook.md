@@ -12,6 +12,7 @@ Always use the fastest tool that provides sufficient structural confirmation bef
 |---|---|---|---|
 | **Tier 1** | **Headless (Instant)** | ⚡ 1–5s | Server-side state, HTTP status, DOM tag presence, CSS variables |
 | **Tier 2** | **Structural Skeleton (Fast)** | 🚀 5–10s | Assembly verification, component presence, H1–H6 levels, buttons, and functional links |
+| **Tier 2.5**| **Authenticated State** | 🚀 5–10s | Dashboard structure, gated content, and user-specific state via live browser |
 | **Tier 3** | **Visual Fidelity (Slow)** | 🐢 60–90s | Final visual regression, pixel-level alignment, color-matching, and layout spacing |
 
 ---
@@ -182,6 +183,17 @@ const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
 - [ ] If the ratio fails, fix direction of the color (light→dark or dark→light depends on the new backdrop) and re-check. Do **not** proceed to T3.
 
 **Incident reference — 2026-04-20, PL2 canvas hero:** a layout change zeroed `--space-for-fixed-header` to let the hero bleed to the top of the viewport. The nav, previously sitting on a light `theme-surface` band, now sat on dark navy `theme--primary` hero. Nav color token (`--theme-text-color-soft`) was calibrated for light backgrounds; on the new dark backdrop the contrast ratio was **2.33:1 — failing AA body and AA large both**. The T3 screenshot at desktop viewport did not obviously flag this — it looked "appropriately muted". A T2 contrast pass at the point of backdrop-change would have caught it immediately. Retuning the token to `color-mix(in oklch, var(--white) 75%, transparent)` brought the ratio to **9.15:1 (AAA body pass)**. Documented in `visual-regression-report.md` under that date.
+
+---
+
+## Tier 2.5 — Authenticated State Verification (Browser Harness)
+
+When verifying functionality hidden behind a login screen (e.g., dashboards, admin interfaces), clean-room Playwright instances (Tier 2/3) are blocked. **Do not write complex Playwright login scripts.**
+
+Instead, use **Tier 2.5**: Ask the developer to log in via their daily-driver Chrome browser, then use `browser-harness` to attach directly to that active, authenticated session.
+
+- **Use Cases**: Verifying user settings pages, dashboard data grids, CTRFHub interface, or gated content.
+- **Method**: Run `browser-harness` via `run_command` in the terminal to extract the DOM/Accessibility tree or execute clicks as the authenticated user.
 
 ---
 
