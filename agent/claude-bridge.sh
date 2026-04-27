@@ -25,6 +25,7 @@ set -u
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 MAGENTA='\033[0;35m'
 GRAY='\033[0;90m'
@@ -72,22 +73,83 @@ mkdir -p "$BRIDGE"
 stale_count=$(ls "$BRIDGE"/res-*.out "$BRIDGE"/res-*.exit 2>/dev/null | wc -l | tr -d ' ')
 rm -f "$BRIDGE"/res-*.out "$BRIDGE"/res-*.exit 2>/dev/null
 
+# --- Status gathering for the launch banner ---
+PROJECT_NAME="$(basename "$REPO_ROOT")"
+
+# Git branch + dirty state (the watcher already validated this is a git repo)
+GIT_BRANCH="$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null)"
+[ -z "$GIT_BRANCH" ] && GIT_BRANCH="(detached HEAD)"
+if git -C "$REPO_ROOT" diff --quiet 2>/dev/null && git -C "$REPO_ROOT" diff --cached --quiet 2>/dev/null; then
+  GIT_STATE="${GREEN}clean${NC}"
+else
+  GIT_STATE="${YELLOW}dirty${NC}"
+fi
+
+# Origin sync state (if there's an upstream and a recent fetch)
+GIT_SYNC=""
+if git -C "$REPO_ROOT" rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
+  ahead_behind="$(git -C "$REPO_ROOT" rev-list --left-right --count '@{u}'...HEAD 2>/dev/null)"
+  behind="$(echo "$ahead_behind" | awk '{print $1}')"
+  ahead="$(echo "$ahead_behind" | awk '{print $2}')"
+  if [ "${behind:-0}" = "0" ] && [ "${ahead:-0}" = "0" ]; then
+    GIT_SYNC="${GREEN}in sync${NC}"
+  elif [ "${behind:-0}" != "0" ] && [ "${ahead:-0}" = "0" ]; then
+    GIT_SYNC="${YELLOW}behind by ${behind}${NC}"
+  elif [ "${behind:-0}" = "0" ] && [ "${ahead:-0}" != "0" ]; then
+    GIT_SYNC="${BLUE}ahead by ${ahead}${NC}"
+  else
+    GIT_SYNC="${YELLOW}diverged: -${behind} +${ahead}${NC}"
+  fi
+else
+  GIT_SYNC="${GRAY}no upstream${NC}"
+fi
+
+# Pending request count (a watcher restart inherits whatever was queued)
+PENDING_COUNT=$(ls "$BRIDGE"/req-*.sh 2>/dev/null | wc -l | tr -d ' ')
+if [ "$PENDING_COUNT" -gt 0 ]; then
+  PENDING_FMT="${YELLOW}${PENDING_COUNT}${NC} ${GRAY}queued from prior session — will run on next loop iteration${NC}"
+else
+  PENDING_FMT="${GRAY}none${NC}"
+fi
+
+# gh CLI auth status (one-line, doesn't block on slow network beyond ~1s)
+if command -v gh >/dev/null 2>&1; then
+  GH_USER=$(timeout 3 gh api user --jq .login 2>/dev/null)
+  if [ -n "$GH_USER" ]; then
+    GH_STATUS="${GREEN}✓${NC} ${BOLD}${GH_USER}${NC}"
+  else
+    GH_STATUS="${RED}✗ not authenticated${NC} ${GRAY}(some bridged commands will fail)${NC}"
+  fi
+else
+  GH_STATUS="${GRAY}gh CLI not installed${NC}"
+fi
+
+# Watcher process metadata
+WATCHER_PID=$$
+WATCHER_START="$(date '+%Y-%m-%d %H:%M:%S')"
+
 # --- Banner ---
 echo -e "${CYAN}${BOLD}╔══════════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${CYAN}${BOLD}║  Claude bridge                                                   ║${NC}"
 echo -e "${CYAN}${BOLD}╚══════════════════════════════════════════════════════════════════╝${NC}"
-echo -e "${GRAY}Lets Claude's sandboxed agent run host commands (ddev, drush, git,${NC}"
-echo -e "${GRAY}curl, headless Chrome) by dropping shell scripts in .claude-bridge/.${NC}"
-echo -e "${GRAY}This watcher polls that directory once per second and executes any${NC}"
-echo -e "${GRAY}request it finds, writing the combined output + exit code back for${NC}"
-echo -e "${GRAY}the agent to read. Leave this terminal open while collaborating.${NC}"
 echo
-echo -e "  ${BOLD}watching:${NC}       $REPO_ROOT"
-echo -e "  ${BOLD}spool:${NC}          $BRIDGE"
-echo -e "  ${BOLD}command cwd:${NC}    $REPO_ROOT"
+echo -e "  ${BOLD}Project${NC}        ${MAGENTA}${BOLD}${PROJECT_NAME}${NC}"
+echo
+echo -e "  ${BOLD}watching${NC}       ${CYAN}${REPO_ROOT}${NC}"
+echo -e "  ${BOLD}spool${NC}          ${CYAN}${BRIDGE}${NC}"
+echo -e "  ${BOLD}branch${NC}         ${BOLD}${GIT_BRANCH}${NC} (${GIT_STATE})"
+echo -e "  ${BOLD}origin${NC}         ${GIT_SYNC}"
+echo -e "  ${BOLD}gh auth${NC}        ${GH_STATUS}"
+echo -e "  ${BOLD}pending${NC}        ${PENDING_FMT}"
 if [ "$stale_count" -gt 0 ]; then
-  echo -e "  ${YELLOW}cleared $stale_count stale response file(s) from the last run${NC}"
+  echo -e "  ${BOLD}stale res${NC}      ${YELLOW}cleared ${stale_count} response file(s) from prior run${NC}"
 fi
+echo -e "  ${BOLD}watcher${NC}        ${GRAY}PID ${WATCHER_PID}, started ${WATCHER_START}${NC}"
+echo
+echo -e "${GRAY}Drops scripts in ${BRIDGE} get executed on the host with full user${NC}"
+echo -e "${GRAY}privileges (gh, ddev, drush, git, curl, etc.). Output streams back as${NC}"
+echo -e "${GRAY}res-<id>.out + res-<id>.exit for the sandboxed agent to poll. Leave this${NC}"
+echo -e "${GRAY}terminal open while collaborating.${NC}"
 echo
 echo -e "${YELLOW}⚠  Security:${NC} this runs arbitrary shell commands as your user."
 echo -e "   Only run while actively collaborating. ${BOLD}Ctrl-C${NC} to stop."
