@@ -28,7 +28,7 @@ python -m vllm.entrypoints.openai.api_server \
   --model Qwen/Qwen3.6-27B \
   --host 0.0.0.0 --port 8000 \
   --dtype bfloat16 \
-  --max-model-len 65536 \
+  --max-model-len 131072 \
   --enable-auto-tool-choice --tool-call-parser qwen3_coder \
   --reasoning-parser qwen3 \
   --default-chat-template-kwargs '{"enable_thinking": false}' \
@@ -43,7 +43,7 @@ python -m vllm.entrypoints.openai.api_server \
 - `--reasoning-parser qwen3` — vLLM's Qwen3-specific reasoning parser. Routes any thinking content vLLM does see into `reasoning_content` rather than mixing it into `content`. Pair with the chat-template-kwargs flag.
 - `--tool-call-parser qwen3_coder` paired with `--enable-auto-tool-choice` — required for OpenAI-style tool calls to be parsed out of the model's output. The recipe page recommends this even for the non-Coder model.
 - `--dtype bfloat16` — matches the on-disk weight dtype. Don't mix.
-- `--max-model-len 65536` — Qwen3.6 supports 262K natively but vLLM allocates KV cache against this value, so set it to what you actually need. **64K is the practical floor for an agentic coding workload** (Roo Code's prompt — system + agents.md + role md + brief + multi-file reads + tool history — easily exceeds 32K). On A100-80GB with 27B bf16, 64K KV cache uses ~12 GB, comfortable; 128K uses ~24 GB, right at the edge of what fits alongside the 55 GB model. KV cache per token ≈ 192 KB (48 layers × 8 KV heads × 128 dim × 2 bytes × 2 for K+V).
+- `--max-model-len 131072` — Qwen3.6 supports 262K natively but vLLM allocates KV cache against this value, so set it to what you actually need. **128K is the practical setting for an agentic coding workload comparable to Anthropic Opus's window.** Smaller values fail mid-task: 32K runs out before Roo Code finishes loading its system prompt + agents.md + role md + brief + a couple file reads (~33K total). 64K runs out partway through a typical chore once tool-call history (file reads, test outputs, prior assistant messages) accumulates. A real coding session sustains ~50–80K of context, so 128K gives headroom. On A100-80GB with 27B bf16, 128K KV cache uses ~24 GB; total VRAM with the 55 GB model lands at ~79 GB, ~1 GB headroom. **vLLM's startup memory profiler will refuse the launch if it doesn't fit** — there's no risk of mid-session OOM. KV cache per token ≈ 192 KB (48 layers × 8 KV heads × 128 dim × 2 bytes × 2 for K+V).
 
 **Critical flag NOT to use:**
 
@@ -75,7 +75,7 @@ python -m vllm.entrypoints.openai.api_server \
   --model Qwen/Qwen3.6-27B \
   --host 0.0.0.0 --port 8000 \
   --dtype bfloat16 \
-  --max-model-len 65536 \
+  --max-model-len 131072 \
   --enable-auto-tool-choice --tool-call-parser qwen3_coder \
   --reasoning-parser qwen3 \
   --default-chat-template-kwargs '{"enable_thinking": false}' \
@@ -351,18 +351,48 @@ The "0 output tokens" is the giveaway — the input *alone* exceeded the limit. 
 
 **Root cause.** Default `--max-model-len 32768` is too small for Roo Code's effective prompt. A typical Roo Code prompt for a real coding task is: system instructions (~3K) + `agents.md` (~3K) + role-specific md (~1K) + the task brief (~3K) + 1–3 file reads (~5–15K) + tool-call history (~5K). That easily clears 32K before the agent has done much.
 
-**Fix.** Bump `--max-model-len`. **64K (`65536`) is the practical floor.** Memory budget on A100-80GB:
+**Fix.** Bump `--max-model-len`. **128K (`131072`) is the practical setting for sustained agent work.** Memory budget on A100-80GB:
 
-| `--max-model-len` | KV cache | Total VRAM (model + KV) | Headroom |
+| `--max-model-len` | KV cache | Total VRAM (model + KV) | Notes |
 |---|---|---|---|
-| 32768 | ~6 GB | ~61 GB | comfortable, but too small for agents |
-| 65536 | ~12 GB | ~67 GB | comfortable; recommended default |
-| 131072 | ~24 GB | ~79 GB | right at 80 GB ceiling |
-| 262144 (native) | ~48 GB | doesn't fit | OOM |
+| 32768 | ~6 GB | ~61 GB | runs out during initial prompt load |
+| 65536 | ~12 GB | ~67 GB | runs out partway through a typical chore as tool-call history accumulates |
+| 131072 | ~24 GB | ~79 GB | recommended; matches Opus window for fair comparison |
+| 262144 (native) | ~48 GB | doesn't fit | vLLM startup OOM |
 
-KV cache size per token ≈ `2 × num_layers × num_kv_heads × head_dim × dtype_bytes` ≈ 192 KB for Qwen3.6-27B at bf16. Multiply by `max-model-len` for total. (Mamba/GDN state is fixed-size — doesn't scale with seq_len.)
+KV cache size per token ≈ `2 × num_layers × num_kv_heads × head_dim × dtype_bytes` ≈ 192 KB for Qwen3.6-27B at bf16. Multiply by `max-model-len` for total. (Mamba/GDN state is fixed-size — doesn't scale with seq_len.) **vLLM allocates the full KV cache budget at startup**, so OOM (if any) happens at launch, not mid-session.
 
-**Confirmation.** vLLM's startup log line: `Using max model len 65536`. Roo Code's prompt should now fit; if it still errors at 65536, bump to 96K/128K.
+**Empirical: tonight (2026-04-30) we hit this twice on a single chore — first at 32K (initial prompt couldn't fit), then again at 64K (tool-call history grew). Set 128K from the start; don't try to ladder up.**
+
+**Confirmation.** vLLM's startup log line: `Using max model len 131072`. Roo Code's prompt now has 4× breathing room over the typical session size.
+
+### J. Vision-required tasks (Tier 3 visual verification, design-mockup briefs)
+
+**Symptom.** A Hephaestus-driven test-writer or spec-enforcer session hits a step that requires *looking at* an image — interpreting a design mockup in a brief, debugging a Playwright screenshot diff in `test-results/`, or auditing an embedded PNG in a `tier-3-report.md`. Heph produces no useful output beyond "I cannot view images."
+
+**Root cause.** The recipe in §1 sets `--language-model-only`, which is mandatory to dodge the FA2-in-ViT segfault (§4-A). Side effect: the multimodal vision encoder is not loaded at all, so Heph is text-only. He is *not* a multimodal model in this configuration regardless of what `Qwen/Qwen3.6-27B` advertises.
+
+**What still works without vision:**
+
+- *Writing* Tier 3 test code (Playwright `expect(page).toHaveScreenshot()` calls). The model generates Playwright API code from its training knowledge; vision is not required to produce valid test bodies.
+- *Running* Tier 3 tests. Pass/fail/diff-pixel-count signals are all text. Heph reads them fine.
+- Tier 1 (headless) and Tier 2 (ARIA) for any route. These are entirely text-based.
+
+**What does not work without vision:**
+
+- Debugging a Tier 3 failure ("is this a real regression or should I update the snapshot?"). Heph sees only "X% pixels differ"; he cannot judge.
+- Spec-enforcer auditing a `tier-3-report.md` that includes screenshots. Heph audits the markdown structure; he is blind to the embedded PNGs.
+- Briefs that include Figma exports, design mockups, or screenshots of intended UI. Heph cannot read them as input.
+
+**Mitigation, until fixed.** Treat Heph as **qualified for backend stories and chores only**. Route UI stories (anything touching `src/views/`, the `/setup` wizard, login/password forms, the dashboard) to Daedalus or Talos. The brief's "Required test tiers" section per story declares whether Tier 3 applies; if it does, Heph is not the right implementer.
+
+**Path to fix (one of):**
+
+1. vLLM upstream patches the multimodal vision-encoder warmup for `Qwen3_5ForConditionalGeneration`, allowing `--language-model-only` to be dropped. Watch for vLLM 0.20+.
+2. Switch Heph's model to a text-only Qwen3 dense (e.g. `Qwen3-32B`) and accept "no multimodal capacity" as a permanent design choice — but lose Qwen3.6's tool-call training.
+3. Add a vision-capable second model (e.g., a smaller VLM on the same pod via tensor-parallel slicing) that handles only the Tier 3 audit steps, fronted by a router. Significant complexity for a corner case.
+
+For now: option 1 is the wait-and-see; the role-boundary note is the operational answer. See §6 for `agents.md` integration.
 
 ---
 
@@ -380,7 +410,7 @@ A full description lives at `~/Sites/ai_guidance/agent/claude-bridge.md`. Adjunc
 
 ## 6. Notes on Qwen3.6-27B specifically
 
-The official vLLM recipe at https://github.com/vllm-project/recipes/blob/main/Qwen/Qwen3.5.md covers **Qwen3.5** (397B-A17B MoE) and **Qwen3.6** (35B-A3B MoE) — the bigger, MoE-architecture cousins. There is **no Qwen3.6-27B.md** recipe. The 27B variant exists in the official Qwen HuggingFace org (created 2026-04-21, ~770K downloads as of 2026-04-30) and shares the architecture (`Qwen3_5ForConditionalGeneration`, multimodal, Mamba+GDN delta), but it is *not* in the official recipe table.
+The official vLLM recipe at https://github.com/vllm-project/recipes/blob/main/Qwen/Qwen3.5.md covers **Qwen3.5** (397B-A17B MoE) and **Qwen3.6** (35B-A3B MoE) — the bigger, MoE-architecture cousins. There is **no Qwen3.6-27B.md** recipe. The 27B variant exists in the official Qwen HuggingFace org (created 2026-04-21, ~770K downloads as of 2026-04-30) and shares the architecture (`Qwen3_5ForConditionalGeneration`, multimodal, Mamba+GDN delta), but it is *not* in the official recipe table. **It's a dense model, not MoE** — naming convention in the Qwen3 family: `{Total}-A{Active}` suffix denotes MoE (e.g., 35B-A3B = 35B total / 3B active per token); plain `{N}B` like `27B` is dense. So Qwen3.6-27B reads all ~54 GB of weights per token during decode, which is the binding constraint on inference throughput on bandwidth-limited hardware.
 
 Implications:
 
@@ -452,7 +482,120 @@ The split into `qwen3-vllm:latest` (lean) + `qwen3-vllm-bench:latest` (extends w
 
 ---
 
-## 10. Forward links
+## 10. Empirical baselines
+
+Concrete numbers from a real session, for future operators to compare against.
+
+### CHORE-LINT-001 (Hephaestus, 2026-04-30)
+
+A single-file TypeScript refactor (eliminating 14 `as any` casts in a Vitest integration test file by adding a Fastify module augmentation). Roo Code agent driving the model; fully autonomous after auto-approve was enabled mid-session.
+
+**Stack at the time of measurement:** vLLM 0.19.1, Qwen3.6-27B bf16, A100-SXM4-80GB, `--max-model-len 131072` (128K), no `--enable-prefix-caching`, `--language-model-only`.
+
+**Measured over the 128K-context window only** (vLLM was restarted twice for context bumps; numbers below are from the final, stable phase of the session):
+
+| Metric | Value |
+|---|---|
+| Successful chat completions | 13 (all `finish_reason: stop`, 0 errors) |
+| Total prompt tokens processed | 914,907 (~915K) |
+| Total generation tokens | 2,012 |
+| Avg prompt size per request | ~70K tokens |
+| Avg completion length | ~155 tokens |
+| Peak generation throughput | 26.1 tokens/sec (10s window avg) |
+| Mean generation throughput | 5.59 tokens/sec (over 36 snapshots, dragged down by idle gaps between tool calls) |
+| Mean prompt-prefill throughput | 2,541 tokens/sec |
+| Peak KV cache usage | 23.3% of 128K ≈ 30K tokens |
+| Pod runtime for the experiment | ~3 hours |
+| Cost on RunPod A100-80GB on-demand | ~$4.50 |
+
+**Read-out for future operators:**
+
+- **Prompt:generation token ratio is ~450:1** for agentic workflows. Most token cost is re-reading context across tool calls. That's why prefix-caching (when it works for the architecture) is the biggest available optimization.
+- **Real KV needs maxed at ~30K tokens** in this session, well under the 64K we initially tried. But a single one-token-overflow killed the session at 64K because Roo Code retries in-place; 128K is the right setting because it has comfortable margin, not because the workload demands 128K of active context.
+- **Peak generation throughput of 26 t/s** is the floor for "model is working correctly." If you see steady-state averages anywhere near 5–10 t/s on this hardware, that's normal duty cycling between tool calls. If you see *peaks* below 10 t/s, something's wrong (revisit §4-B).
+- **Wall-clock for a single-file mechanical refactor: roughly 30 minutes of model time spread over 13 requests, ~3 hours of pod uptime including the (long, painful) infrastructure debugging.** A clean run with the runbook's recipe in place would be closer to ~30 min total: 12 min cold start + 15–20 min of Heph working.
+
+---
+
+## 11. Head-to-head audit — CHORE-LINT-001 (2026-04-30)
+
+A controlled comparison of two coding agents on the same brief. Documented here because the runbook is the only durable cross-session record of *why* this Qwen3.6-27B + RunPod stack was set up in the first place.
+
+### Setup
+
+| Contestant | Model | Driver | Branch |
+|---|---|---|---|
+| **Hephaestus** | Qwen3.6-27B (bf16, vLLM on RunPod A100) | Roo Code | `chore/lint-001-qwen` |
+| **Daedalus** | Claude Opus 4.6 | AntiGravity | `chore/lint-001-opus` |
+
+Both received the identical brief at `.argos/CHORE-LINT-001/brief.md` (committed to both contestant branches by Argos before the run, so each agent read it from the same on-branch path). The brief asked for a single mechanical refactor: replace 14 `(app as any).<member>` casts in one Vitest integration test file with a proper Fastify `FastifyInstance` module augmentation. Acceptance criteria: lint clean, typecheck clean, tests pass, small diff.
+
+### What each delivered
+
+| Metric | Heph | Daedalus |
+|---|---|---|
+| Files changed | 2 | 2 |
+| Net lines changed | 71 (+57 / −14) | 39 (+25 / −14) |
+| New augmentation file | `src/types/fastify-augment.ts` (42 lines) | `src/types/fastify-augment.d.ts` (11 lines) |
+| Augmented type members | 3 (correct) | 3 (correct) |
+| `as any` casts removed | 14/14 ✓ | 14/14 ✓ |
+| `BootState` source | imported from existing `../modules/health/schemas.js` ✓ | same ✓ |
+| `MikroORM` import | `@mikro-orm/core` ✓ | same ✓ |
+| `import 'fastify';` in aug file | absent (relies on indirect imports) | present (canonical Fastify pattern) |
+| Extra import added to test file | `import '../../types/fastify-augment.js';` | none (relies on tsconfig auto-include) |
+| Extension chosen | `.ts` (deviation from brief's `.d.ts` recommendation) | `.d.ts` (matches brief) |
+| JSDoc commentary | extensive (30 lines) | none |
+| PR opened by agent | yes (PR #62) — deviates from "stop after pushing" instruction | no |
+| Commit message | exact match to brief template | exact match to brief template |
+
+### Validation results (Argos ran post-hoc on a clean checkout)
+
+| Branch | `npm run lint` | `npm run typecheck` | `npm test` |
+|---|---|---|---|
+| `chore/lint-001-qwen` (Heph) | 0 warnings ✓ | 0 errors ✓ | 304 pass / 9 fail / 90 skipped — failures are `better-sqlite3` native-binding issues unrelated to the chore (same 9 fail on `main`) |
+| `chore/lint-001-opus` (Daedalus) | 0 warnings ✓ | 0 errors ✓ | identical to Heph (same 304/9/90) |
+
+The 9 test failures pre-exist on `main` and reproduce identically on both contestant branches — they're an environment issue with `better-sqlite3` needing a rebuild against current Node, not anything either contestant introduced. Treated as a wash for scoring.
+
+### Scoring per the head-to-head rubric
+
+Rubric is in `.argos/CHORE-LINT-001/head-to-head.md`: five criteria scored 1–5, weighted, max 45.
+
+| Criterion | Weight | Heph | Daedalus | Reasoning |
+|---|---|---|---|---|
+| **Correctness** | 3× | 5 | 5 | Both removed all 14 casts, both have correct types, both pass lint/typecheck, test failures are environment-only and identical between branches |
+| **Type Fidelity** | 2× | 5 | 5 | Both correctly used the existing `BootState` union and the project's `MikroORM` import path; both signatures match what `app.decorate(...)` actually attaches |
+| **Minimality** | 2× | 3 | 5 | Daedalus minimal (11 lines, exact match to brief). Heph wrote 4× more lines, mostly JSDoc commentary the brief didn't request, plus an explicit consumer-side import the brief didn't ask for. Both well-formed, but Heph exceeds the requested scope |
+| **Code Style** | 1× | 3 | 5 | Daedalus matches brief's recommended `.d.ts` extension and uses the canonical `import 'fastify';` pattern from Fastify's docs. Heph used `.ts` and added an explicit consumer-side import. Heph also opened PR #62 despite the brief saying "stop after pushing — Argos opens the winning PR." All small deviations, none catastrophic |
+| **Autonomy** | 1× | 4 | 5 | Heph completed the implementation in 13 successful model calls. Required interventions: turning on Roo Code's auto-approve mid-task, plus three context-window restarts (32K → 64K → 128K). The context-window failures were Argos's setup error, not Heph's autonomy issue, so docked only for the auto-approve toggle. Daedalus ran without reported intervention |
+
+| Contestant | Score |
+|---|---|
+| Heph | (5×3) + (5×2) + (3×2) + (3×1) + (4×1) = **38 / 45** |
+| Daedalus | (5×3) + (5×2) + (5×2) + (5×1) + (5×1) = **45 / 45** |
+
+### Winner: **Daedalus**, by 7 points.
+
+Both implementations are functionally correct. The 7-point gap is entirely in **Minimality** and **Code Style** — Daedalus produced exactly what the brief asked for, in the form the brief recommended. Heph produced a *defensibly more documented* version that exceeded the requested scope.
+
+In a different context — e.g., introducing `fastify-augment.d.ts` as a new module-augmentation pattern *for future maintainers to copy* — Heph's verbose JSDoc-heavy version might be preferred. For a chore brief asking for the minimum mechanical change, restraint wins.
+
+### What this says about Qwen3.6-27B as a Hephaestus model
+
+- **Capable of producing correct refactors at this scope.** No type errors, no eslint-disable workarounds, no `as unknown as X` chains. The augmentation pattern was understood and applied correctly.
+- **Tends toward over-documentation when not constrained.** The JSDoc additions (30 lines) suggest the model defaults to "be helpful by adding context" rather than "do exactly what the brief asks." For chore work specifically, briefs may need a "no JSDoc unless requested" non-goal explicitly.
+- **Brief literalism is uneven.** The `.d.ts` recommendation in the brief was framed as "Create `src/types/fastify-augment.d.ts`" with extension implicit. Heph generalized to `.ts`. Daedalus took it literally. Future briefs for Heph should treat extension/path/idiom as required, not suggested, when comparing fairly.
+- **Tool-call autonomy is real.** 13 sequential tool calls completed without redirection, on context that grew to ~70K tokens per request. This is the work Heph is for.
+
+### Aftermath
+
+- `chore/lint-001-opus` (Daedalus) becomes the merged PR.
+- `chore/lint-001-qwen` (Heph) gets deleted; PR #62 closed without merging.
+- The brief edit + orchestrator artifacts on `chore/agents-add-hephaestus` get committed via a normal chore PR.
+
+---
+
+## 12. Forward links
 
 - Memory entry `runpod_qwen3_vllm_recipe.md` — short-form recipe summary, kept terse for context-window efficiency in future Argos sessions.
 - `~/Projects/ctrfhub/.claude-bridge/` — full history of bridge scripts that produced this runbook (v1–v8 of various probes, all preserved for archaeology).
