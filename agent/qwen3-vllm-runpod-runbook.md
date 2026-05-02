@@ -1286,22 +1286,25 @@ huggingface-cli download Qwen/Qwen3.6-35B-A3B-GGUF \
   --local-dir ./models
 ```
 
-### 17.5 ngram speculative decoding on mlx-lm
+### 17.5 Speculative decoding on mlx-lm — blocked for MoE (tested 2026-05-02)
 
-mlx-lm supports ngram spec decoding with the same flag semantics we validated on vLLM. Expected gain: same +10-15% on code, ~flat on prose (matches vLLM results from §14.3).
+mlx-lm supports draft-model speculative decoding via `--draft-model` and `--num-draft-tokens`. **ngram is not supported** — the flags referenced in earlier drafts of this section do not exist in mlx-lm.
 
-```bash
-mlx_lm.server \
-  --model unsloth/Qwen3.6-27B-UD-MLX-4bit \
-  --host 0.0.0.0 --port 8000 \
-  --max-tokens 131072 \
-  --speculative-decoding-algorithm ngram \
-  --num-draft-tokens 5 \
-  --ngram-prompt-lookup-max 4 \
-  --api-key sk-1234567890
-```
+**Draft model attempt: Qwen3-4B-4bit drafting Qwen3.6-35B-A3B-4bit**
 
-Not tested on Apple Silicon yet — this is the obvious next experiment once the Mac setup is validated.
+Two blockers encountered in sequence:
+
+1. **Tokenizer mismatch warning** — `Draft model tokenizer does not match model tokenizer. Speculative decoding may not work as expected.` Qwen3 and Qwen3.6 use different tokenizers. Acceptance rate would be near 0%.
+
+2. **MoE cache type incompatibility** — Even ignoring the tokenizer issue, inference crashes with:
+   ```
+   ValueError: Speculative decoding requires a trimmable prompt cache (got {'ArraysCache'})
+   ```
+   The MoE architecture's KV cache (`ArraysCache`) cannot be trimmed, which is required by mlx-lm's speculative decoding implementation. This is a hard architectural block, not a configuration issue.
+
+**No smaller Qwen3.6 model exists.** The Qwen3.6 family has only two models: 27B dense and 35B-A3B MoE. Using 27B as a draft for 35B-A3B is impractical (draft nearly as expensive as target). A matching small draft model does not exist.
+
+**Conclusion:** Speculative decoding is not available for Qwen3.6-35B-A3B on mlx-lm. The 41 t/s baseline is the current ceiling. This mirrors the NEXTN block on SGLang (§16.5) — MoE architectures have constraints that block speculative decoding optimizations on current tooling.
 
 ### 17.6 DFlash on Apple Silicon
 
