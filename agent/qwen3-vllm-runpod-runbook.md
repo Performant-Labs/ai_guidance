@@ -1310,9 +1310,185 @@ For Hephaestus (agentic coding), the 35B-A3B at Q4 on any M-series is the better
 
 ---
 
+## §18. Local / AMD Radeon 890M deployment (Ganymede)
+
+> **⚠️ All benchmarks in this section were performed on Ganymede — a Minisforum AI X1 Pro (AMD Ryzen AI 9 HX 370, Radeon 890M iGPU, 48 GB unified LPDDR5X RAM). They are entirely distinct from the A100-SXM4-80GB results in §§1–16 and the Apple Silicon results in §17. Do not mix these numbers.**
+
+**Hardware specs:**
+
+| Property | Value |
+|---|---|
+| Machine | Minisforum AI X1 Pro |
+| CPU | AMD Ryzen AI 9 HX 370 |
+| GPU | AMD Radeon 890M (iGPU, integrated) |
+| Unified VRAM | 48 GB LPDDR5X |
+| Memory bandwidth | ~170 GB/s |
+| OS | Windows 11 |
+| Inference backend | LM Studio (Vulkan backend via llama.cpp) |
+
+No ROCm on Windows — LM Studio uses Vulkan compute shaders for all GPU operations. Speed is purely memory-bandwidth-bound, same physics as Apple Silicon unified memory but at ~170 GB/s vs Apple's 400–614 GB/s.
+
+---
+
+### 18.1 Baseline: Qwen3.6-27B dense Q4_K_M
+
+**Model:** `unsloth/Qwen3.6-27B-UD-Q4_K_M` loaded in LM Studio, `--gpu max`
+
+| Metric | Value |
+|---|---|
+| Generation speed | **2.10 t/s** |
+| VRAM used | ~16 GB |
+
+This is the bandwidth ceiling for a 27B dense model at Q4_K_M on 170 GB/s memory. All spec decoding experiments below are measured against this baseline.
+
+---
+
+### 18.2 N-gram speculative decoding (Qwen3.6-27B)
+
+Best practical option for interactive chat on this hardware. No training-distribution mismatch, zero VRAM cost.
+
+| Metric | Value |
+|---|---|
+| Generation speed | **3.12 t/s** |
+| Improvement vs baseline | **+49%** |
+
+LM Studio exposes n-gram spec decoding in the model load settings. Set draft min/max tokens to 2–5, prompt lookup window to 4.
+
+---
+
+### 18.3 DFlash speculative decoding (Qwen3.6-27B)
+
+DFlash uses hidden-state draft tokens from a dedicated 1.73B drafter (`z-lab/Qwen3.6-27B-DFlash`). Requires `buun-llama-cpp` fork (not stock llama.cpp). **Not useful for chat on this hardware.**
+
+#### Results by mode
+
+| Mode | Speed | Acceptance rate | vs baseline |
+|---|---|---|---|
+| Chat (default) | 0.93 t/s | 5.6% | **−56% (worse)** |
+| Chat, temp=0 | ~1.0 t/s | 21.9% | worse |
+| Chat, `thinking=0` | ~1.0 t/s | ~20% | worse |
+| Raw completion (`/completion` endpoint) | **4.23 t/s** | **46.5%** | **+101%** |
+
+#### Why chat mode fails
+
+DFlash was trained on plain-text continuation data. Chat-format inputs (system prompt + `<|im_start|>` turn structure) produce hidden states that are out-of-distribution for the drafter → catastrophically low acceptance rate (5.6%). The break-even for chat on this hardware is ~29% acceptance; chat mode never gets there.
+
+Raw `/completion` (no chat template) hits 46.5% acceptance and doubles throughput — but is not useful for interactive agents that rely on chat format.
+
+**Conclusion:** Use n-gram for chat (+49%), DFlash only if you have a raw-completion use case (+101%).
+
+#### Build notes (buun-llama-cpp on Windows)
+
+Building buun-llama-cpp on Windows requires:
+- Vulkan SDK (for SPIR-V shader compilation)
+- `glslc` available on PATH — must wrap WSL2's `glslc` because:
+  - Windows native glslc often isn't available
+  - CMD batch files split on `=` signs (breaks `-fshader-stage=compute`)
+  - Bash metacharacters in `-DFLOAT_TYPE_MAX=float16_t(65504.0)` break `wsl -- glslc` without quoting
+
+**Working wrapper** (`C:\scoop\shims\glslc.cmd`):
+```batch
+@echo off
+python "%~dp0glslc_wrap.py" %*
+exit /b %ERRORLEVEL%
+```
+
+**`glslc_wrap.py`** (handles `=` in args and `()` in macros via shlex quoting):
+```python
+import sys, subprocess, re, shlex
+
+def win_to_wsl(arg):
+    m = re.match(r'^([A-Za-z]):[/\\]+(.*)', arg)
+    if m:
+        return '/mnt/{}/{}'.format(m.group(1).lower(), m.group(2).replace('\\', '/'))
+    return arg
+
+args = [win_to_wsl(a) for a in sys.argv[1:]]
+bash_cmd = ' '.join(shlex.quote(a) for a in ['glslc'] + args)
+subprocess.run(['wsl', '--', 'bash', '-c', bash_cmd])
+```
+
+Also required in `ggml/src/ggml-vulkan/CMakeLists.txt`: propagate `CMAKE_C_COMPILER`, `CMAKE_CXX_COMPILER`, `CMAKE_RC_COMPILER` into `VULKAN_SHADER_GEN_CMAKE_ARGS` for the ExternalProject_Add sub-cmake.
+
+---
+
+### 18.4 MoE: Qwen3.6-35B-A3B — the right model for this hardware
+
+**Model:** `unsloth/Qwen3.6-35B-A3B-UD-Q4_K_M` (Unsloth Dynamic mixed-precision quant)
+**File size:** ~21 GB + 1.7 GB mmproj (vision projector, unused for text inference)
+
+| Metric | Value |
+|---|---|
+| Generation speed | **14.54 t/s** |
+| VRAM used | 23.92 GB |
+| Improvement vs dense 27B | **7× (690%)** |
+| Improvement vs n-gram 27B | **4.7×** |
+
+#### Why MoE wins on bandwidth-limited hardware
+
+Dense 27B: every token requires reading all 27B parameters from LPDDR5X.
+MoE 35B-A3B: only 3B parameters are **active** per token (top-2 expert routing from 64 experts). Memory reads per token drop ~9×, proportionally reducing the bandwidth bottleneck.
+
+**Bandwidth scaling validates the result:**
+- M5 Max (614 GB/s) measures ~50 t/s on this model (§17.4)
+- Radeon 890M (170 GB/s): 50 × (170 / 614) ≈ **13.8 t/s**
+- Measured: 14.54 t/s ✓ — within noise of the theoretical ceiling
+
+**This means we are at the hardware bandwidth ceiling.** No software optimization will significantly exceed 14–15 t/s on this hardware with this model at this quantization.
+
+#### Loading in LM Studio
+
+```
+lms load unsloth/qwen3.6-35b-a3b --gpu max
+```
+
+Model key: `unsloth/qwen3.6-35b-a3b` (lowercase). The model picker also shows it at 22.28 GiB (includes mmproj). LM Studio's `lms status` confirms load at 23.92 GB.
+
+The model fits alongside other loaded models — at 23.92 GB it leaves 24 GB free in the 48 GB pool (enough for a second 14B-class model simultaneously).
+
+#### Startup script (LMStudio-Startup.ps1)
+
+Updated to load MoE as default, aliased to `mistralai/mistral-small-3.2` for API compatibility with existing clients:
+
+```powershell
+& $lmsPath load unsloth/qwen3.6-35b-a3b --identifier mistralai/mistral-small-3.2 --gpu max
+```
+
+---
+
+### 18.5 Benchmark summary (Ganymede, Radeon 890M)
+
+All tests: LM Studio Vulkan backend, Windows 11, 48 GB LPDDR5X.
+
+| Model | Spec decoding | Speed | Notes |
+|---|---|---|---|
+| Qwen3.6-27B Q4_K_M | None | 2.10 t/s | Bandwidth ceiling for dense 27B |
+| Qwen3.6-27B Q4_K_M | N-gram | 3.12 t/s | +49%; best for chat |
+| Qwen3.6-27B Q4_K_M | DFlash (chat) | 0.93 t/s | Worse than baseline; do not use for chat |
+| Qwen3.6-27B Q4_K_M | DFlash (raw completion) | 4.23 t/s | +101%; only useful without chat format |
+| **Qwen3.6-35B-A3B UD-Q4_K_M** | **None** | **14.54 t/s** | **Recommended default** |
+
+---
+
+### 18.6 What carries over from the A100/Apple Silicon experiments
+
+| Finding | Applies on Radeon 890M? |
+|---|---|
+| `enable_thinking: false` required | **Yes** — same model behaviour; set in LM Studio per-model settings |
+| Prefix caching incompatible with Mamba hybrid | **Yes** — do not enable in LM Studio |
+| Tool-call parser `qwen3_coder` | LM Studio handles internally |
+| 128K context minimum for agentic workloads | **Yes** — same session dynamics |
+| Vocab mismatch for standard Qwen3 draft models | **Yes** — Qwen3.6 uses 248,320-token vocab; any Qwen3-0.6B/1.7B draft is rejected |
+| ngram +14.6% code on A100 | Measured **+49% on 890M** — larger gain because verification overhead is proportionally smaller at lower base speed |
+| SGLang NEXTN blocked on A100 by VRAM | Irrelevant — SGLang is Linux/CUDA only |
+| MTP native head (~2× decode, 80–90% acceptance) | **Untested** — highest priority next experiment; check if UD-Q4_K_M preserves the MTP head |
+
+---
+
 *Compiled by Argos (Claude Opus 4.7), 2026-04-30, after a single ~5-hour debugging session with André to bring up Qwen3.6-27B for the CHORE-LINT-001 head-to-head experiment vs Daedalus (Opus 4.6).*
 *§14 added by Argos (Claude Sonnet 4.6), 2026-05-02, after adding ngram speculative decoding to the template and running post-change benchmarks.*
 *§14.6 added by Argos (Claude Sonnet 4.6), 2026-05-02, after a failed attempt to use Qwen3-0.6B as a draft model.*
 *§15 added by Argos (Claude Sonnet 4.6), 2026-05-02, after surveying the X/GitHub community landscape for Qwen3.6-27B inference optimizations.*
 *§16 added by Argos (Claude Sonnet 4.6), 2026-05-02, after creating the SGLang parallel experiment template (`q8ycgrr2s0`) and running baseline benchmarks. NEXTN blocked; baseline SGLang is 8% faster than vLLM baseline.*
+*§18 added by Argos (Claude Haiku 4.5), 2026-05-02, after benchmarking Qwen3.6 models on Ganymede (Minisforum AI X1 Pro, Radeon 890M, 48 GB LPDDR5X) — DFlash build, n-gram spec decoding, and MoE 35B-A3B validated.*
 *§17 added by Argos (Claude Sonnet 4.6), 2026-05-02, after testing SGLang/NEXTN limits and connecting findings to Apple Silicon deployment paths.*
