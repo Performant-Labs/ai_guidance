@@ -1481,7 +1481,24 @@ All tests: LM Studio Vulkan backend, Windows 11, 48 GB LPDDR5X.
 | Vocab mismatch for standard Qwen3 draft models | **Yes** — Qwen3.6 uses 248,320-token vocab; any Qwen3-0.6B/1.7B draft is rejected |
 | ngram +14.6% code on A100 | Measured **+49% on 890M** — larger gain because verification overhead is proportionally smaller at lower base speed |
 | SGLang NEXTN blocked on A100 by VRAM | Irrelevant — SGLang is Linux/CUDA only |
-| MTP native head (~2× decode, 80–90% acceptance) | **Untested** — highest priority next experiment; check if UD-Q4_K_M preserves the MTP head |
+| MTP native head (~2× decode, 80–90% acceptance) | **Not available** — confirmed absent from `unsloth/Qwen3.6-35B-A3B-UD-Q4_K_M.gguf` (see §18.7) |
+
+### 18.7 MTP head: confirmed absent from Unsloth UD-Q4_K_M (2026-05-02)
+
+Inspected GGUF metadata and tensor list using the `gguf` Python library:
+
+```python
+import gguf
+reader = gguf.GGUFReader('Qwen3.6-35B-A3B-UD-Q4_K_M.gguf')
+# 733 tensors, 54 KV metadata pairs
+# No 'mtp', 'nextn', 'draft', or 'spec' keys in either metadata or tensor names
+```
+
+**Result: MTP head is not present.** 733 tensors total, none with MTP/nextn naming. Unsloth dropped the MTP head during quantization — same behaviour as their Qwen3.6-27B quants and consistent with the §15 note that standard INT4 quants silently drop the MTP head.
+
+**Implication:** MTP speculative decoding (~2×, 80–90% acceptance) is not available for this file. The only path to MTP on 35B-A3B would be a quant that explicitly preserves the head — no such quant exists in the community as of 2026-05-02 (the Lorbus MTP-preserving quant exists only for Qwen3.6-27B).
+
+**Next experiment:** n-gram speculative decoding (§18.2 approach applied to 35B-A3B) — the only remaining zero-cost speedup available for this model file.
 
 ---
 
