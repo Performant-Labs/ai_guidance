@@ -1244,10 +1244,22 @@ mlx_lm.server \
 **Why this is the right model for most Apple Silicon setups:**
 - Q4 INT4: ~18 GB VRAM → fits M1 Max 32 GB
 - ~50 t/s on M5 Max 128 GB (vs ~10 t/s for dense 27B BF16)
-- ~20-30 t/s on M1 Max 32 GB with llama.cpp MoE offload
+- **45.2 t/s prose / 37.1 t/s code on M1 Max 32 GB with mlx-lm** (measured 2026-05-02)
 - SWE-bench Verified: 73.4 (vs 77.2 for dense 27B) — 3.8-point quality gap
 
-At 50 t/s on M5 Max, Hephaestus's ~87K generation token story (CTRF-003 equivalent) drops from ~5 hours to ~30 minutes. The 3.8-point SWE-bench gap is almost certainly worth it.
+**M1 Max 32 GB measured results (mlx-lm, `mlx-community/Qwen3.6-35B-A3B-4bit`, 2026-05-02):**
+
+| Task | t/s |
+|---|---|
+| Prose (300 tok) | 45.2 |
+| Code (300 tok) | 37.1 |
+| **Average** | **~41** |
+
+This is **faster than the A100-SXM4-80GB running the dense 27B with SGLang (28.2 t/s)**. The MoE architecture makes the difference — only 3B active parameters per forward pass vs 27B for the dense model, fully offsetting the M1 Max's lower raw compute vs an A100.
+
+Tool-call smoke test: `finish_reason: tool_calls`, `content: null`, valid JSON arguments — wire-compatible with Roo Code.
+
+At ~41 t/s on M1 Max, Hephaestus's ~87K generation token story (CTRF-003 equivalent) drops from ~5 hours to ~35 minutes, locally, at zero cost. The 3.8-point SWE-bench gap is almost certainly worth it.
 
 **llama.cpp MoE offload command (M1 Max 32 GB):**
 
@@ -1301,7 +1313,7 @@ The llama.cpp path (`Luce`) is the other option and doesn't require the gated mo
 
 | Device | Model | Engine | Command section |
 |---|---|---|---|
-| M1 Max 32 GB | `Qwen3.6-35B-A3B-Q4_K_M` | llama.cpp + MoE offload | §17.4 |
+| M1 Max 32 GB | `mlx-community/Qwen3.6-35B-A3B-4bit` | mlx-lm | §17.4 |
 | M1 Max 64 GB | `Qwen3.6-27B-UD-MLX-8bit` or 35B-A3B Q4 | mlx-lm or llama.cpp | §17.3 / §17.4 |
 | M5 Max 48 GB | `Qwen3.6-35B-A3B-Q4` (full VRAM) | mlx-lm | §17.4 |
 | M5 Max 128 GB | `Qwen3.6-27B` BF16 or 35B-A3B Q4 | mlx-lm | §17.3 |
