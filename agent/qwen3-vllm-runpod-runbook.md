@@ -680,7 +680,7 @@ A controlled comparison of two coding agents on the same brief. Documented here 
 | Contestant | Model | Driver | Branch |
 |---|---|---|---|
 | **Hephaestus** | Qwen3.6-27B (bf16, vLLM on RunPod A100) | Roo Code | `chore/lint-001-qwen` |
-| **Daedalus** | Claude Opus 4.6 | AntiGravity | `chore/lint-001-opus` |
+| **Daedalus** | Claude Opus 4.6 | the IDE | `chore/lint-001-opus` |
 
 Both received the identical brief at `.argos/CHORE-LINT-001/brief.md` (committed to both contestant branches by Argos before the run, so each agent read it from the same on-branch path). The brief asked for a single mechanical refactor: replace 14 `(app as any).<member>` casts in one Vitest integration test file with a proper Fastify `FastifyInstance` module augmentation. Acceptance criteria: lint clean, typecheck clean, tests pass, small diff.
 

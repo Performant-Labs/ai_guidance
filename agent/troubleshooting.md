@@ -59,8 +59,8 @@ This document catalogs every type of process hang encountered in DDEV/Drupal/Pla
 
 | # | Hang Type | Symptom | Fix |
 |---|-----------|---------|-----|
-| 28 | AntiGravity IDE hidden consent button | Approve/Reject buttons never appear after GFM alert block | Cancel session, restart, avoid `> [!...]` before tool calls |
-| 29 | AntiGravity IDE stuck / unresponsive | IDE freezes completely, no response to any input | `git config --local --unset extensions.worktreeConfig` |
+| 28 | the IDE hidden consent button | Approve/Reject buttons never appear after GFM alert block | Cancel session, restart, avoid `> [!...]` before tool calls |
+| 29 | the IDE stuck / unresponsive | IDE freezes completely, no response to any input | `git config --local --unset extensions.worktreeConfig` |
 
 ---
 
@@ -1008,10 +1008,10 @@ It may also report DDEV container health status.
 
 ---
 
-## 28. AntiGravity IDE Hidden Consent Button (Markdown Render Conflict)
+## 28. IDE Hidden Consent Button (Markdown Render Conflict)
 
 ### Symptom
-The AntiGravity IDE agent attempts to execute a tool (e.g., `run_command`, `replace_file_content`, `grep_search`) and enters a `WAITING` state. The **Approve** and **Reject** buttons never appear in the chat UI. The agent is permanently deadlocked — it cannot proceed, and there is no visible way to approve or reject the action.
+The AI IDE agent attempts to execute a tool (e.g., `run_command`, `replace_file_content`, `grep_search`) and enters a `WAITING` state. The **Approve** and **Reject** buttons never appear in the chat UI. The agent is permanently deadlocked — it cannot proceed, and there is no visible way to approve or reject the action.
 
 ### Root Cause
 The IDE's UI renderer fails to inject the tool-approval block when the agent's immediately preceding response contains complex Markdown formatting — specifically:
@@ -1021,7 +1021,7 @@ The IDE's UI renderer fails to inject the tool-approval block when the agent's i
 
 The alert block syntax corrupts the rendering context, and the Approve/Reject button block is silently swallowed.
 
-**Note:** As of April 2026, this is an open bug with no upstream code fix. The AntiGravity IDE does not have a public issue tracker; the workarounds below are the only available mitigations.
+**Note:** As of April 2026, this is an open bug with no upstream code fix. The AI IDE does not have a public issue tracker; the workarounds below are the only available mitigations.
 
 ### Detection
 - The agent's last response contained a `> [!...]` alert block or deeply nested Markdown
@@ -1044,17 +1044,17 @@ Use standard **bold text** for emphasis instead of alert blocks when a tool call
 **For users:** Add a standing instruction to your system prompt or session opener:
 > "Never use GFM alert blocks (`> [!...]`) or complex Markdown immediately before a tool call."
 
-**Session reset:** If the UI becomes unresponsive, fully close and reopen the AntiGravity panel before starting a new session.
+**Session reset:** If the UI becomes unresponsive, fully close and reopen the IDE panel before starting a new session.
 
 ### Status
-**Open — no upstream fix.** The AntiGravity IDE is a closed-source product; the root fix (decoupling the Markdown renderer from the tool-block renderer) must come from the AntiGravity/DeepMind team. Monitor for IDE updates.
+**Open — no upstream fix.** The AI IDE is a closed-source product; the root fix (decoupling the Markdown renderer from the tool-block renderer) must come from the AI vendor team. Monitor for IDE updates.
 
 ---
 
-## 29. AntiGravity IDE Stuck / Stops Responding
+## 29. the IDE Stuck / Stops Responding
 
 ### Symptom
-The AntiGravity IDE freezes completely and stops responding. The UI is unresponsive — no commands execute, no chat messages are processed, and normal session recovery steps (cancel, restart agent) have no effect.
+The AI IDE freezes completely and stops responding. The UI is unresponsive — no commands execute, no chat messages are processed, and normal session recovery steps (cancel, restart agent) have no effect.
 
 ### Root Cause
 A `git` repository in the workspace has a local config entry `extensions.worktreeConfig` set. This extension signals to Git that the repository uses per-worktree configuration, which can trigger unexpected behavior in tooling that runs `git` commands internally (such as the IDE's file-watching and workspace-indexing subsystems). When the IDE's internal `git` calls encounter this extension flag in combination with certain workspace states, it can cause the IDE process to deadlock or hang.
@@ -1071,10 +1071,10 @@ Run the following command from the root of the affected repository:
 ```bash
 git config --local --unset extensions.worktreeConfig
 ```
-Then restart the AntiGravity IDE. The IDE should recover normally after the extension is removed.
+Then restart the IDE. The IDE should recover normally after the extension is removed.
 
 ### Prevention
-- Avoid using `git worktree` commands or enabling `extensions.worktreeConfig` in repositories that are actively open in the AntiGravity IDE.
+- Avoid using `git worktree` commands or enabling `extensions.worktreeConfig` in repositories that are actively open in the IDE.
 - If you must use Git worktrees, open the worktree directories as separate IDE workspaces rather than as subdirectories of the same workspace.
 - After any `git worktree add` or `git config` changes in an open workspace, restart the IDE to prevent stale state.
 
@@ -1128,4 +1128,4 @@ When something appears stuck, check in this order:
 22. **Multi-repo loop appears hung?** → Sequential SSH handshakes naturally take ~35 seconds. Wait 60s before intervening.
 
 ### IDE / Tooling
-23. **AntiGravity IDE completely frozen / unresponsive?** → Run `git config --local --unset extensions.worktreeConfig` in the workspace repo, then restart the IDE. See Issue #29.
+23. **the IDE completely frozen / unresponsive?** → Run `git config --local --unset extensions.worktreeConfig` in the workspace repo, then restart the IDE. See Issue #29.
