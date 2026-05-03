@@ -1573,7 +1573,13 @@ verify ubatch: 1 tok, 66ms (66ms/tok)
 2. **Test code generation specifically.** If acceptance follows the A100 pattern (30–44% on code, 0% on prose), then n-gram becomes a workload-specific switch: enable for code, disable for prose. Not a uniform speedup.
 3. **Consider the experiment closed for chat use.** At 14.54 t/s baseline and the bandwidth ceiling already reached on this hardware, the cost of further optimization may exceed the value. The MoE model already delivers 7× the baseline — the remaining gains are smaller and harder to capture.
 
-**Net result:** N-gram on Qwen3.6-35B-A3B at Ganymede is **not a recommended optimization** for chat workloads given the current toolchain. Likely net negative on prose, untestable on code.
+**Net result:** N-gram on Qwen3.6-35B-A3B at Ganymede is **blocked, not concluded.** Three paths could unblock it:
+
+1. **LM Studio adds n-gram support to the UI.** Underlying llama.cpp already supports it; LM Studio's renderer already has `numReuseTokens` and related plumbing — the gap is small. Could land in any release.
+2. **Stock llama.cpp `llama-server` works correctly.** The thinking-suppression bug is likely buun-fork-specific (the fork is heavily customized for DFlash). Stock vanilla llama.cpp's `--reasoning-budget 0` may work and unblock benchmarking immediately. Worth a 10-minute test next time.
+3. **buun-llama-cpp fixes the bug.** Lower probability; maintainer is focused on DFlash, not chat-template behavior on MoE variants.
+
+**However, one finding will persist regardless of tooling:** 0% n-gram acceptance on prose is a property of the model + prompt distribution, not the toolchain. Any backend running n-gram on Qwen3.6-35B-A3B with prose will see near-zero acceptance — natural language doesn't repeat enough across short windows. So even with perfect tooling, n-gram is likely a net loss for prose on this model. **Code generation is the only workload where it might pay off** (A100 saw 30–44% acceptance on TypeScript boilerplate), and that's the test still worth running when tooling allows.
 
 ---
 
