@@ -1481,7 +1481,10 @@ All tests: LM Studio Vulkan backend, Windows 11, 48 GB LPDDR5X.
 | Qwen3.6-27B Q4_K_M | N-gram | 3.12 t/s | +49%; best for chat |
 | Qwen3.6-27B Q4_K_M | DFlash (chat) | 0.93 t/s | Worse than baseline; do not use for chat |
 | Qwen3.6-27B Q4_K_M | DFlash (raw completion) | 4.23 t/s | +101%; only useful without chat format |
-| **Qwen3.6-35B-A3B UD-Q4_K_M** | **None** | **14.54 t/s** | **Recommended default** |
+| **Qwen3.6-35B-A3B UD-Q4_K_M** | **None** | **14.54 t/s** | **Recommended default**; at theoretical bandwidth ceiling |
+| Qwen3.6-35B-A3B UD-Q4_K_M | N-gram (prose) | ~12 t/s (est) | 0% acceptance; net loss; see §18.8 |
+| Qwen3.6-35B-A3B UD-Q4_K_M | N-gram (code) | Untested | Blocked by thinking-suppression bug in buun-llama-cpp |
+| Qwen3.6-35B-A3B UD-Q4_K_M | MTP | N/A | MTP head dropped by Unsloth quant; see §18.7 |
 
 ---
 
@@ -1494,7 +1497,7 @@ All tests: LM Studio Vulkan backend, Windows 11, 48 GB LPDDR5X.
 | Tool-call parser `qwen3_coder` | LM Studio handles internally |
 | 128K context minimum for agentic workloads | **Yes** — same session dynamics |
 | Vocab mismatch for standard Qwen3 draft models | **Yes** — Qwen3.6 uses 248,320-token vocab; any Qwen3-0.6B/1.7B draft is rejected |
-| ngram +14.6% code on A100 | Measured **+49% on 890M** — larger gain because verification overhead is proportionally smaller at lower base speed |
+| ngram +14.6% code on A100 | **Mixed.** On 27B dense: measured +49% (chat). On 35B-A3B MoE: 0% acceptance on prose → ~−17% (see §18.8). Code untested due to tooling blocker |
 | SGLang NEXTN blocked on A100 by VRAM | Irrelevant — SGLang is Linux/CUDA only |
 | MTP native head (~2× decode, 80–90% acceptance) | **Not available** — confirmed absent from `unsloth/Qwen3.6-35B-A3B-UD-Q4_K_M.gguf` (see §18.7) |
 
@@ -1517,10 +1520,69 @@ reader = gguf.GGUFReader('Qwen3.6-35B-A3B-UD-Q4_K_M.gguf')
 
 ---
 
+### 18.8 N-gram on 35B-A3B: blocked by tooling, partial findings (2026-05-02)
+
+**Context:** Wanted to test n-gram on the MoE model after MTP was confirmed absent. Two blockers were discovered.
+
+**Blocker 1: LM Studio doesn't support n-gram speculative decoding.**
+
+LM Studio's UI exposes only model-based draft speculation. Inspection of the renderer bundle confirms the schema:
+
+```
+speculativeDecoding.draftModel             (required, empty = disabled)
+speculativeDecoding.maxTokensToDraft
+speculativeDecoding.minDraftLengthToConsider
+speculativeDecoding.minContinueDraftingProbability
+speculativeDecoding.numReuseTokens
+```
+
+The `enabled` flag is computed as `'' !== draftModel`, i.e., spec decoding is OFF unless a real draft model is set. There is no n-gram / prompt-lookup option. To test n-gram on this hardware, you must run `llama-server` directly (bypassing LM Studio).
+
+**Blocker 2: buun-llama-cpp doesn't suppress thinking on Qwen3.6-35B-A3B.**
+
+Ran `llama-server` directly with `--spec-type ngram-simple`, which is the buun-llama-cpp equivalent of vLLM's `{"method":"ngram"}`. Tried three approaches to suppress reasoning tokens:
+
+| Flag | Result |
+|---|---|
+| `-rea off` | Reasoning continues; ~10,000 hidden thinking tokens generated before output |
+| `--reasoning-budget 0` | Reasoning continues; ~7,000 hidden thinking tokens before output |
+| `/no_think` system message | Untested — interrupted before completion |
+
+A 500-token completion request took 600+ seconds because the model was generating thousands of unbilled `<think>` tokens behind the API. The `completion_tokens` field reported only the post-thinking output (often 6–60 tokens) but the wall-clock time included all thinking. This made benchmarking impossible.
+
+**Partial finding from llama-server logs (before giving up):**
+
+While generating prose with `--spec-type ngram-simple` (`size-n=4, size-m=5, draft-max=5`), the server logged speculative decoding metrics every cycle:
+
+```
+spec cycle (1 slots): draft=17ms verify=66ms accept=0.0ms other=0.1ms total=83ms
+verify ubatch: 1 tok, 66ms (66ms/tok)
+```
+
+- **Acceptance rate on prose: 0%** (consistent across hundreds of cycles)
+- **Per-token cost with n-gram overhead: ~83 ms** (17 ms draft + 66 ms verify)
+- **Equivalent throughput: ~12 t/s** (vs 14.54 t/s baseline)
+
+**Conclusion for prose:** N-gram on 35B-A3B prose is a net loss on this hardware — the draft overhead (17 ms/token) is added to every token but no draft tokens are accepted, so the speedup is negative (~−17%).
+
+**Conclusion for code: untested.** The thinking-suppression bug prevented a clean code benchmark. Based on the A100 data (§14.3), code might still be a net positive (30–44% acceptance there), but this needs a working build to verify. Estimated upper bound from A100 ratios: **~17 t/s on code** if 30%+ acceptance carries over, vs **~12 t/s on prose**.
+
+**Path forward (not pursued in this session):**
+
+1. **Fix buun-llama-cpp's thinking suppression for Qwen3.6-35B-A3B** — the `-rea off` / `--reasoning-budget` flags don't take effect for this model. Likely a chat-template integration bug specific to the MoE variant. Check upstream stock llama.cpp (non-buun) for whether it's a fork-specific issue.
+2. **Test code generation specifically.** If acceptance follows the A100 pattern (30–44% on code, 0% on prose), then n-gram becomes a workload-specific switch: enable for code, disable for prose. Not a uniform speedup.
+3. **Consider the experiment closed for chat use.** At 14.54 t/s baseline and the bandwidth ceiling already reached on this hardware, the cost of further optimization may exceed the value. The MoE model already delivers 7× the baseline — the remaining gains are smaller and harder to capture.
+
+**Net result:** N-gram on Qwen3.6-35B-A3B at Ganymede is **not a recommended optimization** for chat workloads given the current toolchain. Likely net negative on prose, untestable on code.
+
+---
+
 *Compiled by Argos (Claude Opus 4.7), 2026-04-30, after a single ~5-hour debugging session with André to bring up Qwen3.6-27B for the CHORE-LINT-001 head-to-head experiment vs Daedalus (Opus 4.6).*
 *§14 added by Argos (Claude Sonnet 4.6), 2026-05-02, after adding ngram speculative decoding to the template and running post-change benchmarks.*
 *§14.6 added by Argos (Claude Sonnet 4.6), 2026-05-02, after a failed attempt to use Qwen3-0.6B as a draft model.*
 *§15 added by Argos (Claude Sonnet 4.6), 2026-05-02, after surveying the X/GitHub community landscape for Qwen3.6-27B inference optimizations.*
 *§16 added by Argos (Claude Sonnet 4.6), 2026-05-02, after creating the SGLang parallel experiment template (`q8ycgrr2s0`) and running baseline benchmarks. NEXTN blocked; baseline SGLang is 8% faster than vLLM baseline.*
 *§18 added by Argos (Claude Haiku 4.5), 2026-05-02, after benchmarking Qwen3.6 models on Ganymede (Minisforum AI X1 Pro, Radeon 890M, 48 GB LPDDR5X) — DFlash build, n-gram spec decoding, and MoE 35B-A3B validated.*
+*§18.7 added 2026-05-02 (Claude Haiku 4.5) after inspecting GGUF metadata to confirm MTP head absence in Unsloth UD-Q4_K_M.*
+*§18.8 added 2026-05-02 (Claude Opus 4.7) after attempting n-gram spec decoding on 35B-A3B; documented the LM Studio tooling gap and buun-llama-cpp thinking-suppression bug that blocked clean benchmarks. Partial finding: 0% n-gram acceptance on prose, net negative.*
 *§17 added by Argos (Claude Sonnet 4.6), 2026-05-02, after testing SGLang/NEXTN limits and connecting findings to Apple Silicon deployment paths.*
