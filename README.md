@@ -30,7 +30,9 @@ ai_guidance/
 │   ├── tailwind/            # Tailwind CSS v4 + Flowbite conventions
 │   ├── vitest/              # Vitest unit + integration testing patterns
 │   └── vue/                 # Vue 3 + TypeScript + Composition API
-├── go/                      # Go testing conventions
+├── languages/               # Language-level conventions (vs framework-level above)
+│   ├── css/                 # CSS change workflow + design-token discipline
+│   └── go/                  # Go testing conventions
 ├── projects/
 │   └── opencloud/           # Project-specific planning docs
 ├── snippets/                # Reusable code snippets
@@ -126,6 +128,12 @@ After modifying your `.zshrc`, run `source ~/.zshrc`. You can now run `guidance:
 | [`testing/verification-cookbook.md`](testing/verification-cookbook.md) | The Three-Tier Verification Hierarchy (Tier 1 headless → Tier 2 ARIA → Tier 3 visual) |
 | [`testing/visual-regression-strategy.md`](testing/visual-regression-strategy.md) | Tier 3 budget rules, pre-condition ladder, gate cadence |
 | [`testing/agent-failure-log.md`](testing/agent-failure-log.md) | Running log of agent-side test failures and root causes |
+
+### Language-level guidance
+| File | Purpose |
+|------|---------|
+| [`languages/css/css-change-workflow.md`](languages/css/css-change-workflow.md) | 7-step workflow for making CSS changes at the correct layer (5-layer token hierarchy + DOM-inspection gate) |
+| [`languages/go/testing.md`](languages/go/testing.md) | Go testing conventions (file placement, naming, build tags) |
 
 ### Framework conventions
 | File | Purpose |
