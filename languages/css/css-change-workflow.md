@@ -33,6 +33,75 @@ Every token-driven design system can be described by five layers, ordered from b
 
 The higher the layer, the more places the change applies. The lower the layer, the more risk of fighting overrides accumulating across sessions.
 
+### Token kinds
+
+The model applies to **all** token kinds, not just colour. Quick examples of where each kind tends to live:
+
+| Token kind | Typical L1 | Typical L2 derivation | Common L4–L5 risk |
+|---|---|---|---|
+| Colour | `--color-brand` | `oklch()` / `color-mix()` shade ramp | Brand drift from one-off hex codes at L5 |
+| Spacing | `--space-1` (e.g., `0.25rem`) | Modular scale: `--space-2` = `--space-1 * φ` | Inconsistent gaps when L5 hard-codes `padding: 14px` |
+| Typography | `--font-size-base`, `--font-sans` | Type ramp via `clamp()` and modular scale | Off-scale font sizes injected at L4 break vertical rhythm |
+| Border radii | `--radius-md` | `--radius-lg` = `--radius-md * 2` | Inconsistent corner shapes when L5 sets `border-radius` directly |
+| Shadows | `--shadow-color`, `--shadow-md` | Layered shadow recipes derived from a single colour | L5 shadow overrides reduce dimensional consistency |
+| Z-index scale | `--z-base`, `--z-overlay`, `--z-modal` | (rarely derived) | Stacking-context wars when L5 sets arbitrary integers |
+| Animation timing | `--duration-fast`, `--ease-out` | (rarely derived) | Inconsistent motion when L5 inlines `transition: ... 250ms` |
+
+Z-index in particular is a poor fit for L5 because stacking context interactions are global by nature — keep z-index decisions at L4.
+
+---
+
+## Outside the layer model
+
+Some CSS isn't a value — it's a **condition** or a **structural at-rule**. These don't get their own layer; they attach to the layer of the thing they modify (for conditions) or default to L4 (for structural at-rules).
+
+### State pseudo-classes
+
+Style for an interaction state lives at the same layer as the resting style of the same selector.
+
+- `:hover` — pointer/cursor over the element
+- `:focus` — keyboard or programmatic focus
+- `:focus-visible` — focus that the browser deems "should show a ring" (keyboard, not mouse). Prefer this over `:focus` for ring/outline styling so mouse users don't get the noisy ring
+- `:active` — being clicked or activated
+- `:disabled` — disabled state (form controls, ARIA-disabled buttons)
+- `:visited` — visited link (with privacy-restricted property set)
+- `:checked`, `:indeterminate` — form control state
+
+A button's `:hover` style sits in the same `@layer components` block as the button's resting style. A pill's `:focus-visible` ring sits in the same component class. **Don't** push interaction states down a layer "because they're separate" — they're not.
+
+### Responsive and contextual conditions
+
+Same rule: the at-rule attaches to the layer of the rule it wraps.
+
+- `@media (max-width: …)`, `@media (prefers-reduced-motion)`, `@media (prefers-color-scheme: dark)`
+- `@container (...)`
+- `@supports (...)`
+
+```css
+/* Still L4 — responsive variant of an L4 component class */
+@layer components {
+  .btn-primary { padding: var(--space-2) var(--space-4); }
+  @media (max-width: 640px) {
+    .btn-primary { padding: var(--space-1) var(--space-3); }
+  }
+}
+```
+
+`prefers-color-scheme: dark` is the conventional trigger for L3 dark-mode token overrides — it's still L3, just media-gated.
+
+### Structural at-rules
+
+These declare *things*, not *values*. They default to L4.
+
+- `@keyframes` — animation definitions
+- `@font-face` — font-file declarations (in `app-fonts.css` or equivalent — **never** at L5)
+- `@property` — typed custom-property registrations (lets the browser interpolate them)
+- Print stylesheets (`@media print { ... }`)
+
+Always at L4 because they're shared infrastructure. A keyframe defined in a single Vue SFC's `<style scoped>` cannot be reused — that's an anti-pattern.
+
+`@property` registrations have one wrinkle: they belong with their token. If `--gradient-angle` is L1 (a design token), its `@property` registration sits next to the L1 declaration. If `--btn-shake-amplitude` is L4-component-internal, its registration lives in `@layer components`.
+
 ---
 
 ## The Steps
@@ -53,7 +122,20 @@ This is the only required input to start the loop.
 
 the AI does **two passes** — bottom-up trace to find the origin, then a top-down eligibility check to find the highest layer where the fix is correct. Nothing is proposed until each higher layer has been explicitly ruled out.
 
-**Pass 1 — Bottom-up trace (find the origin):**
+#### Modifying an existing token vs. adding a new one
+
+Before Pass 1, the AI determines whether the requested change can be expressed by **modifying an existing token** or whether it requires **adding a new token to the design system**. The two paths share Step 3 (human approval) but differ in scope:
+
+| Path | What happens at Step 2 | What Step 3 approves |
+|---|---|---|
+| **Modify existing** | Standard two-pass trace below | Layer + scope of the modification |
+| **Add new token** | Trace shows there is **no existing token** that can carry this change. AI proposes a new token (name + initial value + target layer, usually L1) and notes which existing tokens it should be derived-from-or-related-to | Two things: (1) extending the design system at all, and (2) the proposed name, value, and layer of the new token |
+
+The "add new token" path is more deliberate because adding is harder to reverse than modifying — every consumer that adopts the new token becomes coupled to its name. When in doubt, the AI proposes "modify" first. The human can request "add" if modify isn't sufficient.
+
+A new token's first appearance in the change log uses the `[added]` tag (see [Change Log](#change-log)).
+
+#### Pass 1 — Bottom-up trace (find the origin)
 ```
 Property:      color on <a> inside .site-footer
 Current value: oklch(0.48 0.12 264)  [computed]
@@ -89,7 +171,9 @@ If a row is checked but the evidence string is missing, the gate is closed. Pass
 
 ---
 
-**Pass 2 — Top-down eligibility (rule out higher layers first):**
+#### Pass 2 — Top-down eligibility (rule out higher layers first)
+
+**Worked example A — colour change ("the footer link colour is too light"):**
 ```
 L1 check: Is the canonical config value wrong?
           → brand_color is set to #1B3A6B — correct brand value. NOT the fix.
@@ -106,6 +190,39 @@ L3 check: Can a variant-zone token override solve this?
    html .theme--primary { --link-color: #F4A942; }
    File: css/base.css
    Ruling: L1 and L2 checked and ruled out.
+```
+
+**Worked example B — spacing change ("the case-row padding feels too tight on mobile"):**
+```
+L1 check: Is the canonical spacing scale wrong?
+          → --space-1 = 0.25rem, --space-2 = 0.5rem, etc. The scale is internally
+             consistent and used elsewhere correctly. NOT the fix.
+
+L2 check: Is the derived padding computed incorrectly?
+          → .case-row uses padding: var(--space-2) var(--space-3) — derives correctly
+             from L1. Tight feel is a deliberate density choice at default viewport,
+             not a bug in derivation. NOT the fix.
+
+L3 check: Is there a "compact" or "comfortable" density variant zone?
+          → No density-variant zones exist in this project. Adding one would be a
+             new-token request (see "Modifying vs adding"). NOT the fix today.
+
+L4 check: Should the .case-row component class itself bump padding at the mobile
+          breakpoint?
+          → YES. This is a responsive concern of the component, attaches to the
+             same L4 selector, gated by @media (max-width: 640px).
+             Correct layer: L4. Scope: every .case-row, mobile only.
+
+→ Proposed fix: L4
+   @layer components {
+     .case-row { padding: var(--space-2) var(--space-3); }
+     @media (max-width: 640px) {
+       .case-row { padding: var(--space-3) var(--space-4); }
+     }
+   }
+   File: src/assets/input.css
+   Ruling: L1+L2+L3 checked and ruled out. Responsive variant attaches to L4
+   per "Outside the layer model".
 ```
 
 Human sees the full two-pass report — nothing has been written yet.
@@ -193,11 +310,27 @@ the AI follows the Three-Tier Verification Hierarchy defined in [`../../testing/
    # Confirm the token landed
    curl -sk "$URL" | grep -oE -- '--link-color:[^;]+;' | head -1
    ```
-2. **T2 — ARIA structural tree, 5–10 s.** Read the rendered structure and confirm the **computed** value of the changed property matches what was written. T2 is required when the change affects structural behaviour (layout, visibility, focus order) **or** when T1 alone cannot confirm the fix landed (e.g., the property is set by JS at runtime). If the computed value does not match what was written, something downstream is overriding it — the AI re-runs Step 2 (trace) on the conflicting rule; the human is not involved unless the conflict requires a scope decision.
+2. **T2 — ARIA structural tree, 5–10 s.** Read the rendered structure and confirm the **computed** value of the changed property matches what was written. T2 is required when the change affects structural behaviour (layout, visibility, focus order) **or** when T1 alone cannot confirm the fix landed (e.g., the property is set by JS at runtime).
+3. **Affected component / E2E test suite.** If the change touches a component that has Vitest component tests or Playwright E2E coverage, the AI **must** run the affected test files as part of confirming T2. A computed-style change can break a snapshot or screenshot test that T1/T2 alone won't surface. See the relevant testing conventions doc for your stack — for Vue 3 + Vitest see [`../../frameworks/vue/conventions.md`](../../frameworks/vue/conventions.md) and [`../../frameworks/vitest/conventions.md`](../../frameworks/vitest/conventions.md).
 
-**Never skip T1 in favour of a screenshot. Never skip T2 when the change is structural.**
+**Never skip T1 in favour of a screenshot. Never skip T2 when the change is structural. Never declare T2 passing while affected component tests are red.**
 
 The human sees nothing unless T1 or T2 fails.
+
+#### Diagnosing T2 failures
+
+If the computed value does not match what was written, **something downstream is overriding the rule.** The AI does not jump straight back to Step 2; it runs this diagnostic in order and reports the finding before the next change attempt:
+
+1. **Specificity calculation.** Identify all rules in the cascade that touch this property on this element. Compute their specificity as `(inline, ID, class+attr+pseudo-class, type+pseudo-element)`. The rule with highest specificity wins ties; later rules win same-specificity ties. If a higher-specificity rule than the one we wrote is delivering the wrong value, **that rule is the conflict** — not ours.
+2. **`!important` audit.** Grep the project's CSS for `!important` declarations of the same property. Any of them that *also* match this element will trump our rule regardless of specificity. `!important` declarations are themselves a smell — flag any found that aren't already in the change log.
+3. **Cascade-layer order check.** If the project uses CSS `@layer` ordering (recommended — see [Layer mappings by stack](#layer-mappings-by-stack)), confirm our rule lives in a layer declared *after* any conflicting rule's layer. Layer order beats specificity within layered CSS.
+4. **Computed-style trace.** In a real browser (DevTools or Playwright headless), inspect the element's computed style for this property. The "Styles" panel lists all declarations, ordered by override. Identify the winning declaration's source file and selector — that's the actual conflict.
+5. **JS runtime override.** If the property is being set by JavaScript at runtime (inline `element.style.foo = …` or a CSS-in-JS library), no static rule will land. Confirm by checking for `style="..."` attributes on the rendered element; trace which JS code sets it.
+
+After diagnosis, the AI **reports the conflict source** (file + line + reason) and:
+- If the conflict is itself an entry in the change log: flag the [Loop](#the-loop) violation and propose unwinding.
+- If the conflict is a higher-specificity rule with no log entry: that rule pre-dates the workflow. Add a `[discovered]`-tagged log entry for it, then re-run Step 2 with the new context.
+- If the conflict is `!important` or runtime JS: surface to the human at Step 3 — the fix usually requires removing the conflict, which is a scope decision.
 
 ---
 
@@ -230,6 +363,20 @@ Before Step 2 of any new change request, **the AI reads the change log first.** 
 
 This prevents the accumulation of fighting overrides across sessions.
 
+Entries marked `[superseded]` or `[removed]` (see [Change Log](#change-log) for syntax) **do not** trigger the Loop warning — they are intentionally archived and no longer active. The AI skips them when scanning for conflicts.
+
+### When to skip the workflow
+
+The full 7-step loop is overkill for a few specific cases. The AI may skip the workflow when **all** of the following are true:
+
+- The change lives in code that is **explicitly throwaway**: a debug overlay, a single-render demo, a sandbox route, a one-off prototype that won't ship to users.
+- The change is **scoped to a single file** that is itself flagged as throwaway (e.g., `*.sandbox.vue`, `playground/`, `__debug__/`).
+- The change does **not** modify any token, component class, or theme-zone selector that is reachable from production code.
+
+If any of those is false, the workflow applies. **Skipped changes do not get a change-log entry** — the log is for production-affecting decisions only.
+
+When in doubt, do the workflow. Skip is a deliberate exemption, not a default.
+
 ---
 
 ## Change Log
@@ -241,26 +388,57 @@ A single project-wide log file. Common locations:
 
 Pick one, commit it to git, and have the AI update it at Step 4 and read it at the start of every new session.
 
-**Format:**
+**Format (active entry):**
 ```
-[L<N>] <token-or-property> in <selector> → <value>  <file>:L<line>  YYYY-MM-DD  [note]
+[L<N>] <token-or-property> in <selector> → <value>  <file>:L<line>  YYYY-MM-DD  [tag]
   Ruling: <one-line summary of the Pass 2 trace>
 ```
 
+**Tags:**
+
+| Tag | Meaning |
+|---|---|
+| (no tag) | Standard active entry |
+| `[added]` | This entry is the **first appearance of a new token** in the design system (vs. modifying an existing one) |
+| `[discovered]` | This entry retroactively records an override that pre-dated the workflow, surfaced via T2 conflict diagnosis |
+| `[superseded by L<line>]` | A later entry made this one obsolete. The back-pointer references the line number of the superseding entry |
+| `[removed YYYY-MM-DD]` | The override was deleted from the codebase — the entry is kept in the log for history |
+
 **Example entries:**
 ```
-[L1] brand_color → #1B3A6B  config (cms-cli)  2026-04-17
-  Ruling: brand spec change — config layer is the only correct fix.
+L1: [L1] brand_color → #1B3A6B  config (cms-cli)  2026-04-17
+      Ruling: brand spec change — config layer is the only correct fix.
 
-[L3] --color-surface in .theme--white → #F5F5F2  css/base.css:L12  2026-04-18
-  Ruling: L1+L2 correct; surface is variant-zone-specific.
+L4: [L1] --space-3xl  →  6rem  src/assets/input.css:L18  2026-04-17  [added]
+      Ruling: existing scale ends at --space-2xl=4rem; hero needed wider spacing.
 
-[L3] --link-color in .theme--primary → #F4A942  css/base.css:L47  2026-04-18
-  Ruling: deliberate brand deviation from auto-derived colour.
+L7: [L3] --color-surface in .theme--white → #F5F5F2  css/base.css:L12  2026-04-18
+      Ruling: L1+L2 correct; surface is variant-zone-specific.
 
-[L5] --button-bg in .button--primary → #F4A942  css/button.css:L3  2026-04-19
-  Ruling: L3 available but scoped down — primary-button-only emphasis intended.
+L10: [L3] --link-color in .theme--primary → #F4A942  css/base.css:L47  2026-04-18
+       Ruling: deliberate brand deviation from auto-derived colour.
+
+L13: [L5] --button-bg in .button--primary → #F4A942  css/button.css:L3  2026-04-19  [superseded by L20]
+       Ruling: L3 available but scoped down — primary-button-only emphasis intended.
+
+L16: [L5] !important on .legacy-banner color  src/assets/legacy.css:L88  unknown date  [discovered]
+       Ruling: pre-workflow override exposed via T2 conflict diagnosis on 2026-04-22.
+       Conflict with L10 — needs removal once banner is replaced.
+
+L19: [L4] .footer color: #6b7280  src/assets/input.css:L102  2026-04-25  [removed 2026-05-02]
+       Ruling: replaced by L3 token --color-text-muted; entry kept for history.
+
+L20: [L3] --button-bg in .theme--primary → #F4A942  css/base.css:L60  2026-04-26
+       Ruling: L5 entry at L13 was scoped too narrow — promoted to L3 zone.
 ```
+
+### Pruning the log
+
+When a new change makes an old entry obsolete, **mark it superseded; don't delete the line.** The supersession back-pointer (`[superseded by L20]`) lets future sessions trace the history of a decision.
+
+The change log is append-mostly: lines never get reordered (it would invalidate every existing back-pointer). Two exceptions:
+- Adding a `[superseded by L<n>]` or `[removed YYYY-MM-DD]` tag to an existing line — same-line edit, expected.
+- A periodic archival pass (every ~6 months) that moves all entries tagged `[superseded]` or `[removed]` into a `## Archive` section at the bottom of the file. Active entries stay at the top. The Loop scan only reads the active section.
 
 ---
 
@@ -291,6 +469,14 @@ The 5-layer model is abstract. Here is how it maps to common stacks. Add your pr
 | L4 | `@layer components` block in `input.css`: `.btn-primary`, `.pill-status` | Define semantic classes with `@apply` or token references inside the `@layer components` block |
 | L5 | Vue SFC `<style scoped>` or one-off utility class on the element | Edit the SFC's `<style scoped>` block |
 
+**Use CSS `@layer` to enforce cascade order.** The L1–L5 numbering should correspond to actual CSS cascade layers so the cascade enforces priority, not just specificity. Declare the order at the top of `src/assets/input.css`:
+
+```css
+@layer tokens, derived, theme, components, scoped;
+```
+
+L1 declarations live in `@layer tokens`, L2 in `derived`, L3 in `theme`, L4 in `components`, L5 in `scoped`. Tailwind v4 lays this out automatically for `@theme {}` and `@layer components {}` — you only need to add the `@layer scoped` declaration for SFC styles if you want them to participate. Without an explicit cascade-layer declaration, conflicts are resolved by selector specificity alone, which is fragile.
+
 Cache rebuild: `pnpm css:build` (or just rely on Vite HMR while developing).
 
 ### Plain CSS + design tokens + any component framework
@@ -319,8 +505,119 @@ Cache rebuild: framework-specific (e.g., `drush cr` for Drupal). Use the most-ta
 
 ---
 
+## Adopting this workflow on a new project
+
+The workflow assumes a few things already exist in the project. Bootstrap them once, then the AI can run the loop from any session.
+
+### 1. Create the change log
+
+Pick a stable path and create an empty file with a header:
+
+```bash
+# Common paths — pick one
+docs/css-change-log.md
+docs/design/css-change-log.md
+<theme>/docs/css-change-log.md
+```
+
+Initial content:
+
+```markdown
+# CSS Change Log
+
+Tracks every CSS-layer override decision per the workflow at
+languages/css/css-change-workflow.md. The AI reads this file
+at the start of every CSS change request and updates it at Step 4.
+
+## Active
+
+(no entries yet)
+
+## Archive
+
+(superseded and removed entries — periodic archival pass)
+```
+
+### 2. Document this project's L1–L5 mapping
+
+The 5-layer model is abstract. Each project resolves it concretely. Add a short doc at `docs/design/css-layer-mapping.md` (or equivalent) that names the actual files, selector patterns, and tools for *this project's* L1–L5. Use the [Layer mappings by stack](#layer-mappings-by-stack) tables above as a starting template.
+
+### 3. Configure stylelint
+
+The workflow's deterministic-tools row depends on a stylelint config that flags the patterns the workflow forbids. Use the [stylelint-config-standard](https://github.com/stylelint/stylelint-config-standard) community config as the base, then add the workflow-specific overrides:
+
+```bash
+pnpm add -D stylelint stylelint-config-standard
+```
+
+`.stylelintrc.json`:
+
+```json
+{
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "declaration-no-important": true,
+    "no-descending-specificity": null,
+    "selector-max-specificity": ["0,4,0", { "ignoreSelectors": [":root", "html"] }],
+    "selector-max-id": 0,
+    "custom-property-pattern": null
+  }
+}
+```
+
+The `declaration-no-important: true` rule is the load-bearing one — it mechanically enforces the workflow's "no `!important`" rule, leaving any override that needs to use `!important` (e.g., a `[discovered]` legacy entry) to be explicitly opted out of with a `/* stylelint-disable */` comment plus a change-log entry.
+
+`selector-max-specificity` blocks the most common specificity-war pattern (deeply-nested selectors) without forcing a rewrite of `:root` or `html`.
+
+`custom-property-pattern: null` is intentional — the workflow doesn't constrain the *naming* of custom properties (different stacks have different conventions). [`agent/naming.md`](../../agent/naming.md) covers naming conventions.
+
+### 4. Configure the pre-commit hook
+
+Run stylelint on staged CSS files before each commit. With `lefthook`:
+
+```yaml
+# lefthook.yml
+pre-commit:
+  parallel: true
+  commands:
+    stylelint:
+      glob: "*.{css,scss}"
+      run: pnpm stylelint {staged_files}
+```
+
+Or with `husky` + `lint-staged`:
+
+```json
+"lint-staged": {
+  "*.{css,scss}": ["stylelint"]
+}
+```
+
+### 5. Establish CSS cascade-layer ordering
+
+If the stack supports CSS `@layer` (Tailwind v4 native, plain CSS native, most modern build tools), declare the layer order at the top of the entry stylesheet:
+
+```css
+@layer tokens, derived, theme, components, scoped;
+```
+
+This makes the workflow's L1–L5 priority enforced by the cascade itself, not just by specificity. See [Layer mappings by stack](#layer-mappings-by-stack) for stack-specific notes.
+
+### 6. First commit
+
+Commit the empty log, the layer-mapping doc, the stylelint config, and the cascade-layer declaration in one bootstrap commit:
+
+```
+chore(css): adopt CSS Change Workflow — bootstrap log, mapping, lint, cascade
+```
+
+After this, every CSS change goes through the 7-step workflow.
+
+---
+
 ## See also
 
 - [`../../testing/verification-cookbook.md`](../../testing/verification-cookbook.md) — Three-Tier Verification Hierarchy. T1 + T2 are mandatory at Step 5.
 - [`../../testing/visual-regression-strategy.md`](../../testing/visual-regression-strategy.md) — T3 protocol used at Step 6.
 - [`../../agent/naming.md`](../../agent/naming.md) — naming conventions for change-log file names and any new CSS class names introduced.
+- [`../../frameworks/vue/conventions.md`](../../frameworks/vue/conventions.md) and [`../../frameworks/vitest/conventions.md`](../../frameworks/vitest/conventions.md) — required reading for Step 5 component-test integration in Vue projects.
