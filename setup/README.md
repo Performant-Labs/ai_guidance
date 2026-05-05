@@ -1,119 +1,90 @@
-# AI Guidance Subtree Setup
+# Symlink Setup for `ai_guidance`
 
-When `ai_guidance` is consumed as a **git subtree** inside another project, these scripts let you `ai:pull` and `ai:push` changes without remembering the full `git subtree` invocations.
+When `ai_guidance` is consumed by another project, the host project exposes
+the rules to its AI agents by **symlinking** the source repo into
+`docs/ai_guidance/`.
 
-## What You Get
+This page documents the one-line setup, how to verify it, and how to recover
+if the symlink breaks.
 
-| Command | What it does |
-|---------|-------------|
-| `ai:pull` | Pulls the latest from `Performant-Labs/ai_guidance` into `docs/ai_guidance/` (squash merge) |
-| `ai:push` | Pushes local changes back upstream |
-| `ai:pull --model opus` | Uses a specific Claude model for the change summary |
+## One-line setup
 
-Both commands:
-- Check for a clean working tree before proceeding
-- Ask Claude CLI for advice if the tree is dirty (optional — requires [Claude CLI](https://docs.anthropic.com/en/docs/claude-cli))
-- `ai:pull` summarizes what changed using Claude after a successful pull
-
-## Prerequisites
-
-| Tool | Required | Install |
-|------|----------|---------|
-| **git** | ✅ | Xcode CLT or [git-scm.com](https://git-scm.com/) |
-| **uv** | ✅ | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-| **Claude CLI** | Optional | `npm install -g @anthropic-ai/claude-code` then run `claude` and `/login` |
-
-## Quick Install
-
-From the **root of your project** (the repo that contains `ai_guidance` as a subtree):
+From the **root of the host project** (the repo whose AI agents need access
+to these rules):
 
 ```bash
-./setup/install.sh
+ln -s ~/Projects/ai_guidance docs/ai_guidance
+```
+
+Then add the path to `.gitignore` so the link itself isn't committed:
+
+```bash
+echo "docs/ai_guidance" >> .gitignore
+```
+
+## Verify it worked
+
+```bash
+ls -la docs/ai_guidance
+# Expected: starts with `lrwxr-xr-x` and shows `-> /Users/<you>/Projects/ai_guidance`
+
+ls docs/ai_guidance/TROUBLESHOOTING.md
+# Should show the file (proves the target is reachable through the symlink)
+```
+
+## Helper script
+
+`setup/install.sh` automates the same two steps and adds an idempotent check
+(it skips if a symlink already exists at the target path):
+
+```bash
+# From the host project root
+~/Projects/ai_guidance/setup/install.sh
 ```
 
 The script will:
+1. Verify `~/Projects/ai_guidance` exists and looks like a valid clone.
+2. Create the `docs/ai_guidance` symlink (or skip if already correct).
+3. Add `docs/ai_guidance` to `.gitignore` if not already present.
+4. Print the verification commands so you can confirm it worked.
 
-1. **Verify** that `uv` and `git` are installed
-2. **Copy** the Python scripts to `~/LocalDevelopment/python_scripts/`
-3. **Add** `ai:pull` and `ai:push` aliases to your `~/.zshrc` (or `~/.bashrc`)
-
-Use `--force` to skip confirmation prompts:
-
-```bash
-./setup/install.sh --force
-```
-
-After installation, reload your shell:
+Override the source path with the `AI_GUIDANCE_SRC` environment variable if
+you keep this repo somewhere other than `~/Projects/ai_guidance`:
 
 ```bash
-source ~/.zshrc   # or open a new terminal
+AI_GUIDANCE_SRC=~/code/ai_guidance ~/Projects/ai_guidance/setup/install.sh
 ```
 
-## Manual Install
+## Updating the rules
 
-If you prefer to set things up by hand:
+There is nothing to "update." Because the host project's `docs/ai_guidance/`
+is a live link to the source repo, any change you make in the source is
+visible immediately in every linked host project.
 
-### 1. Copy the scripts
+To pull in changes from collaborators:
 
 ```bash
-mkdir -p ~/LocalDevelopment/python_scripts
-cp setup/scripts/ai_common.py ~/LocalDevelopment/python_scripts/
-cp setup/scripts/ai_pull.py   ~/LocalDevelopment/python_scripts/
-cp setup/scripts/ai_push.py   ~/LocalDevelopment/python_scripts/
+cd ~/Projects/ai_guidance
+git pull
 ```
 
-### 2. Add aliases to your shell
+All host projects on this machine see the result instantly.
 
-Append this to `~/.zshrc` (or `~/.bashrc`):
+## Recovering from a broken symlink
 
-```bash
-# --- AI Subtree Aliases (ai_guidance) ---
-_ai_pull() {
-  uv run ~/LocalDevelopment/python_scripts/ai_pull.py "$@"
-}
-_ai_push() {
-  uv run ~/LocalDevelopment/python_scripts/ai_push.py "$@"
-}
+If files appear missing or stale, see [`git/TROUBLESHOOTING.md`](../git/TROUBLESHOOTING.md) §3.1
+("Symlink synchronization") for diagnosis and the recovery commands.
 
-alias ai:pull="_ai_pull"
-alias ai:push="_ai_push"
-# --- End AI Subtree Aliases ---
-```
+## Why not `git subtree`?
 
-### 3. Reload
+Earlier versions of this project distributed the guidance using `git subtree`.
+That required every host project to remember to run `ai:pull` periodically,
+and uncommitted edits in the source repo were invisible downstream until
+pushed. The current symlink approach is simpler and always live.
 
-```bash
-source ~/.zshrc
-```
+## Prerequisites
 
-## File Overview
-
-```
-setup/
-├── README.md          ← this file
-├── install.sh         ← automated installer
-└── scripts/
-    ├── ai_common.py   ← shared config & helpers
-    ├── ai_pull.py     ← ai:pull implementation
-    └── ai_push.py     ← ai:push implementation
-```
-
-## Configuration
-
-The subtree prefix, remote URL, and branch are defined in `scripts/ai_common.py`:
-
-```python
-PREFIX = "docs/ai_guidance"
-REMOTE = "git@github.com:Performant-Labs/ai_guidance.git"
-BRANCH = "main"
-```
-
-If your project mounts `ai_guidance` at a different path, update `PREFIX` accordingly.
-
-## Customizing the Claude Model
-
-You can specify which Claude model to use in three ways (highest priority first):
-
-1. **CLI flag**: `ai:pull --model claude-opus-4-5`
-2. **Environment variable**: `export AI_SYNC_MODEL=opus`
-3. **Default**: Claude CLI's default model
+| Tool | Required | Notes |
+|------|----------|-------|
+| **git** | ✅ | To clone this repo to its canonical local path |
+| Symlink-capable filesystem | ✅ | Default on macOS and Linux. Windows requires Developer Mode or admin shell |

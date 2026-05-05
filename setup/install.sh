@@ -1,138 +1,83 @@
 #!/usr/bin/env bash
 #
-# install.sh — Set up ai:pull and ai:push aliases for the ai_guidance subtree.
+# install.sh — Symlink the ai_guidance source repo into docs/ai_guidance/
+#              of the current host project.
 #
-# This script:
-#   1. Verifies prerequisites (uv, git)
-#   2. Copies the Python scripts to ~/LocalDevelopment/python_scripts/
-#   3. Appends shell aliases to ~/.zshrc (or ~/.bashrc)
+# Run from the root of the host project (the repo whose AI agents need
+# access to these rules). Idempotent — safe to re-run.
 #
-# Usage:
-#   ./setup/install.sh            # interactive, asks before writing
-#   ./setup/install.sh --force    # skip confirmation prompts
+# Override the source path with AI_GUIDANCE_SRC if you keep the source repo
+# somewhere other than ~/Projects/ai_guidance.
+#
+#   ~/Projects/ai_guidance/setup/install.sh
+#   AI_GUIDANCE_SRC=~/code/ai_guidance ~/Projects/ai_guidance/setup/install.sh
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SCRIPTS_SRC="$SCRIPT_DIR/scripts"
-INSTALL_DIR="$HOME/LocalDevelopment/python_scripts"
-FORCE=false
-
-[[ "${1:-}" == "--force" ]] && FORCE=true
+SRC="${AI_GUIDANCE_SRC:-$HOME/Projects/ai_guidance}"
+DEST="docs/ai_guidance"
+GITIGNORE_LINE="docs/ai_guidance"
 
 # ─── Colors ──────────────────────────────────────────────────────────────────
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-CYAN='\033[0;36m'
-DIM='\033[2m'
-BOLD='\033[1m'
-RESET='\033[0m'
+RED='\033[0;31m'; GREEN='\033[0;32m'; CYAN='\033[0;36m'; DIM='\033[2m'; RESET='\033[0m'
 
-info()  { echo -e "${CYAN}▸${RESET} $*"; }
-ok()    { echo -e "${GREEN}✔${RESET} $*"; }
-fail()  { echo -e "${RED}✖${RESET} $*"; exit 1; }
-dim()   { echo -e "${DIM}$*${RESET}"; }
+err()  { printf "${RED}error:${RESET} %s\n" "$*" >&2; }
+ok()   { printf "${GREEN}ok:${RESET}    %s\n" "$*"; }
+info() { printf "${CYAN}info:${RESET}  %s\n" "$*"; }
+dim()  { printf "${DIM}%s${RESET}\n"     "$*"; }
 
-confirm() {
-    if $FORCE; then return 0; fi
-    read -rp "  $1 [Y/n] " answer
-    [[ -z "$answer" || "$answer" =~ ^[Yy] ]]
-}
-
-# ─── Prerequisites ───────────────────────────────────────────────────────────
-echo
-echo -e "${BOLD}${CYAN}◆ ai_guidance subtree setup${RESET}"
-echo
-
-info "Checking prerequisites…"
-
-if ! command -v uv &>/dev/null; then
-    fail "'uv' is not installed. Install it first: https://docs.astral.sh/uv/getting-started/installation/"
+# ─── Sanity checks ───────────────────────────────────────────────────────────
+if [[ ! -d "$SRC" ]]; then
+  err "source repo not found at: $SRC"
+  err "clone it first, or set AI_GUIDANCE_SRC to its actual path"
+  exit 1
 fi
-ok "uv found: $(uv --version)"
 
-if ! command -v git &>/dev/null; then
-    fail "'git' is not installed."
+if [[ ! -f "$SRC/TROUBLESHOOTING.md" || ! -f "$SRC/README.md" ]]; then
+  err "$SRC does not look like an ai_guidance checkout"
+  err "expected to find TROUBLESHOOTING.md and README.md inside it"
+  exit 1
 fi
-ok "git found: $(git --version)"
 
-# Optional: check for Claude CLI
-if command -v claude &>/dev/null; then
-    ok "claude CLI found (enables AI-powered advice on errors)"
+if [[ ! -d ".git" ]]; then
+  err "not in a git repository (no .git directory here)"
+  err "run this from the host project's root"
+  exit 1
+fi
+
+# ─── Create the parent docs/ if needed ───────────────────────────────────────
+mkdir -p "$(dirname "$DEST")"
+
+# ─── Create or repair the symlink ────────────────────────────────────────────
+if [[ -L "$DEST" ]]; then
+  current_target="$(readlink "$DEST")"
+  if [[ "$current_target" == "$SRC" ]]; then
+    ok "symlink already correct: $DEST -> $SRC"
+  else
+    info "replacing existing symlink (was: $current_target)"
+    rm "$DEST"
+    ln -s "$SRC" "$DEST"
+    ok "symlink: $DEST -> $SRC"
+  fi
+elif [[ -e "$DEST" ]]; then
+  err "$DEST exists but is not a symlink"
+  err "back up or remove the existing path manually, then re-run"
+  exit 1
 else
-    dim "  claude CLI not found — AI advice will be unavailable (optional)"
+  ln -s "$SRC" "$DEST"
+  ok "symlink: $DEST -> $SRC"
 fi
 
-# ─── Install Python scripts ─────────────────────────────────────────────────
-echo
-info "Installing Python scripts → ${INSTALL_DIR}/"
-
-mkdir -p "$INSTALL_DIR"
-
-for script in ai_common.py ai_pull.py ai_push.py; do
-    src="$SCRIPTS_SRC/$script"
-    dst="$INSTALL_DIR/$script"
-
-    if [[ -f "$dst" ]]; then
-        if cmp -s "$src" "$dst"; then
-            dim "  $script — already up to date"
-            continue
-        fi
-        if ! confirm "$script already exists and differs. Overwrite?"; then
-            dim "  Skipping $script"
-            continue
-        fi
-    fi
-
-    cp "$src" "$dst"
-    ok "Installed $script"
-done
-
-# ─── Shell aliases ───────────────────────────────────────────────────────────
-echo
-info "Configuring shell aliases…"
-
-# Detect shell config file
-if [[ -n "${ZSH_VERSION:-}" || "$SHELL" == */zsh ]]; then
-    RC_FILE="$HOME/.zshrc"
+# ─── Add to .gitignore (idempotent) ──────────────────────────────────────────
+if [[ -f .gitignore ]] && grep -qxF "$GITIGNORE_LINE" .gitignore; then
+  dim ".gitignore already excludes $GITIGNORE_LINE"
 else
-    RC_FILE="$HOME/.bashrc"
+  echo "$GITIGNORE_LINE" >> .gitignore
+  ok "added $GITIGNORE_LINE to .gitignore"
 fi
 
-ALIAS_BLOCK='# --- AI Subtree Aliases (ai_guidance) ---
-_ai_pull() {
-  uv run ~/LocalDevelopment/python_scripts/ai_pull.py "$@"
-}
-_ai_push() {
-  uv run ~/LocalDevelopment/python_scripts/ai_push.py "$@"
-}
-
-alias ai:pull="_ai_pull"
-alias ai:push="_ai_push"
-# --- End AI Subtree Aliases ---'
-
-if grep -q "alias ai:pull" "$RC_FILE" 2>/dev/null; then
-    ok "Aliases already present in $RC_FILE"
-else
-    if confirm "Add ai:pull / ai:push aliases to $RC_FILE?"; then
-        echo "" >> "$RC_FILE"
-        echo "$ALIAS_BLOCK" >> "$RC_FILE"
-        ok "Aliases added to $RC_FILE"
-    else
-        echo
-        dim "Skipped. To add manually, append this to $RC_FILE:"
-        echo
-        echo "$ALIAS_BLOCK"
-    fi
-fi
-
-# ─── Done ────────────────────────────────────────────────────────────────────
-echo
-echo -e "${BOLD}${GREEN}✔ Setup complete.${RESET}"
-echo
-dim "Run 'source $RC_FILE' or open a new terminal, then:"
-echo
-echo "  ai:pull          # pull latest ai_guidance from upstream"
-echo "  ai:push          # push local changes to upstream"
-echo "  ai:pull --model opus  # use a specific Claude model"
-echo
+# ─── Verify ──────────────────────────────────────────────────────────────────
+echo ""
+info "verify with:"
+dim "  ls -la $DEST"
+dim "  cat $DEST/TROUBLESHOOTING.md | head -20"
