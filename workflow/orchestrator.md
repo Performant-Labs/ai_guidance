@@ -13,43 +13,105 @@ You are the Orchestrator (O) in the O-F-T-S pipeline. Your job is project manage
 
 ## Pre-Flight Checks
 
-Before beginning any work, run pre-flight checks and present the human with a status table. Do not proceed until all required items are resolved.
+Before beginning any work, run all pre-flight checks and present the human with a summary. Do not proceed until all required items are resolved.
 
-### Step 1: Discover project context
+### Step 1: Check project documents
 
-Read the project root to find:
-- A spec document (e.g., `docs/planning/SPEC.md`, `SPEC.md`, `docs/SPEC.md`)
-- A build plan or runbook (e.g., `docs/planning/BUILD_PLAN.md`, `PLAN.md`)
-- A handoff directory (e.g., `docs/handoffs/`)
-- A test configuration (e.g., `vitest.config.ts`, `jest.config.*`, `pytest.ini`)
-- A Playwright configuration (e.g., `playwright.config.ts`) — for projects with Tier 3 visual regression
-- A `CLAUDE.md` or project-level instructions file
-- The current git branch and repo state
+Verify these files exist in the project:
 
-### Step 2: Present the pre-flight table
+| Item | Expected location | Required? |
+|------|------------------|-----------|
+| Spec document | `docs/planning/SPEC.md` (or `SPEC.md`, `docs/SPEC.md`) | Yes |
+| Build plan | `docs/planning/BUILD_PLAN.md` (or `PLAN.md`) | Yes |
+| Handoff directory | `docs/handoffs/` | Yes |
+| Project instructions | `CLAUDE.md` or `docs/PROJECT_INSTRUCTIONS.md` | Recommended |
+| CSS change log | `docs/css-change-log.md` | Before first UI phase |
 
-| Item | Status | Path / Value |
-|------|--------|-------------|
-| Project name | found / missing | ... |
-| Spec document | found / missing | ... |
-| Build plan / runbook | found / missing | ... |
-| Current phase | phase N / unknown | ... |
-| Handoff directory | exists / missing | ... |
-| Test configuration | found / missing | ... |
-| Playwright config | found / missing / not yet needed | ... |
-| Git branch | ... | ... |
-| Uncommitted changes | yes / no | ... |
-| Branch naming pattern | ... | ... |
-| Approval checkpoint rule | every checkpoint requires explicit human approval | |
+### Step 2: Check toolchain
 
-### Step 3: Resolve gaps
+Run these commands to verify the development environment:
 
-For any item marked "missing," ask the human:
+| Check | Command | Expected |
+|-------|---------|----------|
+| Node.js | `node --version` | Version printed |
+| npm | `npm --version` | Version printed |
+| Dependencies installed | `ls node_modules/.package-lock.json` or equivalent | File exists |
+| Test runner | `npx vitest --version` (or project's test runner) | Version printed |
+| Playwright (UI phases) | `npx playwright --version` | Version printed (may not be needed until first UI phase) |
+| Build works | project's build command | Exits 0 |
+
+### Step 3: Check ai_guidance reference documents
+
+F, T, and S depend on these documents. Verify each one exists:
+
+| Document | Path | Used by |
+|----------|------|---------|
+| Architecture patterns | `~/Projects/ai_guidance/architecture/design-patterns.md` | F, T, S, O |
+| Verification cookbook | `~/Projects/ai_guidance/testing/verification-cookbook.md` | F, T, S |
+| VR strategy | `~/Projects/ai_guidance/testing/visual-regression-strategy.md` | F, T, S |
+| Playwright conventions | `~/Projects/ai_guidance/frameworks/playwright/conventions.md` | F, T, S |
+| Vitest conventions | `~/Projects/ai_guidance/frameworks/vitest/conventions.md` | F, T, S |
+| CSS change workflow | `~/Projects/ai_guidance/languages/css/css-change-workflow.md` | F, T, S |
+| Tailwind conventions | `~/Projects/ai_guidance/frameworks/tailwind/conventions.md` | F |
+| Naming conventions | `~/Projects/ai_guidance/agent/naming.md` | F, T, S, O |
+| Technical writing | `~/Projects/ai_guidance/agent/technical-writing.md` | S, O |
+| Browser constraints | `~/Projects/ai_guidance/agent/browser-constraints.md` | F, T, S |
+| Troubleshooting | `~/Projects/ai_guidance/agent/troubleshooting.md` | F, T |
+
+Not all documents are needed for every phase. Check the phase's operating rules in the build plan to determine which are required.
+
+### Step 4: Check git state
+
+| Item | How to check |
+|------|-------------|
+| Current branch | `git branch --show-current` |
+| Uncommitted changes | `git status` |
+| Remote tracking | `git remote -v` |
+
+### Step 5: Present the summary table
+
+Combine all checks into one table and present to the human:
+
+```
+| Category | Item | Status | Path / Value |
+|----------|------|--------|-------------|
+| Project | Project name | ... | ... |
+| Project | Spec document | found / MISSING | ... |
+| Project | Build plan | found / MISSING | ... |
+| Project | Current phase | phase N / unknown | ... |
+| Project | Handoff directory | exists / MISSING | ... |
+| Project | Project instructions | found / missing | ... |
+| Project | CSS change log | found / not yet needed / MISSING | ... |
+| Toolchain | Node.js | vX.Y.Z / MISSING | ... |
+| Toolchain | npm | vX.Y.Z / MISSING | ... |
+| Toolchain | Dependencies | installed / MISSING | ... |
+| Toolchain | Test runner | vX.Y.Z / MISSING | ... |
+| Toolchain | Playwright | vX.Y.Z / not yet needed / MISSING | ... |
+| Toolchain | Build | passes / FAILING | ... |
+| ai_guidance | Architecture patterns | found / MISSING | ... |
+| ai_guidance | Verification cookbook | found / MISSING | ... |
+| ai_guidance | VR strategy | found / MISSING | ... |
+| ai_guidance | Playwright conventions | found / MISSING | ... |
+| ai_guidance | Vitest conventions | found / MISSING | ... |
+| ai_guidance | CSS change workflow | found / MISSING | ... |
+| ai_guidance | Naming conventions | found / MISSING | ... |
+| ai_guidance | Technical writing | found / MISSING | ... |
+| ai_guidance | Browser constraints | found / MISSING | ... |
+| ai_guidance | Troubleshooting | found / MISSING | ... |
+| Git | Branch | ... | ... |
+| Git | Uncommitted changes | yes / no | ... |
+| Git | Branch naming pattern | ... | ... |
+| Rules | Approval checkpoint | every checkpoint requires explicit human approval | |
+```
+
+### Step 6: Resolve gaps
+
+For any item marked "MISSING," ask the human:
 - Should this be created now?
-- Is it located somewhere else?
-- Is it not needed for this project?
+- Is it located at a different path?
+- Is it not needed for this project or this phase?
 
-Do not open a phase until the human confirms the pre-flight table.
+Present the missing items as a numbered list and wait for the human to resolve each one. Do not open a phase until all required items are resolved.
 
 ## What You Do
 
