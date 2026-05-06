@@ -62,6 +62,12 @@ This document catalogs every type of process hang encountered in DDEV/Drupal/Pla
 | 28 | the IDE hidden consent button | Approve/Reject buttons never appear after GFM alert block | Cancel session, restart, avoid `> [!...]` before tool calls |
 | 29 | the IDE stuck / unresponsive | IDE freezes completely, no response to any input | `git config --local --unset extensions.worktreeConfig` |
 
+### G. LM Studio / Local LLM
+
+| # | Issue | Symptom | Fix |
+|---|-------|---------|-----|
+| 30 | `lms server stop` passkey failure | `Invalid passkey for lms CLI client` — daemon cannot be stopped via CLI | Kill `llmster.exe` + its `node.exe` workers directly; use LM Studio GUI going forward |
+
 ---
 
 ## 1. Playwright `networkidle` Hang
@@ -1080,6 +1086,64 @@ Then restart the IDE. The IDE should recover normally after the extension is rem
 
 ---
 
+## 30. LM Studio `lms server stop` Passkey Failure
+
+### Symptom
+Running `lms server stop` (or any `lms` control command) against a running `llmster.exe` daemon fails immediately with:
+```
+Error: Failed to authenticate: Invalid passkey for lms CLI client.
+Please make sure you are using the lms shipped with LM Studio.
+```
+The daemon keeps running. Neither the `bin/lms.exe` nor the co-bundled `llmster/.bundle/lms.exe` can stop it.
+
+### Root Cause
+When `llmster` starts, it generates a **session-specific passkey** shared only with the process that launched it. The `lms` CLI that started the daemon holds the passkey in memory. Any subsequent invocation of `lms` — including the exact same binary — gets a fresh instance with no knowledge of the current session's passkey.
+
+On this machine the daemon was started by a process (parent PID) that had already exited by the time a stop was attempted. Once the parent exits, the passkey is gone from any accessible location and the daemon is effectively **orphaned** — alive and serving on port 1234, but unreachable via `lms` CLI.
+
+This is a design gap: `llmster` is intended to be managed by a long-lived supervisor (the LM Studio GUI or a persistent `lms` process), not launched and forgotten.
+
+### Detection
+```powershell
+# If this errors with passkey message, the daemon is orphaned:
+& "C:\Users\<user>\.lmstudio\bin\lms.exe" server stop
+
+# Confirm llmster is running but its parent is gone:
+Get-CimInstance Win32_Process -Filter "Name = 'llmster.exe'" |
+    Select-Object ProcessId, ParentProcessId, CommandLine
+# If ParentProcessId process no longer exists → orphaned
+```
+
+### Solution
+Kill the processes directly:
+```powershell
+# Get the PIDs
+$llmster = Get-Process llmster -ErrorAction SilentlyContinue
+$nodes = Get-Process node -ErrorAction SilentlyContinue |
+    Where-Object { $_.Path -match 'lmstudio' }
+
+# Kill all of them
+Stop-Process -Id ($llmster.Id + $nodes.Id) -Force
+```
+
+### Prevention
+**On a Windows desktop machine: always use the LM Studio GUI** (`LM Studio.exe`) to manage the server, not `lms` CLI. The GUI:
+- Owns `llmster` as a proper child process with a valid passkey
+- Shuts the daemon down cleanly when the app is closed
+- Avoids the orphan scenario entirely
+
+Reserve `lms` CLI for headless Linux/server environments where no GUI is available.
+
+### LM Studio process map (for reference)
+| Process | Path | Role |
+|---|---|---|
+| `LM Studio.exe` | `C:\Users\<user>\AppData\Local\LM Studio\` | Full Electron GUI — **use this on desktop** |
+| `llmster.exe` | `C:\Users\<user>\.lmstudio\llmster\<ver>\` | Backend daemon — child of GUI or `lms` |
+| `node.exe` ×2 | `C:\Users\<user>\.lmstudio\.internal\utils\` | Inference workers — hold GPU VRAM |
+| `lms.exe` | `C:\Users\<user>\.lmstudio\bin\` | CLI — for headless/server use only |
+
+---
+
 ## Diagnostic Checklist
 
 When something appears stuck, check in this order:
@@ -1129,3 +1193,6 @@ When something appears stuck, check in this order:
 
 ### IDE / Tooling
 23. **the IDE completely frozen / unresponsive?** → Run `git config --local --unset extensions.worktreeConfig` in the workspace repo, then restart the IDE. See Issue #29.
+
+### LM Studio / Local LLM
+24. **`lms server stop` fails with passkey error?** → Kill `llmster.exe` and its two `node.exe` workers directly (see Issue #30). Use the LM Studio GUI on desktop machines going forward.
