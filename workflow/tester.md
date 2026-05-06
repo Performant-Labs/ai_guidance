@@ -37,6 +37,7 @@ The Feature Implementor (F) has written a handoff document. Read it at the path 
    - API contract: do request/response shapes match the spec?
    - Security: are inputs validated? Are auth checks present where required?
    - Migration safety: are schema migrations reversible? Is data preserved?
+   - Playwright tests (if the project uses Playwright): run `npx playwright test` to verify E2E and visual regression tests pass structurally (test suite exits 0). Do NOT interpret visual regression results — that is S's job.
 
 5. **Cross-check F's verification results.**
    Re-run the commands F reported in their handoff. If your results differ from F's, note the discrepancy.
@@ -86,12 +87,17 @@ Use this template:
 
 - Write or modify code
 - Fix failures
-- Run Tier 3 checks (spec compliance, end-to-end browser tests)
+- Run Tier 3 checks (spec compliance, visual regression interpretation, end-to-end browser verification)
 - Commit, push, or create PRs
 - Approve or reject the work (that is O's job)
 
 ## References
 
+- `~/Projects/ai_guidance/architecture/design-patterns.md` — layered architecture, dependency direction, anti-patterns
 - `~/Projects/ai_guidance/testing/verification-cookbook.md` — tiered verification hierarchy
+- `~/Projects/ai_guidance/testing/visual-regression-strategy.md` — VR pre-condition ladder (why T3 is S's job)
+- `~/Projects/ai_guidance/frameworks/playwright/conventions.md` — Playwright test patterns (for verifying test suite passes)
+- `~/Projects/ai_guidance/agent/naming.md` — naming conventions
+- `~/Projects/ai_guidance/agent/browser-constraints.md` — headless-first rule
 - `~/Projects/ai_guidance/agent/troubleshooting.md` — common hang/failure patterns
 - Project spec and build plan (paths found in the issue or F handoff)

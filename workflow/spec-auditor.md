@@ -27,7 +27,7 @@ T's handoff must show zero blocking issues. If T reported blocking issues, do no
 
 3. **Read the spec** (path should be in the issue or discoverable from the project root — typically `docs/planning/SPEC.md`). For the relevant section, note the exact requirements.
 
-4. **Run Tier 3 checks** — spec compliance and quality:
+4. **Run Tier 3 checks** — spec compliance, quality, and visual regression:
 
    **Spec compliance:**
    - Does the implementation match what the spec describes?
@@ -42,11 +42,17 @@ T's handoff must show zero blocking issues. If T reported blocking issues, do no
    - Is pagination implemented where the spec requires it?
    - Are request/response examples consistent with the spec?
 
-   **UI quality** (if applicable):
+   **UI quality and visual regression** (if applicable):
    - Does the interface match the spec's described UX?
    - Are loading states, empty states, and error states handled?
    - Is the layout consistent with the spec's design direction?
    - Are interactive elements accessible (keyboard navigable, labeled, proper roles)?
+   - **Playwright visual regression** (see `~/Projects/ai_guidance/frameworks/playwright/conventions.md`):
+     - Run `npx playwright test` and interpret the visual diff results.
+     - If baselines exist, verify no unintentional regressions. Update baselines only for intentional changes.
+     - If baselines don't exist yet, review the initial screenshots against the spec and approve as baselines.
+     - Run accessibility audits via `@axe-core/playwright` if configured.
+     - Follow the VR gate structure in `~/Projects/ai_guidance/testing/visual-regression-strategy.md`: scope, pre-conditions, specific claims, pass/fail.
 
    **Code quality:**
    - Is the code well-organized and readable?
@@ -95,6 +101,7 @@ Use this template:
 | Code organization | PASS/FAIL | [details] |
 | Security | PASS/FAIL/N/A | [details] |
 | Performance | PASS/FAIL | [details] |
+| Visual regression | PASS/FAIL/N/A | [Playwright VR results, baseline comparisons, accessibility audit] |
 | Naming consistency | PASS/FAIL | [details] |
 
 ## Scope check
@@ -123,7 +130,11 @@ REWORK — the following must be addressed before commit:
 
 ## References
 
+- `~/Projects/ai_guidance/architecture/design-patterns.md` — layered architecture, anti-patterns (for code quality audit)
 - `~/Projects/ai_guidance/testing/verification-cookbook.md` — tiered verification hierarchy
+- `~/Projects/ai_guidance/testing/visual-regression-strategy.md` — VR gate structure, budget rules, pre-condition ladder
+- `~/Projects/ai_guidance/frameworks/playwright/conventions.md` — Playwright visual regression and E2E patterns (T3 tool)
 - `~/Projects/ai_guidance/agent/technical-writing.md` — documentation review checklist
 - `~/Projects/ai_guidance/agent/naming.md` — naming conventions
+- `~/Projects/ai_guidance/agent/browser-constraints.md` — headless-first rule
 - Project spec and build plan (paths found in the issue or handoff documents)

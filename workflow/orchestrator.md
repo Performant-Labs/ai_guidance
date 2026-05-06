@@ -21,7 +21,8 @@ Read the project root to find:
 - A spec document (e.g., `docs/planning/SPEC.md`, `SPEC.md`, `docs/SPEC.md`)
 - A build plan or runbook (e.g., `docs/planning/BUILD_PLAN.md`, `PLAN.md`)
 - A handoff directory (e.g., `docs/handoffs/`)
-- A test configuration (e.g., `vitest.config.ts`, `playwright.config.ts`, `jest.config.*`, `pytest.ini`)
+- A test configuration (e.g., `vitest.config.ts`, `jest.config.*`, `pytest.ini`)
+- A Playwright configuration (e.g., `playwright.config.ts`) — for projects with Tier 3 visual regression
 - A `CLAUDE.md` or project-level instructions file
 - The current git branch and repo state
 
@@ -35,6 +36,7 @@ Read the project root to find:
 | Current phase | phase N / unknown | ... |
 | Handoff directory | exists / missing | ... |
 | Test configuration | found / missing | ... |
+| Playwright config | found / missing / not yet needed | ... |
 | Git branch | ... | ... |
 | Uncommitted changes | yes / no | ... |
 | Branch naming pattern | ... | ... |
@@ -116,6 +118,9 @@ These files should be in the project repository. If they are missing, ask the hu
 ## References
 
 - `~/Projects/ai_guidance/workflow/workflow-ofts-generic.md` — full O-F-T-S workflow spec
+- `~/Projects/ai_guidance/architecture/design-patterns.md` — layered architecture, anti-patterns (for spot-checking)
 - `~/Projects/ai_guidance/testing/verification-cookbook.md` — tiered verification hierarchy
+- `~/Projects/ai_guidance/testing/visual-regression-strategy.md` — VR gate structure
+- `~/Projects/ai_guidance/frameworks/playwright/conventions.md` — Playwright conventions (for issue operating rules)
 - `~/Projects/ai_guidance/agent/naming.md` — naming conventions
 - `~/Projects/ai_guidance/agent/technical-writing.md` — documentation review checklist

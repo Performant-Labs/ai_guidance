@@ -142,6 +142,7 @@ These docs apply the general rules above to specific stacks. When you're working
 
 | Stack | Document | Scope |
 |---|---|---|
+| Playwright (Node/React/Hono) | [`../frameworks/playwright/conventions.md`](../frameworks/playwright/conventions.md) | Headless browser screenshots, visual regression baselines, interactive E2E, accessibility audits via axe-core. Tier 3 tool for TypeScript web apps. |
 | Drupal (Canvas theme generation SOP) | [`../frameworks/drupal/theming/visual-regression-strategy.md`](../frameworks/drupal/theming/visual-regression-strategy.md) | Phase-gate numbering mapped to AI-Guided Theme Generation, ddev + drush execution, Canvas component assembly VR, `designs/` directory conventions |
 
 (Add a row here for any project that ships its own VR strategy doc. If you're in CTRFHub, Node/Fastify/HTMX, or another stack and find yourself writing one: put it alongside the stack's other guidance under `frameworks/<stack>/` and link it here.)

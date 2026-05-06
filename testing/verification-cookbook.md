@@ -197,12 +197,13 @@ Instead, use **Tier 2.5**: Ask the developer to log in via their daily-driver Ch
 
 ---
 
-## Tier 3 — Visual Fidelity (Screenshots)
+## Tier 3 — Visual Fidelity (Screenshots + Playwright)
 
-Reserve `browser_subagent` screenshots exclusively for visual sign-off.
+Use **Playwright** for automated visual regression and interactive E2E verification. For ad-hoc visual sign-off, `browser_subagent` screenshots are also acceptable.
 
-- **Use Cases**: Correct padding/margins, color-matching against design references, z-index overlaps, and mobile menu animations.
-- **Efficiency Rule**: Follow Section 10 of the Operational Guidance to batch all screenshots into a single subagent call across multiple viewport positions.
+- **Primary tool**: Playwright with `toHaveScreenshot()` for baseline comparisons. See [`../frameworks/playwright/conventions.md`](../frameworks/playwright/conventions.md) for setup, patterns, and budget rules.
+- **Use Cases**: Visual regression against baselines, layout verification at specific viewports, interactive behavior (hover states, modals, form flows), accessibility audits (`@axe-core/playwright`).
+- **Efficiency Rule**: One viewport per comparison. Element-scoped screenshots for component checks. Never full-page screenshots as analysis inputs. See the budget rules in [`../testing/visual-regression-strategy.md`](visual-regression-strategy.md).
 - **Gate before T3**: If the current change moved an element's backdrop (layout token change, position switch, theme-zone relocation, background swap), run the T2 **Backdrop Changes** contrast check before taking the screenshot. A visually-muted screenshot can still be a WCAG failure.
 
 ---

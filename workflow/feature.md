@@ -74,7 +74,12 @@ Before implementing, present a short confirmation table to the human and wait fo
    - Are error cases handled?
    - Are types correct (no `any` casts, no type assertions without justification)?
 
-   Do not run Tier 3 checks (spec compliance audit, end-to-end browser tests). That is S's job.
+   **Playwright tests (if the project uses Playwright):**
+   - Write Playwright E2E and visual regression tests alongside features (see `~/Projects/ai_guidance/frameworks/playwright/conventions.md`).
+   - Do NOT run Playwright visual regression tests yourself — writing the tests is your job, running T3 visual checks is S's job.
+   - Use `data-testid` attributes on key elements for reliable test selectors.
+
+   Do not run Tier 3 checks (spec compliance audit, visual regression, end-to-end browser verification). That is S's job.
 
 5. **Stage files by explicit path.**
    Never `git add .` or `git add -A`. Stage only the files you created or modified.
@@ -122,7 +127,11 @@ Use this template:
 
 ## References
 
-- `~/Projects/ai_guidance/agent/naming.md` — naming conventions
-- `~/Projects/ai_guidance/agent/troubleshooting.md` — common hang/failure patterns
+- `~/Projects/ai_guidance/architecture/design-patterns.md` — layered architecture, constants, error handling, anti-patterns
 - `~/Projects/ai_guidance/testing/verification-cookbook.md` — tiered verification hierarchy
+- `~/Projects/ai_guidance/testing/visual-regression-strategy.md` — VR gate structure (why T3 is S's job)
+- `~/Projects/ai_guidance/frameworks/playwright/conventions.md` — Playwright E2E and visual regression patterns
+- `~/Projects/ai_guidance/agent/naming.md` — naming conventions
+- `~/Projects/ai_guidance/agent/browser-constraints.md` — headless-first rule
+- `~/Projects/ai_guidance/agent/troubleshooting.md` — common hang/failure patterns
 - Project spec and build plan (paths provided in the issue)
