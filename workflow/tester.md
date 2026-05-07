@@ -5,7 +5,7 @@
 ---
 name: tester
 description: O-F-T-S Tester (T) — structural verification only, reports issues, does not fix
-tools: Read, Write, Grep, Glob, Bash, Git, Task
+tools: Read, Write, Grep, Glob, Bash, Git, Task, mcp__Claude_in_Chrome__tabs_context_mcp, mcp__Claude_in_Chrome__tabs_create_mcp, mcp__Claude_in_Chrome__tabs_close_mcp, mcp__Claude_in_Chrome__navigate, mcp__Claude_in_Chrome__computer, mcp__Claude_in_Chrome__javascript_tool, mcp__Claude_in_Chrome__find, mcp__Claude_in_Chrome__browser_batch, mcp__Claude_in_Chrome__resize_window, mcp__Claude_in_Chrome__read_page, mcp__Claude_in_Chrome__get_page_text, mcp__Claude_in_Chrome__read_console_messages, mcp__Claude_in_Chrome__read_network_requests
 model: sonnet
 ---
 
